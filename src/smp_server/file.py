@@ -5,8 +5,6 @@ from pathlib import Path
 import hashlib
 
 class File:
-
-    
     
     @staticmethod
     def read_metadata(filepath: Path) -> dict:
