@@ -4,30 +4,32 @@ from smp_server.file import File
 
 class Database:
 
-    def __init__(self):
-        self.check_db()
-        self.check_source_folder()
+    def __init__(self,**kwargs):
+        """
+           Creates a new Database object.  
+        """
 
-    def check_source_folder(self):
-        """
-            Checks if the source music folder exists. If it dosen't, it creates it.
-        """
-        source_folder_path = Path.home() / "Music" / "Scarlett" / "Source"
-        source_folder_path.mkdir(parents=True,exist_ok=True)
+        # Sets the file paths for db_path, source_path, and albumart_path
+        self.db_path = Path.home() / "Music" / "Scarlett" / "Scarlett.db" if "db_path" not in kwargs else kwargs.get("db_path") 
+        self.source_path = Path.home() / "Music" / "Scarlett" / "Source" if "source_folder_path" not in kwargs else kwargs.get("source_path") 
+        self.albumart_path = Path.home() / "Music" / "Scarlett" / "AlbumArt" if "source_folder_path" not in kwargs else kwargs.get("albumart_path") 
 
-        albumart_folder_path = Path.home() / "Music" / "Scarlett" / "AlbumArt"
-        albumart_folder_path.mkdir(parents=True,exist_ok=True)
-            
-    def check_db(self):
+        # Validates that the locations exist and have the necessary files.
+        self.validate_library()
+
+    def validate_library(self,database_folder=True,source_folder=True,albumart_folder=True):
         """
-           Checks if database file exists. If it dosen't, it creates it. 
+           By default, checks to ensure the database, source_folder, and albumart_folder exist.
+           If they do not, they are created.
         """
-        db_path = Path.home() / "Music" / "Scarlett" / "Scarlett.db"
-        db_path.parent.mkdir(parents=True, exist_ok=True) # Creates directory if it dosen't exist
-        # Creates blank table if file dosen't exist
-        connection = sqlite3.connect(db_path)
-        cursor = connection.cursor()
-        cursor.execute('''
+        def check_db():
+            """
+                Checks if database file exists. If it dosen't, it creates it. 
+            """
+            # Creates blank table if file dosen't exist
+            connection = sqlite3.connect(self.db_path)
+            cursor = connection.cursor()
+            cursor.execute('''
             CREATE TABLE IF NOT EXISTS "tracks" (
             	"id"	INTEGER NOT NULL UNIQUE,
             	"title"	TEXT,
@@ -43,9 +45,16 @@ class Database:
             	"albumart" TEXT,
             	PRIMARY KEY("id" AUTOINCREMENT)
             )
-        ''')
-        connection.commit()
-        connection.close()
+            ''')
+            connection.commit()
+            connection.close()           
+        
+        if source_folder:
+            self.source_path.mkdir(parents=True,exist_ok=True)
+        if albumart_folder:
+            self.albumart_path.mkdir(parents=True,exist_ok=True)                    
+        if database_folder:
+            check_db()
 
     def upsert_track(self,connection,metadata:dict):
         existing = connection.execute(
@@ -81,12 +90,9 @@ class Database:
            Scans the Scarlett/Source/ folder for music files.
            Each file is stored in the DB and has its album art hashed/saved. 
         """
-        db_path = Path.home() / "Music" / "Scarlett" / "Scarlett.db"
-        source_folder = Path.home() / "Music" / "Scarlett" / "Source"
+        connection = sqlite3.connect(self.db_path)
 
-        connection = sqlite3.connect(db_path)
-
-        mp3s = list(source_folder.rglob("*.mp3"))
+        mp3s = list(self.source_path.rglob("*.mp3"))
 
         for i, filepath in enumerate(mp3s,1):
             try:
