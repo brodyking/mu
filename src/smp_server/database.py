@@ -77,6 +77,10 @@ class Database:
             """, metadata)
 
     def scan_source_folder(self):
+        """
+           Scans the Scarlett/Source/ folder for music files.
+           Each file is stored in the DB and has its album art hashed/saved. 
+        """
         db_path = Path.home() / "Music" / "Scarlett" / "Scarlett.db"
         source_folder = Path.home() / "Music" / "Scarlett" / "Source"
 
