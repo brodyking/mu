@@ -19,7 +19,8 @@ def load_config():
 
 
 def main():
-    parser = argparse.ArgumentParser(prog="Scarlett Media Player Server",add_help=False,description="A Spotify Downloader",epilog="Created and maintained by Brody King. You can find this project at https://github.com/brodyking/smp-server")
+    parser = argparse.ArgumentParser(prog="Scarlett Media Player Server",add_help=False,description="This program manages your library and can host a server for your SMP client.",epilog="Created and maintained by Brody King. You can find this project at https://github.com/brodyking/smp-server")
+    parser.add_argument('-h', '--help', action='help', help='Shows this help message.')
     parser.add_argument('action', choices=["scan"], help="Options for library")
     args = parser.parse_args()
 
