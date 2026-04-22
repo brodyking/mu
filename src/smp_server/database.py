@@ -8,9 +8,6 @@ class Database:
         self.check_db()
         self.check_source_folder()
 
-    def __str__(self):
-        return "hi"
-
     def check_source_folder(self):
         """
             Checks if the source music folder exists. If it dosen't, it creates it.
