@@ -1,0 +1,21 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project.scripts]
+smp-server = "smp_server.main:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/smp_server/"]
+
+[project]
+name = "smp-server"
+version = "1.0.0"
+description = "Scarlett Music Player Server"
+dependencies = [
+    "requests",
+    "dotenv",
+    "spotipy",
+    "mutagen",
+    "yt_dlp"
+]
