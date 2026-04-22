@@ -1,7 +1,6 @@
 import sqlite3
 from pathlib import Path
 from smp_server.file import File
-import os
 
 class Database:
 
@@ -13,9 +12,9 @@ class Database:
         return "hi"
 
     def check_source_folder(self):
-        '''
+        """
             Checks if the source music folder exists. If it dosen't, it creates it.
-        '''
+        """
         source_folder_path = Path.home() / "Music" / "Scarlett" / "Source"
         source_folder_path.mkdir(parents=True,exist_ok=True)
 
@@ -23,9 +22,9 @@ class Database:
         albumart_folder_path.mkdir(parents=True,exist_ok=True)
             
     def check_db(self):
-        '''
+        """
            Checks if database file exists. If it dosen't, it creates it. 
-        '''
+        """
         db_path = Path.home() / "Music" / "Scarlett" / "Scarlett.db"
         db_path.parent.mkdir(parents=True, exist_ok=True) # Creates directory if it dosen't exist
         # Creates blank table if file dosen't exist

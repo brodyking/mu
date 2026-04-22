@@ -4,14 +4,16 @@ from mutagen import MutagenError
 from pathlib import Path
 import hashlib
 
-
 class File:
+
+    
+    
     @staticmethod
     def read_metadata(filepath: Path) -> dict:
-        '''
+        """
             Reads the metadata for the file and returns all the data as a dict.
             Album art is stored from extract_album_art(), and the key is set to the file path.
-        '''
+        """
         def get(tags, key):
             try:
                 return tags[key][0]
@@ -39,14 +41,14 @@ class File:
 
     @staticmethod
     def extract_album_art(filepath: Path) -> str | None:
-        '''
-        Extracts album art from a song file, and stores it in Scarlett/AlbumArt/.
-        All images are hashed and stored with the hash as the filename.
-        This prevents duplicates for same album covers.
+        """
+            Extracts album art from a song file, and stores it in Scarlett/AlbumArt/.
+            All images are hashed and stored with the hash as the filename.
+            This prevents duplicates for same album covers.
 
-        It then returns the file path
+            It then returns the file path
         
-        '''
+        """
         try:
             tags = ID3(filepath)
         except Exception:
