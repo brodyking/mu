@@ -38,6 +38,7 @@ class Database:
             	"tracknumber"	INTEGER,
             	"artist"	TEXT,
             	"albumartist"	TEXT,
+            	"album"	TEXT,
             	"discnumber"	INTEGER,
             	"genre"	TEXT,
             	"date"	TEXT,
@@ -73,9 +74,9 @@ class Database:
         else:
             connection.execute("""
                 INSERT INTO tracks (
-                    filepath, filename, title, artist, albumartist, tracknumber, discnumber, date, genre, albumart
+                    filepath, filename, title, artist, album, albumartist, tracknumber, discnumber, date, genre, albumart
                 ) VALUES (
-                    :filepath, :filename, :title, :artist, :albumartist, :tracknumber, :discnumber, :date, :genre, :albumart
+                    :filepath, :filename, :title, :artist, :album, :albumartist, :tracknumber, :discnumber, :date, :genre, :albumart
                 )
             """, metadata)
 
