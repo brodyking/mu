@@ -29,7 +29,8 @@ def main():
     subparsers.add_parser("scan", help="imports all files in Source folder")
 
     # List
-    subparsers.add_parser("list", help="list all files in the library")
+    list_parser = subparsers.add_parser("list", help="list all files in the library")
+    list_parser.add_argument("-j","--json",action='store_true',help="output in json")
 
     # Importing
     import_parser = subparsers.add_parser("import", help="import individual files")
@@ -43,7 +44,7 @@ def main():
 
     actions = {
         "scan": db.scan_source_folder,
-        "list": lambda: db.list_library(),
+        "list": lambda: db.list_library(export_json=args.json),
         "import": lambda: db.import_media(args.filepath),
         "search": lambda: db.search(args.term)
     }

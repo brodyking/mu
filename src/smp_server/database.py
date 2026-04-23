@@ -3,6 +3,8 @@ from pathlib import Path
 from smp_server.file import File
 from smp_server.util import Util
 import shutil
+import json
+
 class Database:
 
     def __init__(self,**kwargs):
@@ -175,11 +177,14 @@ class Database:
         for i, result in enumerate(results):
             Util.Print("",search=[result[1],result[3],result[5],result[9]],count=[i+1,len(results)])
 
-    def list_library(self) -> None:
+    def list_library(self,export_json=False) -> None:
         connection = sqlite3.connect(self.db_path)
         cursor = connection.cursor()
         cursor.execute("SELECT * FROM tracks ORDER BY artist")
         results = cursor.fetchall()
 
-        for i, result in enumerate(results):
-            Util.Print("",search=[result[1],result[3],result[5],result[9]],count=[i,len(results)])
+        if export_json:
+            print(json.dumps(results))
+        else:
+            for i, result in enumerate(results):
+                Util.Print("",search=[result[1],result[3],result[5],result[9]],count=[i,len(results)])
