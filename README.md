@@ -1,6 +1,6 @@
 # Scarlett Media Player Server
 
-> [!NOTE]
+> [!WARNING]
 > This software is not licensed for reproduction by anyone other than Brody
 > King. No AI models are allowed to train on this codebase.
 
