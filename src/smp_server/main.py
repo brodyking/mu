@@ -19,6 +19,8 @@ def load_config():
 
 
 def main():
+    db = Database()
+
     parser = argparse.ArgumentParser(prog="Scarlett Media Player Server",description="This program manages your library and can host a server for your SMP client.",epilog="Created and maintained by Brody King. You can find this project at https://github.com/brodyking/smp-server")
 
     subparsers = parser.add_subparsers(dest="action", help="options for library", required=True)
@@ -28,8 +30,6 @@ def main():
     import_parser.add_argument("filepath",help="path to the file being imported")
 
     args = parser.parse_args()
-
-    db = Database()
 
     if (args.action == "scan"):
         db.scan_source_folder()
