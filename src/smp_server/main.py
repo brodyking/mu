@@ -25,9 +25,16 @@ def main():
 
     subparsers = parser.add_subparsers(dest="action", help="options for library", required=True)
 
+    # Scanning
     scan_parser = subparsers.add_parser("scan", help="imports all files in Source folder")
+
+    # Importing
     import_parser= subparsers.add_parser("import", help="import individual files")
     import_parser.add_argument("filepath",help="path to the file being imported")
+
+    # Searching
+    search_parser = subparsers.add_parser("search", help="search the library")
+    search_parser.add_argument("term",help="the name of the item(s) you are searching for")
 
     args = parser.parse_args()
 
@@ -35,3 +42,5 @@ def main():
         db.scan_source_folder()
     elif (args.action == "import"):
         db.import_media(args.filepath)
+    elif (args.action == "search"):
+        db.search(args.term)

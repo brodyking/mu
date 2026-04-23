@@ -1,8 +1,8 @@
 import sqlite3
 from pathlib import Path
 from smp_server.file import File
+from smp_server.util import Util
 import shutil
-
 class Database:
 
     def __init__(self,**kwargs):
@@ -23,7 +23,7 @@ class Database:
            By default, checks to ensure the database, source_folder, and albumart_folder exist.
            If they do not, they are created.
         """
-        def check_db():
+        def check_db() -> None:
             """
                 Checks if database file exists. If it dosen't, it creates it. 
             """
@@ -56,7 +56,7 @@ class Database:
         if database_folder:
             check_db()
 
-    def upsert_track(self,connection,metadata:dict):
+    def upsert_track(self,connection,metadata:dict) -> None:
         """
            Puts all song metadata along with album art and file location into the database.
            If the filepath already exists, then it just updates the metadata instead of reinserting.
@@ -89,7 +89,7 @@ class Database:
                 )
             """, metadata)
 
-    def scan_folder(self,path):
+    def scan_folder(self,path) -> None:
         """
            Scans the path for music files.
            Each file is stored in the DB and has its album art hashed/saved. 
@@ -102,9 +102,9 @@ class Database:
             try:
                 metadata = File.read_metadata(filepath)
                 self.upsert_track(connection,metadata)
-                print(f"[{i}/{len(mp3s)}] ✓ {filepath.name}")
+                Util.Print(f"{filepath.name}",count=[i,len(mp3s)])
             except Exception as e:
-                print(f"[{i}/{len(mp3s)}] ✗ {filepath.name}: {e}")
+                Util.Print(f"{filepath.name}\n{e}",count=[i,len(mp3s)],ok=False)
 
         connection.commit()
         connection.close()
@@ -130,7 +130,7 @@ class Database:
 
         return metadata
          
-    def import_media(self,path):
+    def import_media(self,path) -> None:
         """
             Copies the file or files (if dir) to ~/Scarlett/Source, upserts metadata to the database.
         """
@@ -153,3 +153,23 @@ class Database:
         connection.commit()
         connection.close()
 
+    def search(self,term: str):
+        """
+            Searches the database
+        """
+
+        formatted_search = f"%{term}%"
+
+        connection = sqlite3.connect(self.db_path)
+        cursor = connection.cursor()
+        cursor.execute("""
+            SELECT * FROM tracks
+            WHERE title LIKE ?
+            OR artist LIKE ?
+            OR albumartist LIKE ?
+            OR album LIKE ?
+        """,(formatted_search,formatted_search,formatted_search,formatted_search))
+
+        results = cursor.fetchall()
+
+        return results        
