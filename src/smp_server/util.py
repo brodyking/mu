@@ -1,17 +1,20 @@
 class Util:
 
 	@staticmethod
-	def Print(content: str,ok: bool=True,count: list=[]):
+	def Print(content: str, **kwargs):
 		"""
-			Prints to the terminal. If counting, count takes in [current,total] in a list.	
+		Prints to the terminal
+		- ok (bool): Shows checkmark or X. Defaults to True.
+		- count (list): [current, total]. Defaults to empty.
+		- search (list): [title,artist,album,location]. Defaults to empty.
 		"""
-		output = ""
-		if ok:
-			output +="[✓] "
-		else:
-			output +="[✗] "
-		if len(count) == 2:
-			output += f"[{count[0]}/{count[1]}] "
 
-		print(f"{output}{content}")
+		ok = kwargs.get('ok', True)
+		count = kwargs.get('count', [])
+		search = kwargs.get('search', [])
 
+
+		prefix = "[✓] " if ok else "[✗] "
+		counter = f"[{count[0]}/{count[1]}] " if len(count) == 2 else ""
+		searchresult = f"[⌕] {search[0]} | {search[1]} | {search[2]} | {search[3]}" if len(search) == 4 else ""
+		print(f"{prefix}{counter}{searchresult}{content}")
