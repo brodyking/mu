@@ -28,8 +28,7 @@ class Database:
             """
             # Creates blank table if file dosen't exist
             connection = sqlite3.connect(self.db_path)
-            cursor = connection.cursor()
-            cursor.execute('''
+            connection.execute('''
             CREATE TABLE IF NOT EXISTS "tracks" (
             	"id"	INTEGER NOT NULL UNIQUE,
             	"title"	TEXT,
