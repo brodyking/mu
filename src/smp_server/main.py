@@ -19,13 +19,24 @@ def load_config():
 
 
 def main():
-    parser = argparse.ArgumentParser(prog="Scarlett Media Player Server",add_help=False,description="This program manages your library and can host a server for your SMP client.",epilog="Created and maintained by Brody King. You can find this project at https://github.com/brodyking/smp-server")
-    parser.add_argument('-h', '--help', action='help', help='Shows this help message.')
-    parser.add_argument('action', choices=["scan"], help="Options for library")
+    parser = argparse.ArgumentParser(prog="Scarlett Media Player Server",description="This program manages your library and can host a server for your SMP client.",epilog="Created and maintained by Brody King. You can find this project at https://github.com/brodyking/smp-server")
+
+    subparsers = parser.add_subparsers(dest="action", help="options for library", required=True)
+
+    scan_parser = subparsers.add_parser("scan", help="scan the library")
+    scan_parser.add_argument(
+        '-f', '--file', 
+        type=str, 
+        help="specify a specific file to import to your library."
+    )
+
     args = parser.parse_args()
 
     db = Database()
 
     if (args.action == "scan"):
-        db.scan_source_folder()
+        if args.file:
+            print(f"Coming soon! Filename: {args.file}")
+        else:
+            db.scan_source_folder()
 
