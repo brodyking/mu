@@ -155,7 +155,7 @@ class Database:
         connection.commit()
         connection.close()
 
-    def search(self,term: str) -> None:
+    def search(self,term: str,export_json=False) -> None:
         """
             Searches the database
         """
@@ -174,8 +174,11 @@ class Database:
 
         results = cursor.fetchall()
 
-        for i, result in enumerate(results):
-            Util.Print("",search=[result[1],result[3],result[5],result[9]],count=[i+1,len(results)])
+        if export_json:
+            print(json.dumps(results))
+        else:
+            for i, result in enumerate(results):
+                Util.Print("",search=[result[1],result[3],result[5],result[9]],count=[i,len(results)])
 
     def list_library(self,export_json=False) -> None:
         connection = sqlite3.connect(self.db_path)

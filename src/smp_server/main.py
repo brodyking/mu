@@ -39,6 +39,7 @@ def main():
     # Searching
     search_parser = subparsers.add_parser("search", help="search the library")
     search_parser.add_argument("term",help="the name of the item(s) you are searching for")
+    search_parser.add_argument("-j","--json",action='store_true',help="output in json")
 
     args = parser.parse_args()
 
@@ -46,7 +47,7 @@ def main():
         "scan": db.scan_source_folder,
         "list": lambda: db.list_library(export_json=args.json),
         "import": lambda: db.import_media(args.filepath),
-        "search": lambda: db.search(args.term)
+        "search": lambda: db.search(args.term,export_json=args.json)
     }
 
     if args.action in actions:
