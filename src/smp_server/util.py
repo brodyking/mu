@@ -59,12 +59,13 @@ class Util:
 		        return text[:width-2] + ".."
 		    return text.ljust(width)
 
-		searchresult = (
-		    f"[⌕] {Color.red(fmt(search[0], 25))} | "
-		    f"{fmt(search[1], 15)} | "
-		    f"{fmt(search[2], 15)} | "
-		    f"{Color.blue(search[3])}"
-		) if len(search) == 4 else ""
+		favorited = "♥ " if search[1] == 1 else "  "
 
+		searchresult = (
+		    f"[⌕] {Color.red(fmt(f"{favorited}{search[2]}", 25))} | "
+			f"{fmt(search[4], 15)} | "
+		    f"{fmt(search[6], 15)} | "
+		    f"{Color.blue(search[10])}"
+		) if len(search) != 0 else ""
 		
 		print(f"{prefix}{counter}{searchresult}{content}")
