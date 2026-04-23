@@ -57,6 +57,10 @@ class Database:
             check_db()
 
     def upsert_track(self,connection,metadata:dict):
+        """
+           Puts all song metadata along with album art and file location into the database.
+           If the filepath already exists, then it just updates the metadata instead of reinserting.
+        """
         existing = connection.execute(
             "SELECT id FROM tracks WHERE filepath = ?", (metadata["filepath"],)
         ).fetchone()
