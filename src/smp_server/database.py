@@ -135,10 +135,19 @@ class Database:
         path = Path(folder).resolve()
 
         if (path.is_dir()):
-            print("Directories coming soon")
+            mp3s = list(path.rglob("*.mp3"))
         else:
-            metadata = self.move_file(path)
-            connection = sqlite3.connect(self.db_path)
-            self.upsert_track(connection,metadata)
-            connection.commit()
-            connection.close()
+            mp3s = [path]
+
+        connection = sqlite3.connect(self.db_path)
+        for i, filepath in enumerate(mp3s,1):
+            try:
+                metadata = self.move_file(filepath)
+                self.upsert_track(connection,metadata)
+                print(f"[{i}/{len(mp3s)}] ✓ {filepath.name}")
+            except Exception as e:
+                print(f"[{i}/{len(mp3s)}] ✗ {filepath.name}: {e}")
+
+        connection.commit()
+        connection.close()
+
