@@ -89,14 +89,14 @@ class Database:
                 )
             """, metadata)
 
-    def scan_folder(self,folder):
+    def scan_folder(self,path):
         """
            Scans the path for music files.
            Each file is stored in the DB and has its album art hashed/saved. 
         """
         connection = sqlite3.connect(self.db_path)
 
-        mp3s = list(folder.rglob("*.mp3"))
+        mp3s = list(path.rglob("*.mp3"))
 
         for i, filepath in enumerate(mp3s,1):
             try:
@@ -116,11 +116,10 @@ class Database:
         """
         self.scan_folder(self.source_path)
 
-    def move_file(self,path: Path) -> dict:
+    def copy_file(self,path: Path) -> dict:
         '''
-           Moves the file, and returns the new metadata of the file. 
+           Copies the file, and returns the new metadata of the file. 
         '''
-
         metadata = File.read_metadata(path)
         
         newpath = Path(Path.home() / self.source_path / metadata["artist"] / metadata["album"] )
@@ -131,8 +130,11 @@ class Database:
 
         return metadata
          
-    def import_item(self,folder):
-        path = Path(folder).resolve()
+    def import_media(self,path):
+        """
+            Copies the file or files (if dir) to ~/Scarlett/Source, upserts metadata to the database.
+        """
+        path = Path(path).resolve()
 
         if (path.is_dir()):
             mp3s = list(path.rglob("*.mp3"))
@@ -142,7 +144,7 @@ class Database:
         connection = sqlite3.connect(self.db_path)
         for i, filepath in enumerate(mp3s,1):
             try:
-                metadata = self.move_file(filepath)
+                metadata = self.copy_file(filepath)
                 self.upsert_track(connection,metadata)
                 print(f"[{i}/{len(mp3s)}] ✓ {filepath.name}")
             except Exception as e:

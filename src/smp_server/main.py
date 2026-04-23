@@ -34,4 +34,4 @@ def main():
     if (args.action == "scan"):
         db.scan_source_folder()
     elif (args.action == "import"):
-        db.import_item(args.filepath)
+        db.import_media(args.filepath)
