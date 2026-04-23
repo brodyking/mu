@@ -16,5 +16,12 @@ class Util:
 
 		prefix = "[✓] " if ok else "[✗] "
 		counter = f"[{count[0]}/{count[1]}] " if len(count) == 2 else ""
-		searchresult = f"[⌕] {search[0]} | {search[1]} | {search[2]} | {search[3]}" if len(search) == 4 else ""
+
+		searchresult = (
+		    f"[⌕] {search[0]:<{25}} | "
+		    f"{search[1]:<{15}} | "
+		    f"{search[2]:<{15}} | "
+		    f"{search[3]}"
+		) if len(search) == 4 else ""
+
 		print(f"{prefix}{counter}{searchresult}{content}")
