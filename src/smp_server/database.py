@@ -84,14 +84,14 @@ class Database:
                 )
             """, metadata)
 
-    def scan_source_folder(self):
+    def scan_folder(self,folder):
         """
-           Scans the Scarlett/Source/ folder for music files.
+           Scans the path for music files.
            Each file is stored in the DB and has its album art hashed/saved. 
         """
         connection = sqlite3.connect(self.db_path)
 
-        mp3s = list(self.source_path.rglob("*.mp3"))
+        mp3s = list(folder.rglob("*.mp3"))
 
         for i, filepath in enumerate(mp3s,1):
             try:
@@ -103,3 +103,10 @@ class Database:
 
         connection.commit()
         connection.close()
+
+    def scan_source_folder(self):
+        """
+           Scans the Scarlett/Source/ folder for music files.
+           Each file is stored in the DB and has its album art hashed/saved. 
+        """
+        self.scan_folder(self.source_path)
