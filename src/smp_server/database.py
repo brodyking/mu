@@ -172,4 +172,5 @@ class Database:
 
         results = cursor.fetchall()
 
-        return results        
+        for i, result in enumerate(results):
+            Util.Print("",search=[result[1],result[3],result[5],result[9]],count=[i,len(results)])
