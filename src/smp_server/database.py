@@ -1,6 +1,7 @@
 import sqlite3
 from pathlib import Path
 from smp_server.file import File
+import shutil
 
 class Database:
 
@@ -110,3 +111,30 @@ class Database:
            Each file is stored in the DB and has its album art hashed/saved. 
         """
         self.scan_folder(self.source_path)
+
+    def move_file(self,path: Path) -> dict:
+        '''
+           Moves the file, and returns the new metadata of the file. 
+        '''
+
+        metadata = File.read_metadata(path)
+        
+        newpath = Path(Path.home() / self.source_path / metadata["artist"] / metadata["album"] )
+        newpath.mkdir(exist_ok=True,parents=True)
+        shutil.copy(path,newpath)
+
+        metadata["filepath"] = str(newpath / metadata["filename"])
+
+        return metadata
+         
+    def import_item(self,folder):
+        path = Path(folder).resolve()
+
+        if (path.is_dir()):
+            print("Directories coming soon")
+        else:
+            metadata = self.move_file(path)
+            connection = sqlite3.connect(self.db_path)
+            self.upsert_track(connection,metadata)
+            connection.commit()
+            connection.close()

@@ -23,20 +23,15 @@ def main():
 
     subparsers = parser.add_subparsers(dest="action", help="options for library", required=True)
 
-    scan_parser = subparsers.add_parser("scan", help="scan the library")
-    scan_parser.add_argument(
-        '-f', '--file', 
-        type=str, 
-        help="specify a specific file to import to your library."
-    )
+    scan_parser = subparsers.add_parser("scan", help="imports all files in Source folder")
+    import_parser= subparsers.add_parser("import", help="import individual files")
+    import_parser.add_argument("filepath",help="path to the file being imported")
 
     args = parser.parse_args()
 
     db = Database()
 
     if (args.action == "scan"):
-        if args.file:
-            print(f"Coming soon! Filename: {args.file}")
-        else:
-            db.scan_source_folder()
-
+        db.scan_source_folder()
+    elif (args.action == "import"):
+        db.import_item(args.filepath)
