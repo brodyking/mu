@@ -146,9 +146,9 @@ class Database:
             try:
                 metadata = self.copy_file(filepath)
                 self.upsert_track(connection,metadata)
-                print(f"[{i}/{len(mp3s)}] ✓ {filepath.name}")
+                Util.Print(f"{filepath.name}",count=[i,len(mp3s)])
             except Exception as e:
-                print(f"[{i}/{len(mp3s)}] ✗ {filepath.name}: {e}")
+                Util.Print(f"{filepath.name}\n{e}",count=[i,len(mp3s)],ok=False)
 
         connection.commit()
         connection.close()
