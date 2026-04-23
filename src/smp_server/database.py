@@ -153,7 +153,7 @@ class Database:
         connection.commit()
         connection.close()
 
-    def search(self,term: str):
+    def search(self,term: str) -> None:
         """
             Searches the database
         """
@@ -170,6 +170,15 @@ class Database:
             OR album LIKE ?
         """,(formatted_search,formatted_search,formatted_search,formatted_search))
 
+        results = cursor.fetchall()
+
+        for i, result in enumerate(results):
+            Util.Print("",search=[result[1],result[3],result[5],result[9]],count=[i+1,len(results)])
+
+    def list_library(self) -> None:
+        connection = sqlite3.connect(self.db_path)
+        cursor = connection.cursor()
+        cursor.execute("SELECT * FROM tracks ORDER BY artist")
         results = cursor.fetchall()
 
         for i, result in enumerate(results):
