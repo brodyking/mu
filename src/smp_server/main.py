@@ -26,10 +26,13 @@ def main():
     subparsers = parser.add_subparsers(dest="action", help="options for library", required=True)
 
     # Scanning
-    scan_parser = subparsers.add_parser("scan", help="imports all files in Source folder")
+    subparsers.add_parser("scan", help="imports all files in Source folder")
+
+    # List
+    subparsers.add_parser("list", help="list all files in the library")
 
     # Importing
-    import_parser= subparsers.add_parser("import", help="import individual files")
+    import_parser = subparsers.add_parser("import", help="import individual files")
     import_parser.add_argument("filepath",help="path to the file being imported")
 
     # Searching
@@ -38,9 +41,12 @@ def main():
 
     args = parser.parse_args()
 
-    if (args.action == "scan"):
-        db.scan_source_folder()
-    elif (args.action == "import"):
-        db.import_media(args.filepath)
-    elif (args.action == "search"):
-        db.search(args.term)
+    actions = {
+        "scan": db.scan_source_folder,
+        "list": lambda: db.list_library(),
+        "import": lambda: db.import_media(args.filepath),
+        "search": lambda: db.search(args.term)
+    }
+
+    if args.action in actions:
+        actions[args.action]()
