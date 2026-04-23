@@ -117,9 +117,9 @@ class Database:
         self.scan_folder(self.source_path)
 
     def copy_file(self,path: Path) -> dict:
-        '''
+        """
            Copies the file, and returns the new metadata of the file. 
-        '''
+        """
         metadata = File.read_metadata(path)
         
         newpath = Path(Path.home() / self.source_path / metadata["artist"] / metadata["album"] )
