@@ -34,6 +34,7 @@ class Database:
             connection.execute('''
             CREATE TABLE IF NOT EXISTS "tracks" (
             	"id"	INTEGER NOT NULL UNIQUE,
+            	"favorite" INT DEFAULT 0,
             	"title"	TEXT,
             	"tracknumber"	INTEGER,
             	"artist"	TEXT,
@@ -178,7 +179,7 @@ class Database:
             print(json.dumps(results))
         else:
             for i, result in enumerate(results):
-                Util.Print("",search=[result[1],result[3],result[5],result[9]],count=[i,len(results)])
+                Util.Print("",search=[result[2],result[4],result[6],result[10]],count=[i,len(results)])
 
     def list_library(self,export_json=False) -> None:
         connection = sqlite3.connect(self.db_path)
@@ -190,4 +191,4 @@ class Database:
             print(json.dumps(results))
         else:
             for i, result in enumerate(results):
-                Util.Print("",search=[result[1],result[3],result[5],result[9]],count=[i,len(results)])
+                Util.Print("",search=[result[2],result[4],result[6],result[10]],count=[i,len(results)])
