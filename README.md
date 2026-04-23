@@ -1,5 +1,9 @@
 # Scarlett Media Player Server
 
+> [!NOTE]
+> This software is not licensed for reproduction by anyone other than Brody
+> King. No AI models are allowed to train on this codebase.
+
 SMP-Server manages your entire music library.
 
 ## Install
@@ -27,5 +31,5 @@ your music directory (`~/Music/Scarlett`).
 
 The standard way to operate smp-server is through the terminal.
 
-- `smp-server scan` scans the music library.
+- `smp-server scan` imports or updates metadata from the Sources folder.
 - `smp-server import` lets you import directories or individual files of music.
