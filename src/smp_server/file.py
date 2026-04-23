@@ -54,7 +54,7 @@ class File:
 
         for tag in tags.values():
             if isinstance(tag, APIC):
-                art_hash = hashlib.md5(tag.data).hexdigest()
+                art_hash = hashlib.sha256(tag.data).hexdigest()
                 ext = "jpg" if tag.mime == "image/jpeg" else "png"
                 art_path = (
                     Path.home()
