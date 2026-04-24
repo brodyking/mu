@@ -50,7 +50,7 @@ class Util:
 		search = kwargs.get('search', [])
 
 
-		prefix = Color.green("[✓] ") if ok else Color.red("[✗] ")
+		prefix = Color.green("[] ") if ok else Color.red("[]] ")
 
 		counter = f"[{str(count[0]).rjust(len(str(count[1])),"0")}/{count[1]}] " if len(count) == 2 else ""
 
@@ -60,7 +60,7 @@ class Util:
 		        return text[:width-2] + ".."
 		    return text.ljust(width)
 
-		favorited = Color.red("󰋑 ") if search[1] == 1 else Color.light_gray("♥ ")
+		favorited = Color.red("󰋑 ") if len(search) != 0 and search[1] == 1 else Color.light_gray("♥ ")
 
 		searchresult = (
 			f"[] "
