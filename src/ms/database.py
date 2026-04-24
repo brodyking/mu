@@ -219,20 +219,17 @@ class Database:
                 mpv_tracks.append(result[10])
             Util.print(f"Starting mpv playback for {mpv_tracks}")
             Util.mpv(mpv_tracks)
-            return mpv_tracks
-
         if export_json:
             json_export = json.dumps(results)
             print(json_export)
-            return json_export
-        elif export_path:
+        if export_path:
             path_export = []
             for result in results:
                 path_export.append(result[10])
                 print(result[10])
-            return results[0][10]
-        for i, result in enumerate(results):
-            Util.print("", track=result, count=[i + 1, len(results)])
+        if not export_json and not export_path and not mpv:
+            for i, result in enumerate(results):
+                Util.print("", track=result, count=[i + 1, len(results)])
 
         return results
 
