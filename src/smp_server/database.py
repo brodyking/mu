@@ -179,7 +179,7 @@ class Database:
             print(json.dumps(results))
         else:
             for i, result in enumerate(results):
-                Util.Print("",search=result)
+                Util.Print("",search=result,count=[i+1,len(result)])
 
     def list_library(self,export_json=False) -> None:
         connection = sqlite3.connect(self.db_path)
