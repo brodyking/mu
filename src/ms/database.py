@@ -70,7 +70,7 @@ class Database:
             connection.execute("UPDATE sqlite_sequence SET seq = 0 WHERE name = 'tracks';")
             connection.commit();
             connection.close();
-            Util.Print('Database has been reset. Your files are still in ~/ms/source/. Type "ms scan" to rebuild.')
+            Util.print('Database has been reset. Your files are still in ~/ms/source/. Type "ms scan" to rebuild.')
 
     def upsert_track(self,connection,metadata:dict) -> None:
         """
@@ -118,9 +118,9 @@ class Database:
             try:
                 metadata = File.read_metadata(filepath)
                 self.upsert_track(connection,metadata)
-                Util.Print(f"{filepath.name}",count=[i+1,len(mp3s)])
+                Util.print(f"{filepath.name}",count=[i+1,len(mp3s)])
             except Exception as e:
-                Util.Print(f"{filepath.name}\n{e}",count=[i+1,len(mp3s)],ok=False)
+                Util.print(f"{filepath.name}\n{e}",count=[i+1,len(mp3s)],ok=False)
 
         connection.commit()
         connection.close()
@@ -162,37 +162,80 @@ class Database:
             try:
                 metadata = self.copy_file(filepath)
                 self.upsert_track(connection,metadata)
-                Util.Print(f"{filepath.name}",count=[i+1,len(mp3s)])
+                Util.print(f"{filepath.name}",count=[i+1,len(mp3s)])
             except Exception as e:
-                Util.Print(f"{filepath.name}\n{e}",count=[i+1,len(mp3s)],ok=False)
+                Util.print(f"{filepath.name}\n{e}",count=[i+1,len(mp3s)],ok=False)
 
         connection.commit()
         connection.close()
 
-    def search(self,term: str,export_json=False) -> None:
+        
+
+    def search(self, term: str, export_json=False,export_path=False,mpv=False) -> list | str:
         """
-            Searches the database for tracks.
+            Searches the database for tracks with prefix support.
         """
+    
+        prefixes = {
+            "id:": "id",
+            "title:": "title",
+            "artist:": "artist",
+            "albumartist:": "albumartist",
+            "album:": "album"
+        }
 
-        formatted_search = f"%{term}%"
+        target_column = next((col for pref, col in prefixes.items() if term.startswith(pref)), None)
 
-        connection = sqlite3.connect(self.db_path)
-        cursor = connection.cursor()
-        cursor.execute("""
-            SELECT * FROM tracks
-            WHERE title LIKE ?
-            OR artist LIKE ?
-            OR albumartist LIKE ?
-            OR album LIKE ?
-        """,(formatted_search,formatted_search,formatted_search,formatted_search))
+        with sqlite3.connect(self.db_path) as connection:
+            cursor = connection.cursor()
 
-        results = cursor.fetchall()
+            if target_column:
+
+                value = term.split(":", 1)[1]
+        
+                if target_column == "id":
+                    # IDs usually need to be exact
+                    query = "SELECT * FROM tracks WHERE id = ?"
+                    cursor.execute(query, (value,))
+                else:
+                    # Text searches use LIKE and wildcards
+                    # We wrap the value in % so it finds partial matches
+                    query = f"SELECT * FROM tracks WHERE {target_column} LIKE ?"
+                    cursor.execute(query, (f"%{value}%",))
+
+            else:
+                # Global search
+                fmt = f"%{term}%"
+                cursor.execute("""
+                    SELECT * FROM tracks 
+                    WHERE title LIKE ? OR artist LIKE ? OR albumartist LIKE ? OR album LIKE ?
+                """, (fmt, fmt, fmt, fmt))
+
+            results = cursor.fetchall()
+
+        if mpv:
+            mpv_tracks = []
+            for result in results:
+                mpv_tracks.append(result[10])
+            Util.print(f"Starting mpv playback for {mpv_tracks}")
+            Util.mpv(mpv_tracks)
+            return mpv_tracks
 
         if export_json:
-            print(json.dumps(results))
-        else:
-            for i, result in enumerate(results):
-                Util.Print("",track=result,count=[i+1,len(results)])
+            json_export = json.dumps(results)
+            print(json_export)
+            return json_export
+        elif export_path:
+            path_export = []
+            for result in results:
+                path_export.append(result[10])
+                print(result[10])
+            return results[0][10]
+        for i, result in enumerate(results):
+            Util.print("", track=result, count=[i + 1, len(results)])
+
+        return results
+
 
     def list_library(self,export_json: bool=False,favorited: bool=False) -> None:
         """
@@ -210,44 +253,23 @@ class Database:
             print(json.dumps(results))
         else:
             for i, result in enumerate(results):
-                Util.Print("",track=result,count=[i+1,len(results)])
+                Util.print("",track=result,count=[i+1,len(results)])
 
     def favorite_track(self,term: str) -> None:
         """
-          Lets a user favorite a track by title or ID.  
+          Lets a user favorite a track by title or id if search starts with id:  
         """
-        connection = sqlite3.connect(self.db_path)
-        cursor = connection.cursor()
 
-        if term.isdigit():
-            # If it is an integer, it looks for the track id.
-            cursor.execute("""
-                UPDATE tracks
-                SET favorite = 1 - favorite
-                WHERE id=:id""",{'id': term})
+        with sqlite3.connect(self.db_path) as connection:
+            cursor = connection.cursor()
 
-            connection.commit()
+            if term.startswith("id:"):
+                target_id = term.split(":")[1]
+                cursor.execute("UPDATE tracks SET favorite = 1 - favorite WHERE id = ?", (target_id,))
+                cursor.execute("SELECT * FROM tracks WHERE id = ?", (target_id,))
+            else:
+                cursor.execute("UPDATE tracks SET favorite = 1 - favorite WHERE title = ?", (term,))
+                cursor.execute("SELECT * FROM tracks WHERE title LIKE ?", (term,))
+            Util.print("", track=cursor.fetchone())
 
-            cursor.execute("""
-                SELECT *  FROM tracks
-                WHERE id = :id
-                """,{'id': term})
-        else:
-            # If it is an integer, it looks for the track id.
-            cursor.execute("""
-                UPDATE tracks
-                SET favorite = 1 - favorite
-                WHERE title LIKE :title""",{'title': term})
-
-            connection.commit()
-
-            cursor.execute("""
-                SELECT *  FROM tracks
-                WHERE title LIKE :title
-                """,{'title': term})
-        result=cursor.fetchone()
-        if result is None:
-            Util.Print(f"{term} could not be found",ok=False)
-        else:
-            Util.Print("",track=result)
         connection.close()

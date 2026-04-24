@@ -1,3 +1,5 @@
+import subprocess
+
 class Color:
 	# Standard Colors (Lower Intensity)
 	@staticmethod
@@ -36,7 +38,7 @@ class Color:
 class Util:
 
 	@staticmethod
-	def Print(content: str, **kwargs):
+	def print(content: str, **kwargs):
 		"""
 			Prints to the terminal
 			- ok (bool): Shows checkmark or X. Defaults to True.
@@ -71,7 +73,7 @@ class Util:
 		print(f"{prefix}{counter}{searchresult}{content}")
 
 	@staticmethod
-	def PromptBool(content:str) -> bool:
+	def promptBool(content:str) -> bool:
 		"""
 			Asks the user a question, returns the users chioce.
 		"""
@@ -82,3 +84,12 @@ class Util:
 				return True
 			elif response == "n" or response == 0 or response == "no":
 				return False
+
+
+	@staticmethod
+	def mpv(track_paths: list) -> None:
+		"""
+		Plays a list of files in mpv
+		"""
+		subprocess.run(["mpv"] + track_paths)
+

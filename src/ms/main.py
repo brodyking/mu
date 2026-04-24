@@ -24,7 +24,7 @@ def main():
 
     # Favorite
     favorite_parser = subparsers.add_parser("favorite", help="favorite or unfavorite a track")
-    favorite_parser.add_argument("trackid",help="the id of the track you wish to favorite")
+    favorite_parser.add_argument("trackid",help="the name of the track you wish to favorite (use id: to select by id)")
 
     # Importing
     import_parser = subparsers.add_parser("import", help="import individual files")
@@ -32,8 +32,11 @@ def main():
 
     # Searching
     search_parser = subparsers.add_parser("search", help="search the library")
-    search_parser.add_argument("term",help="the name of the item(s) you are searching for")
+    search_parser.add_argument("term",help="the name of the item(s) you are searching for. supports prefixes (id:,album:,etc.)")
     search_parser.add_argument("-j","--json",action='store_true',help="output in json")
+    search_parser.add_argument("-p","--path",action='store_true',help="return the filepath(s)")
+    search_parser.add_argument("-m","--mpv",action='store_true',help="play track(s) in mpv")
+
 
     args = parser.parse_args()
 
@@ -43,7 +46,7 @@ def main():
         "favorite": lambda: db.favorite_track(args.trackid),
         "list": lambda: db.list_library(export_json=args.json,favorited=args.favorited),
         "import": lambda: db.import_media(args.filepath),
-        "search": lambda: db.search(args.term,export_json=args.json)
+        "search": lambda: db.search(args.term,export_json=args.json,export_path=args.path,mpv=args.mpv)
     }
 
     if args.action in actions:
