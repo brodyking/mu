@@ -158,7 +158,7 @@ class Database:
 
     def search(self,term: str,export_json=False) -> None:
         """
-            Searches the database
+            Searches the database for tracks.
         """
 
         formatted_search = f"%{term}%"
@@ -181,10 +181,16 @@ class Database:
             for i, result in enumerate(results):
                 Util.Print("",track=result,count=[i+1,len(results)])
 
-    def list_library(self,export_json: bool=False) -> None:
+    def list_library(self,export_json: bool=False,favorited: bool=False) -> None:
+        """
+            Lists all of the tracks in the database, or just fav ones
+        """
         connection = sqlite3.connect(self.db_path)
         cursor = connection.cursor()
-        cursor.execute("SELECT * FROM tracks ORDER BY artist")
+        if favorited:
+            cursor.execute("SELECT * FROM tracks WHERE favorite = 1 ORDER BY artist")
+        else:
+            cursor.execute("SELECT * FROM tracks ORDER BY artist")
         results = cursor.fetchall()
 
         if export_json:
