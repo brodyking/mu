@@ -11,11 +11,8 @@ packages = ["src/ms/"]
 [project]
 name = "ms"
 version = "1.0.0"
-description = "Scarlett Music Server"
+requires-python = ">=3.14.0"
+description = "Based Music Server"
 dependencies = [
-    "requests",
-    "dotenv",
-    "spotipy",
-    "mutagen",
-    "yt_dlp"
+    "mutagen"
 ]
