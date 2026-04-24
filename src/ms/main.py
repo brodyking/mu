@@ -29,8 +29,9 @@ def main():
     subparsers.add_parser("scan", help="imports all files in Source folder")
 
     # Reset
-    subparsers.add_parser("reset", help="reset the internal database (keeps songs)")
-
+    reset_parser = subparsers.add_parser("reset", help="reset the internal database (keeps songs)")
+    reset_parser.add_argument("-y","--skipconfirmation",help="skip confirmation and reset",action="store_true")
+    
     # List
     list_parser = subparsers.add_parser("list", help="list all files in the library",description="List all your files, or just your favorites in your library.")
     list_parser.add_argument("-j","--json",action='store_true',help="output in json")
@@ -52,8 +53,8 @@ def main():
     args = parser.parse_args()
 
     actions = {
-        "scan": db.scan_source_folder,
-        "reset": db.reset_db,
+        "scan": lambda: db.scan_source_folder(),
+        "reset": lambda: db.reset_db(skip_confirmation=args.skipconfirmation),
         "favorite": lambda: db.favorite_track(args.trackid),
         "list": lambda: db.list_library(export_json=args.json,favorited=args.favorited),
         "import": lambda: db.import_media(args.filepath),
