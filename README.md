@@ -25,7 +25,7 @@ pip install .
 Upon running `ms` for the first time, smp-server will create a folder in your
 music directory (`~/Music/ms/`).
 
-- `~/Music/ms/source/` folder will store your music files.
+- `~/Music/ms/source/` stores your music files.
 - `~/Music/ms/albumart/` stores album art files.
 - `~/Music/ms/ms.db` is the central database file.
 
