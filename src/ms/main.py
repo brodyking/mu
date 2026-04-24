@@ -25,8 +25,11 @@ def main():
 
     subparsers = parser.add_subparsers(dest="action", help="options for library", required=True)
 
-    # Scanning
+    # Scan
     subparsers.add_parser("scan", help="imports all files in Source folder")
+
+    # Reset
+    subparsers.add_parser("reset", help="reset the internal database (keeps songs)")
 
     # List
     list_parser = subparsers.add_parser("list", help="list all files in the library",description="List all your files, or just your favorites in your library.")
@@ -50,6 +53,7 @@ def main():
 
     actions = {
         "scan": db.scan_source_folder,
+        "reset": db.reset_db,
         "favorite": lambda: db.favorite_track(args.trackid),
         "list": lambda: db.list_library(export_json=args.json,favorited=args.favorited),
         "import": lambda: db.import_media(args.filepath),

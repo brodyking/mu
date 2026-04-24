@@ -70,4 +70,12 @@ class Util:
 		
 		print(f"{prefix}{counter}{searchresult}{content}")
 
-
+	@staticmethod
+	def PromptBool(content:str) -> bool:
+		print(Color.yellow("[]"),end="")
+		while (True):
+			response = input(f" {content} (y/n) ")
+			if response == "y" or response == 1 or response == "yes":
+				return True
+			elif response == "n" or response == 0 or response == "no":
+				return False
