@@ -41,18 +41,13 @@ class Util:
 		Prints to the terminal
 		- ok (bool): Shows checkmark or X. Defaults to True.
 		- count (list): [current, total]. Defaults to empty.
-		- search (list): [title,artist,album,location]. Defaults to empty.
+		- track (list): The data pulled from the SQLite DB. Defaults to empty.
 		"""
 
 
-		ok = kwargs.get('ok', True)
-		count = kwargs.get('count', [])
-		search = kwargs.get('search', [])
-
-
-		prefix = Color.green("[] ") if ok else Color.red("[]] ")
-
-		counter = f"[{str(count[0]).rjust(len(str(count[1])),"0")}/{count[1]}] " if len(count) == 2 else ""
+		ok = kwargs.get('ok', True) # Status. Shows check or x.
+		count = kwargs.get('count', []) # Used to display progress in anticipation of another print.
+		track = kwargs.get('track', []) # 
 
 		def fmt(text, width):
 		    text = str(text or "")
@@ -60,15 +55,19 @@ class Util:
 		        return text[:width-2] + ".."
 		    return text.ljust(width)
 
-		favorited = Color.red("󰋑 ") if len(search) != 0 and search[1] == 1 else Color.light_gray("♥ ")
+		prefix = Color.green("[] ") if ok else Color.red("[]] ")
+		counter = f"[{str(count[0]).rjust(len(str(count[1])),"0")}/{count[1]}] " if len(count) == 2 else ""
+		favorited = Color.red("󰋑 ") if len(track) != 0 and track[1] == 1 else Color.light_gray("♥ ")
 
 		searchresult = (
 			f"[] "
-			f"{Color.light_gray('#'+str(search[0]).rjust(4, "0"))} "
-		    f"{favorited}{Color.red(fmt(f"{search[2]}", 25))} | "
-			f"{fmt(search[4], 15)} | "
-		    f"{fmt(search[6], 15)} | "
-		    f"{Color.blue(search[10])}"
-		) if len(search) != 0 else ""
+			f"{Color.light_gray('#'+str(track[0]).rjust(4, "0"))} "
+		    f"{favorited}{Color.red(fmt(f"{track[2]}", 25))} | "
+			f"{fmt(track[4], 15)} | "
+		    f"{fmt(track[6], 15)} | "
+		    f"{Color.blue(track[10])}"
+		) if len(track) != 0 else ""
 		
 		print(f"{prefix}{counter}{searchresult}{content}")
+
+
