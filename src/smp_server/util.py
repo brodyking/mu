@@ -51,7 +51,8 @@ class Util:
 
 
 		prefix = Color.green("[✓] ") if ok else Color.red("[✗] ")
-		counter = f"[{count[0]}/{count[1]}] " if len(count) == 2 else ""
+
+		counter = f"[{str(count[0]).rjust(len(str(count[1])),"0")}/{count[1]}] " if len(count) == 2 else ""
 
 		def fmt(text, width):
 		    text = str(text or "")
@@ -59,10 +60,12 @@ class Util:
 		        return text[:width-2] + ".."
 		    return text.ljust(width)
 
-		favorited = "♥ " if search[1] == 1 else "  "
+		favorited = Color.red("󰋑 ") if search[1] == 1 else Color.light_gray("♥ ")
 
 		searchresult = (
-		    f"[⌕] {Color.red(fmt(f"{favorited}{search[2]}", 25))} | "
+			f"[] "
+			f"{Color.light_gray('#'+str(search[0]).rjust(4, "0"))} "
+		    f"{favorited}{Color.red(fmt(f"{search[2]}", 25))} | "
 			f"{fmt(search[4], 15)} | "
 		    f"{fmt(search[6], 15)} | "
 		    f"{Color.blue(search[10])}"
