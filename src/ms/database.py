@@ -60,6 +60,10 @@ class Database:
             check_db()
 
     def reset_db(self, skip_confirmation=False):
+        """
+           Deletes all tracks from database. Keeps files.
+           skip_confirmation bypasses the prompt before deletion. 
+        """
         if skip_confirmation or Util.PromptBool("Are you sure you want to erase the database file? This action cannot be undone."):
             connection = sqlite3.connect(self.db_path)
             connection.execute("DELETE FROM tracks;")
@@ -209,6 +213,9 @@ class Database:
                 Util.Print("",track=result,count=[i+1,len(results)])
 
     def favorite_track(self,term: str) -> None:
+        """
+          Lets a user favorite a track by title or ID.  
+        """
         connection = sqlite3.connect(self.db_path)
         cursor = connection.cursor()
 

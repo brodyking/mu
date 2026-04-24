@@ -38,10 +38,10 @@ class Util:
 	@staticmethod
 	def Print(content: str, **kwargs):
 		"""
-		Prints to the terminal
-		- ok (bool): Shows checkmark or X. Defaults to True.
-		- count (list): [current, total]. Defaults to empty.
-		- track (list): The data pulled from the SQLite DB. Defaults to empty.
+			Prints to the terminal
+			- ok (bool): Shows checkmark or X. Defaults to True.
+			- count (list): [current, total]. Defaults to empty.
+			- track (list): The data pulled from the SQLite DB. Defaults to empty.
 		"""
 
 
@@ -72,6 +72,9 @@ class Util:
 
 	@staticmethod
 	def PromptBool(content:str) -> bool:
+		"""
+			Asks the user a question, returns the users chioce.
+		"""
 		print(Color.yellow("[]"),end="")
 		while (True):
 			response = input(f" {content} (y/n) ")
