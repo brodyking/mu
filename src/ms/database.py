@@ -114,9 +114,9 @@ class Database:
             try:
                 metadata = File.read_metadata(filepath)
                 self.upsert_track(connection,metadata)
-                Util.Print(f"{filepath.name}",count=[i,len(mp3s)])
+                Util.Print(f"{filepath.name}",count=[i+1,len(mp3s)])
             except Exception as e:
-                Util.Print(f"{filepath.name}\n{e}",count=[i,len(mp3s)],ok=False)
+                Util.Print(f"{filepath.name}\n{e}",count=[i+1,len(mp3s)],ok=False)
 
         connection.commit()
         connection.close()
@@ -158,9 +158,9 @@ class Database:
             try:
                 metadata = self.copy_file(filepath)
                 self.upsert_track(connection,metadata)
-                Util.Print(f"{filepath.name}",count=[i,len(mp3s)])
+                Util.Print(f"{filepath.name}",count=[i+1,len(mp3s)])
             except Exception as e:
-                Util.Print(f"{filepath.name}\n{e}",count=[i,len(mp3s)],ok=False)
+                Util.Print(f"{filepath.name}\n{e}",count=[i+1,len(mp3s)],ok=False)
 
         connection.commit()
         connection.close()
@@ -206,7 +206,7 @@ class Database:
             print(json.dumps(results))
         else:
             for i, result in enumerate(results):
-                Util.Print("",track=result,count=[i,len(results)])
+                Util.Print("",track=result,count=[i+1,len(results)])
 
     def favorite_track(self,term: str) -> None:
         connection = sqlite3.connect(self.db_path)
@@ -225,6 +225,22 @@ class Database:
                 SELECT *  FROM tracks
                 WHERE id = :id
                 """,{'id': term})
-        result=cursor.fetchall()[0]
-        Util.Print("",track=result)
+        else:
+            # If it is an integer, it looks for the track id.
+            cursor.execute("""
+                UPDATE tracks
+                SET favorite = 1 - favorite
+                WHERE title LIKE :title""",{'title': term})
+
+            connection.commit()
+
+            cursor.execute("""
+                SELECT *  FROM tracks
+                WHERE title LIKE :title
+                """,{'title': term})
+        result=cursor.fetchone()
+        if result is None:
+            Util.Print(f"{term} could not be found",ok=False)
+        else:
+            Util.Print("",track=result)
         connection.close()
