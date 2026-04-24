@@ -15,7 +15,7 @@ def main():
     subparsers.add_parser("scan", help="imports all files in Source folder")
 
     # Reset
-    reset_parser = subparsers.add_parser("reset", help="reset the internal database (keeps songs)")
+    reset_parser = subparsers.add_parser("reset", help="reset the internal database (keeps songs)",description="Reset's the internal database, keeps songs.")
     reset_parser.add_argument("-y","--skipconfirmation",help="skip confirmation and reset",action="store_true")
     
     # List
@@ -24,21 +24,21 @@ def main():
     list_parser.add_argument("-f","--favorited",action='store_true',help="list only your favorites")
 
     # Favorite
-    favorite_parser = subparsers.add_parser("favorite", help="favorite or unfavorite a track")
+    favorite_parser = subparsers.add_parser("favorite", help="favorite or unfavorite a track",description="Favorite or unfavorite a track.")
     favorite_parser.add_argument("trackid",help="the name of the track you wish to favorite (use id: to select by id)")
 
     # Importing
-    import_parser = subparsers.add_parser("import", help="import individual files")
+    import_parser = subparsers.add_parser("import", help="import individual files",description="Import file(s) to ms. Directories or individual files can be selected.")
     import_parser.add_argument("filepath",help="path to the file being imported")
 
     # Searching
-    search_parser = subparsers.add_parser("search", help="search the library")
+    search_parser = subparsers.add_parser("search", help="search the library",description="Search your library. You can search with prefixes aswell. By typing id:, album:, title:, artist:, or albumartist: in front, you can narrow your search.")
     search_parser.add_argument("term",help="the name of the item(s) you are searching for. supports prefixes (id:,album:,etc.)")
     search_parser.add_argument("-j","--json",action='store_true',help="output in json")
     search_parser.add_argument("-p","--path",action='store_true',help="return the filepath(s)")
 
     # Playing
-    play_parser = subparsers.add_parser("play", help="play track(s) with mpv")
+    play_parser = subparsers.add_parser("play", help="play track(s) with mpv",description="Open track(s) with mpv. Finds tracks the same way as search.")
     play_parser.add_argument("term",help="the name of the item(s) you are searching for. supports prefixes (id:,album:,etc.)")
 
     args = parser.parse_args()
