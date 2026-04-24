@@ -64,7 +64,7 @@ class Database:
            Deletes all tracks from database. Keeps files.
            skip_confirmation bypasses the prompt before deletion. 
         """
-        if skip_confirmation or Util.PromptBool("Are you sure you want to erase the database file? This action cannot be undone."):
+        if skip_confirmation or Util.promptBool("Are you sure you want to erase the database file? This action cannot be undone."):
             connection = sqlite3.connect(self.db_path)
             connection.execute("DELETE FROM tracks;")
             connection.execute("UPDATE sqlite_sequence SET seq = 0 WHERE name = 'tracks';")
