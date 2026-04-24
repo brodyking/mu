@@ -1,7 +1,7 @@
 import sqlite3
 from pathlib import Path
-from smp_server.file import File
-from smp_server.util import Util
+from ms.file import File
+from ms.util import Util
 import shutil
 import json
 
@@ -13,9 +13,9 @@ class Database:
         """
 
         # Sets the file paths for db_path, source_path, and albumart_path
-        self.db_path = Path.home() / "Music" / "Scarlett" / "Scarlett.db" if "db_path" not in kwargs else kwargs.get("db_path") 
-        self.source_path = Path.home() / "Music" / "Scarlett" / "Source" if "source_folder_path" not in kwargs else kwargs.get("source_path") 
-        self.albumart_path = Path.home() / "Music" / "Scarlett" / "AlbumArt" if "source_folder_path" not in kwargs else kwargs.get("albumart_path") 
+        self.db_path = Path.home() / "Music" / "ms" / "ms.db" if "db_path" not in kwargs else kwargs.get("db_path") 
+        self.source_path = Path.home() / "Music" / "ms" / "source" if "source_folder_path" not in kwargs else kwargs.get("source_path") 
+        self.albumart_path = Path.home() / "Music" / "ms" / "albumart" if "source_folder_path" not in kwargs else kwargs.get("albumart_path") 
 
         # Validates that the locations exist and have the necessary files.
         self.validate_library()
@@ -114,7 +114,7 @@ class Database:
 
     def scan_source_folder(self):
         """
-           Scans the Scarlett/Source/ folder for music files.
+           Scans the ms/source/ folder for music files.
            Each file is stored in the DB and has its album art hashed/saved. 
         """
         self.scan_folder(self.source_path)
@@ -135,7 +135,7 @@ class Database:
          
     def import_media(self,path) -> None:
         """
-            Copies the file or files (if dir) to ~/Scarlett/Source, upserts metadata to the database.
+            Copies the file or files (if dir) to ~/ms/source, upserts metadata to the database.
         """
         path = Path(path).resolve()
 

@@ -40,7 +40,7 @@ class File:
     @staticmethod
     def extract_album_art(filepath: Path) -> str | None:
         """
-            Extracts album art from a song file, and stores it in Scarlett/AlbumArt/.
+            Extracts album art from a song file, and stores it in ms/albumart/.
             All images are hashed and stored with the hash as the filename.
             This prevents duplicates for same album covers.
 
@@ -59,8 +59,8 @@ class File:
                 art_path = (
                     Path.home()
                     / "Music"
-                    / "Scarlett"
-                    / "AlbumArt"
+                    / "ms"
+                    / "albumart"
                     / f"{art_hash}.{ext}"
                 )
 

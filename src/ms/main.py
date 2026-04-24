@@ -1,11 +1,11 @@
 import json
-from smp_server.database import Database
+from ms.database import Database
 from pathlib import Path
 import argparse
 
 def load_config():
     # Config path
-    config_path = Path.home() / "Music" / "Scarlett" / "config.json"
+    config_path = Path.home() / "Music" / "ms" / "config.json"
     # Creates directory if it dosen't exist
     config_path.parent.mkdir(parents=True, exist_ok=True)
     # Create file with defaults if it dosent exist
@@ -21,7 +21,7 @@ def load_config():
 def main():
     db = Database()
 
-    parser = argparse.ArgumentParser(prog="Scarlett Media Player Server",description="This program manages your library and can host a server for your SMP client.",epilog="Created and maintained by Brody King. You can find this project at https://github.com/brodyking/smp-server")
+    parser = argparse.ArgumentParser(prog="Based Music Server",description="This program manages your library of music",epilog="Created and maintained by Brody King. You can find this project at https://github.com/brodyking/ms")
 
     subparsers = parser.add_subparsers(dest="action", help="options for library", required=True)
 

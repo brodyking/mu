@@ -3,15 +3,15 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project.scripts]
-smp-server = "smp_server.main:main"
+ms = "ms.main:main"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/smp_server/"]
+packages = ["src/ms/"]
 
 [project]
-name = "smp-server"
+name = "ms"
 version = "1.0.0"
-description = "Scarlett Music Player Server"
+description = "Scarlett Music Server"
 dependencies = [
     "requests",
     "dotenv",
