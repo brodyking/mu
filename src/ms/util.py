@@ -55,7 +55,7 @@ class Util:
 		        return text[:width-2] + ".."
 		    return text.ljust(width)
 
-		prefix = Color.green("[] ") if ok else Color.red("[]] ")
+		prefix = Color.green("[] ") if ok else Color.red("[] ")
 		counter = f"[{str(count[0]).rjust(len(str(count[1])),"0")}/{count[1]}] " if len(count) == 2 else ""
 		favorited = Color.red("󰋑 ") if len(track) != 0 and track[1] == 1 else Color.light_gray("♥ ")
 
