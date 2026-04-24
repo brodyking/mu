@@ -91,5 +91,6 @@ class Util:
 		"""
 		Plays a list of files in mpv
 		"""
+		Util.print(f"Starting mpv playback for {track_paths}")
 		subprocess.run(["mpv"] + track_paths)
 

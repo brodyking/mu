@@ -169,9 +169,7 @@ class Database:
         connection.commit()
         connection.close()
 
-        
-
-    def search(self, term: str, export_json=False,export_path=False,mpv=False) -> list | str:
+    def search(self, term: str, export_json=False,export_path=False) -> list | str:
         """
             Searches the database for tracks with prefix support.
         """
@@ -184,13 +182,14 @@ class Database:
             "album:": "album"
         }
 
+        # Finds the target column if user is using a prefix.
         target_column = next((col for pref, col in prefixes.items() if term.startswith(pref)), None)
 
         with sqlite3.connect(self.db_path) as connection:
             cursor = connection.cursor()
 
             if target_column:
-
+                # Specific Search
                 value = term.split(":", 1)[1]
         
                 if target_column == "id":
@@ -213,23 +212,20 @@ class Database:
 
             results = cursor.fetchall()
 
-        if mpv:
-            mpv_tracks = []
-            for result in results:
-                mpv_tracks.append(result[10])
-            Util.print(f"Starting mpv playback for {mpv_tracks}")
-            Util.mpv(mpv_tracks)
-        if export_json:
+        if not export_json and not export_path:
+            for i, result in enumerate(results):
+                Util.print("", track=result, count=[i + 1, len(results)])
+            return results
+        elif export_json:
             json_export = json.dumps(results)
             print(json_export)
-        if export_path:
+            return json_export
+        elif export_path:
             path_export = []
             for result in results:
                 path_export.append(result[10])
                 print(result[10])
-        if not export_json and not export_path and not mpv:
-            for i, result in enumerate(results):
-                Util.print("", track=result, count=[i + 1, len(results)])
+            return path_export
 
         return results
 
