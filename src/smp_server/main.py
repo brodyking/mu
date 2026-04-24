@@ -32,6 +32,10 @@ def main():
     list_parser = subparsers.add_parser("list", help="list all files in the library")
     list_parser.add_argument("-j","--json",action='store_true',help="output in json")
 
+    # Favorite
+    favorite_parser = subparsers.add_parser("favorite", help="favorite or unfavorite a track")
+    favorite_parser.add_argument("trackid",help="the id of the track you wish to favorite")
+
     # Importing
     import_parser = subparsers.add_parser("import", help="import individual files")
     import_parser.add_argument("filepath",help="path to the file being imported")
@@ -45,6 +49,7 @@ def main():
 
     actions = {
         "scan": db.scan_source_folder,
+        "favorite": lambda: db.favorite_track(args.trackid),
         "list": lambda: db.list_library(export_json=args.json),
         "import": lambda: db.import_media(args.filepath),
         "search": lambda: db.search(args.term,export_json=args.json)

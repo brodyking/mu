@@ -181,7 +181,7 @@ class Database:
             for i, result in enumerate(results):
                 Util.Print("",track=result,count=[i+1,len(results)])
 
-    def list_library(self,export_json=False) -> None:
+    def list_library(self,export_json: bool=False) -> None:
         connection = sqlite3.connect(self.db_path)
         cursor = connection.cursor()
         cursor.execute("SELECT * FROM tracks ORDER BY artist")
@@ -192,3 +192,24 @@ class Database:
         else:
             for i, result in enumerate(results):
                 Util.Print("",track=result,count=[i,len(results)])
+
+    def favorite_track(self,term: str) -> None:
+        connection = sqlite3.connect(self.db_path)
+        cursor = connection.cursor()
+
+        if term.isdigit():
+            # If it is an integer, it looks for the track id.
+            cursor.execute("""
+                UPDATE tracks
+                SET favorite = 1 - favorite
+                WHERE id=:id""",{'id': term})
+
+            connection.commit()
+
+            cursor.execute("""
+                SELECT *  FROM tracks
+                WHERE id = :id
+                """,{'id': term})
+            result=cursor.fetchall()[0]
+            Util.Print("",track=result)
+            connection.close()
