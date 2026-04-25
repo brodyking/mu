@@ -2,6 +2,7 @@ import sqlite3
 from pathlib import Path
 from ms.file import File
 from ms.util import Util
+from ms.track import Track
 import shutil
 import json
 
@@ -214,7 +215,7 @@ class Database:
 
         if not export_json and not export_path:
             for i, result in enumerate(results):
-                Util.print("", track=result, count=[i + 1, len(results)])
+                Util.print("", track=Track(result), count=[i + 1, len(results)])
             return results
         elif export_json:
             json_export = json.dumps(results)
@@ -223,8 +224,9 @@ class Database:
         elif export_path:
             path_export = []
             for result in results:
-                path_export.append(result[10])
-                print(result[10])
+                track = Track(result)
+                path_export.append(track.filepath)
+                print(track.filepath)
             return path_export
 
         return results
@@ -246,7 +248,7 @@ class Database:
             print(json.dumps(results))
         else:
             for i, result in enumerate(results):
-                Util.print("",track=result,count=[i+1,len(results)])
+                Util.print("",track=Track(result),count=[i+1,len(results)])
 
     def favorite_track(self,term: str) -> None:
         """
