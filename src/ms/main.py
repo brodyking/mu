@@ -73,3 +73,6 @@ def main():
 
     if args.action in actions:
         actions[args.action]()
+
+if __name__ == "__main__":
+    main()
