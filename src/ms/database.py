@@ -147,7 +147,7 @@ class Database:
 
         return metadata
          
-    def import_media(self,path) -> None:
+    def import_media(self,path,console_out:bool=True) -> None:
         """
             Copies the file or files (if dir) to ~/ms/source, upserts metadata to the database.
         """
@@ -163,14 +163,14 @@ class Database:
             try:
                 metadata = self.copy_file(filepath)
                 self.upsert_track(connection,metadata)
-                Util.print(f"{filepath.name}",count=[i+1,len(mp3s)])
+                if console_out: Util.print(f"{filepath.name}",count=[i+1,len(mp3s)])
             except Exception as e:
                 Util.print(f"{filepath.name}\n{e}",count=[i+1,len(mp3s)],ok=False)
 
         connection.commit()
         connection.close()
 
-    def search(self, term: str, export_json=False,export_path=False) -> list | str:
+    def search(self, term: str, export_json=False,export_path=False,console_out:bool=True) -> list | str:
         """
             Searches the database for tracks with prefix support.
         """
@@ -215,7 +215,7 @@ class Database:
 
         if not export_json and not export_path:
             for i, result in enumerate(results):
-                Util.print("", track=Track(result), count=[i + 1, len(results)])
+                if console_out: Util.print("", track=Track(result), count=[i + 1, len(results)])
             return results
         elif export_json:
             json_export = json.dumps(results)
@@ -232,25 +232,32 @@ class Database:
         return results
 
 
-    def list_library(self,export_json: bool=False,favorited: bool=False) -> None:
+    def list_library(self,export_json: bool=False,only_favorited: bool=False,console_out:bool=True) -> list | str:
         """
             Lists all of the tracks in the database, or just fav ones
         """
         connection = sqlite3.connect(self.db_path)
         cursor = connection.cursor()
-        if favorited:
+        if only_favorited:
             cursor.execute("SELECT * FROM tracks WHERE favorite = 1 ORDER BY artist")
         else:
             cursor.execute("SELECT * FROM tracks ORDER BY artist")
         results = cursor.fetchall()
 
         if export_json:
-            print(json.dumps(results))
+            json_export = json.dumps(results)
+            print(json_export)
+            return json_export
         else:
+            track_export = []
             for i, result in enumerate(results):
-                Util.print("",track=Track(result),count=[i+1,len(results)])
+                track = Track(result)
+                track_export.append(track)
+                if console_out: Util.print("",track=track,count=[i+1,len(results)])
+            return track_export
 
-    def favorite_track(self,term: str) -> None:
+
+    def favorite_track(self,term: str,console_out:bool=True) -> Track:
         """
           Lets a user favorite a track by title or id if search starts with id:  
         """
@@ -265,6 +272,11 @@ class Database:
             else:
                 cursor.execute("UPDATE tracks SET favorite = 1 - favorite WHERE title = ?", (term,))
                 cursor.execute("SELECT * FROM tracks WHERE title LIKE ?", (term,))
-            Util.print("", track=cursor.fetchone())
+            result = cursor.fetchone()
+            if result is not None:
+                track = Track(result)
+                if console_out: Util.print("", track=track)
+                return track
+            return None
 
         connection.close()

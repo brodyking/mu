@@ -3,6 +3,7 @@ from ms.database import Database
 from pathlib import Path
 import argparse
 from ms.util import Util
+from ms.client.client import Client, start_client
 
 def main():
     db = Database()
@@ -13,6 +14,9 @@ def main():
 
     # Scan
     subparsers.add_parser("scan", help="imports all files in Source folder")
+
+    # Client
+    subparsers.add_parser("client", help="start the gui cliennt")
 
     # Reset
     reset_parser = subparsers.add_parser("reset", help="reset the internal database (keeps songs)",description="Reset's the internal database, keeps songs.")
@@ -45,11 +49,25 @@ def main():
 
     actions = {
         "scan": lambda: db.scan_source_folder(),
-        "reset": lambda: db.reset_db(skip_confirmation=args.skipconfirmation),
-        "favorite": lambda: db.favorite_track(args.trackid),
-        "list": lambda: db.list_library(export_json=args.json,favorited=args.favorited),
-        "import": lambda: db.import_media(args.filepath),
-        "search": lambda: db.search(args.term,export_json=args.json,export_path=args.path),
+        "client": lambda: start_client(),
+        "reset": lambda: db.reset_db(
+            skip_confirmation=args.skipconfirmation
+        ),
+        "favorite": lambda: db.favorite_track(
+            args.trackid,
+        ),
+        "list": lambda: db.list_library(
+            export_json=args.json,
+            only_favorited=args.favorited,
+        ),
+        "import": lambda: db.import_media(
+            args.filepath,
+        ),
+        "search": lambda: db.search(
+            args.term,
+            export_json=args.json,
+            export_path=args.path,
+        ),
         "play": lambda: Util.mpv(db.search(args.term,export_path=True))
     }
 
