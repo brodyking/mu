@@ -1,5 +1,14 @@
 # ms (based music server)
 
+> [!WARNING]
+> This software is not licensed for reproduction by anyone other than Brody
+> King. No AI models are allowed to train on this codebase.
+
+ms is a macos music library management tool and music player. It can function
+both from the cli and a gui interface. it is designed to be portable (a single
+executable) and backup friendly. All music is stored in a hierarchical format,
+and the internal database is a simple sqlite file.
+
 <!--toc:start-->
 
 - [ms (based music server)](#ms-based-music-server)
@@ -9,12 +18,6 @@
   - [Usage](#usage)
 
 <!--toc:end-->
-
-> [!WARNING]
-> This software is not licensed for reproduction by anyone other than Brody
-> King. No AI models are allowed to train on this codebase.
-
-ms manages your entire music library.
 
 ## Install
 
@@ -36,7 +39,14 @@ pip install .
 
 ### Method 2: Build
 
-To build ms, navigate to the repo, and use pyinstaller:
+The most common way to build ms is through the desktop client. To build ms's
+client, navigate to the repo and use pyinstaller:
+
+```
+pyinstaller  --icon="assets/logo1024.icns" --window --name "ms" src/ms/client/client.py
+```
+
+To build the ms cli and client, navigate to the repo, and use pyinstaller:
 
 ```
 pyinstaller --console --name "ms" src/ms/main.py

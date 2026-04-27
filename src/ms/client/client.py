@@ -81,3 +81,6 @@ def start_client():
     window = Client()
     window.show()
     sys.exit(app.exec())
+
+if __name__ == "__main__":
+    start_client()
