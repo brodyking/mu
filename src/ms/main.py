@@ -5,6 +5,8 @@ import argparse
 from ms.util import Util
 from ms.client.client import Client, start_client
 
+VERSION = "0.0.1"
+
 def main():
     db = Database()
 
@@ -13,10 +15,13 @@ def main():
     subparsers = parser.add_subparsers(dest="action", help="options for library", required=True)
 
     # Scan
-    subparsers.add_parser("scan", help="imports all files in Source folder")
+    subparsers.add_parser("scan", help="imports all files in Source folder", description="Imports all the files in the Source folder.")
 
     # Client
-    subparsers.add_parser("client", help="start the gui cliennt")
+    subparsers.add_parser("client", help="start the gui client", description="Start the GUI client.")
+
+    # Version
+    subparsers.add_parser("version", help="get current version", description="Get the current verson.")
 
     # Reset
     reset_parser = subparsers.add_parser("reset", help="reset the internal database (keeps songs)",description="Reset's the internal database, keeps songs.")
@@ -50,6 +55,7 @@ def main():
     actions = {
         "scan": lambda: db.scan_source_folder(),
         "client": lambda: start_client(),
+        "version": lambda: Util.print(f"Current version: {VERSION}"),
         "reset": lambda: db.reset_db(
             skip_confirmation=args.skipconfirmation
         ),
