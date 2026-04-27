@@ -2,9 +2,12 @@ import sys
 from PySide6.QtWidgets import QApplication, QMainWindow, QTableWidget, QTableWidgetItem, QVBoxLayout, QWidget, QAbstractItemView
 from PySide6.QtMultimedia import QMediaPlayer, QAudioOutput
 from PySide6.QtCore import Qt, QUrl
+from PySide6.QtGui import QIcon
 
 from ms.database import Database
 from ms.util import Util
+
+import ms.client.resources_rc
 
 class Client(QMainWindow):
     def __init__(self):
@@ -72,6 +75,9 @@ class Client(QMainWindow):
 
 def start_client():
     app = QApplication()
+    app.setWindowIcon(QIcon(":/assets/logo1024.png"))
+    app.setApplicationName("ms")
+    app.setApplicationDisplayName("ms")
     window = Client()
     window.show()
     sys.exit(app.exec())

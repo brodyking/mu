@@ -1,0 +1,8 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource>
+    <file>assets/logo128.png</file>
+    <file>assets/logo256.png</file>
+    <file>assets/logo512.png</file>
+    <file>assets/logo1024.png</file>
+</qresource>
+</RCC>
