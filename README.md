@@ -1,5 +1,15 @@
 # ms (based music server)
 
+<!--toc:start-->
+
+- [ms (based music server)](#ms-based-music-server)
+  - [Install](#install)
+    - [Method 1: Install as python package](#method-1-install-as-python-package)
+    - [Method 2: Build](#method-2-build)
+  - [Usage](#usage)
+
+<!--toc:end-->
+
 > [!WARNING]
 > This software is not licensed for reproduction by anyone other than Brody
 > King. No AI models are allowed to train on this codebase.
@@ -7,6 +17,10 @@
 ms manages your entire music library.
 
 ## Install
+
+To install ms, there are two different ways.
+
+### Method 1: Install as python package
 
 Clone the repo
 
@@ -18,6 +32,14 @@ Navigate to the repo, then install it as a python package
 
 ```
 pip install .
+```
+
+### Method 2: Build
+
+To build ms, navigate to the repo, and use pyinstaller:
+
+```
+pyinstaller --console --name "ms" src/ms/main.py
 ```
 
 ## Usage
