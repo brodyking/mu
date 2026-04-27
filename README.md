@@ -21,15 +21,15 @@ and the internal database is a simple sqlite file.
 
 ## Install
 
-To install ms, there are two different ways.
-
-### Method 1: Install as python package
-
-Clone the repo
+First, clone the repo
 
 ```
 git clone https://github.com/brodyking/ms.git
 ```
+
+To install ms, there are two different ways.
+
+### Method 1: Install as python package
 
 Navigate to the repo, then install it as a python package
 
