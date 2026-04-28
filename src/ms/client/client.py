@@ -30,48 +30,50 @@ class Client(QMainWindow):
         # Get all tracks
         db = Database()
         tracks = db.list_library(console_out=False)
+        self.tracks_table = self.gen_tracks_view(tracks)
+        self.tracks_table.cellDoubleClicked.connect(lambda: self.cell_clicked(self.tracks_table))
 
+        # Layout
+        layout = QVBoxLayout()
+        layout.addWidget(self.tracks_table)
+        container = QWidget()
+        container.setLayout(layout)
+        self.setCentralWidget(container)
+
+
+
+    def gen_tracks_view(self,tracks: list) -> QTableWidget:
         # Table
-        self.table = QTableWidget(len(tracks),4) # Row and Col setup
-        self.table.setHorizontalHeaderLabels(["Title", "Artist", "Album","File path"]) # Headers
-        self.table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers) # Hide col number
-        self.table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows) # Select whole row when clicked
-        self.table.verticalHeader().hide() # Hide vertical headers
+        table = QTableWidget(len(tracks),4) # Row and Col setup
+        table.setHorizontalHeaderLabels(["Title", "Artist", "Album","File path"]) # Headers
+        table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers) # Hide col number
+        table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows) # Select whole row when clicked
+        table.verticalHeader().hide() # Hide vertical headers
 
         # Add songs to table
         for row in range(len(tracks)):
             for col in range(4):
                 if col == 0:
-                    self.table.setItem(row,col,QTableWidgetItem(tracks[row].title))
+                    table.setItem(row,col,QTableWidgetItem(tracks[row].title))
                 elif col == 1:
-                    self.table.setItem(row,col,QTableWidgetItem(tracks[row].artist))
+                    table.setItem(row,col,QTableWidgetItem(tracks[row].artist))
                 elif col == 2:
-                    self.table.setItem(row,col,QTableWidgetItem(tracks[row].album))
+                    table.setItem(row,col,QTableWidgetItem(tracks[row].album))
                 else:
-                    self.table.setItem(row,col,QTableWidgetItem(tracks[row].filepath))
+                    table.setItem(row,col,QTableWidgetItem(tracks[row].filepath))
 
-        # Plays song when double clicked
-        def on_cell_double_clicked():
-            current_row = self.table.currentRow()
+        return table
 
-            filepath_col = self.table.item(current_row,3)
-            if filepath_col is not None:
-                filepath = filepath_col.text()
-                self.player.setSource(QUrl.fromLocalFile(filepath))
-                # 3. Play
-                self.player.play()
+    # Plays song when double clicked
+    def cell_clicked(self,table):
+        current_row = table.currentRow()
 
-        # Adds listener
-        self.table.cellDoubleClicked.connect(on_cell_double_clicked)
-
-        # Layout
-        layout = QVBoxLayout()
-        layout.addWidget(self.table)
-        container = QWidget()
-        container.setLayout(layout)
-        self.setCentralWidget(container)
-        
-
+        filepath_col = table.item(current_row,3)
+        if filepath_col is not None:
+            filepath = filepath_col.text()
+            self.player.setSource(QUrl.fromLocalFile(filepath))
+            # 3. Play
+            self.player.play()
 
 def start_client():
     app = QApplication()
