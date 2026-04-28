@@ -8,6 +8,7 @@
 - [x] Start of UI
 - [x] Add window icon and menubar to client
 - [x] Version numbers
+- [ ] Time to completion for all DB methods
 - [ ] Find faster build method
 - [ ] Rename files while importing
 - [ ] Play albums in order
