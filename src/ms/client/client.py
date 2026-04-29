@@ -97,7 +97,7 @@ class Client(QMainWindow):
         # If the query is empty, display all tracks
         if not query:
             self.tracks_table.setRowCount(len(self.tracks))
-            self.tracks_table.setColumnCount(4)
+            self.tracks_table.setColumnCount(5)
             self.populate_table(self.tracks)
             return
 
@@ -112,7 +112,7 @@ class Client(QMainWindow):
         
         # Repopulate the table with the filtered results
         self.tracks_table.setRowCount(len(filtered_tracks))
-        self.tracks_table.setColumnCount(4)
+        self.tracks_table.setColumnCount(5)
         self.populate_table(filtered_tracks)
         
         Util.print(f"Search results found: {len(filtered_tracks)} tracks.")
@@ -123,7 +123,8 @@ class Client(QMainWindow):
         # Clear existing content first
         self.tracks_table.setSortingEnabled(False)
         self.tracks_table.setRowCount(len(tracks))
-        self.tracks_table.setColumnCount(4)
+        self.tracks_table.setColumnCount(5)
+
 
         # Repopulate using the existing logic from gen_tracks_view
         for row_index, track in enumerate(tracks):
@@ -141,14 +142,17 @@ class Client(QMainWindow):
             # Column 3: File path
             self.tracks_table.setItem(row_index, 3, QTableWidgetItem(track.filepath))
 
+            # Column 4: Id
+            self.tracks_table.setItem(row_index, 4, QTableWidgetItem(str(track.id)))
+
         self.tracks_table.setSortingEnabled(True)
 
 
     def gen_tracks_table(self) -> QTableWidget:
         # Table
-        table = QTableWidget(len(self.tracks),4) 
+        table = QTableWidget(len(self.tracks),5) 
                     
-        table.setHorizontalHeaderLabels(["Title", "Artist", "Album","File path"])
+        table.setHorizontalHeaderLabels(["Title", "Artist", "Album","File path","ID"])
         table.verticalHeader().hide()
 
         table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers) 
@@ -163,6 +167,7 @@ class Client(QMainWindow):
         table.setColumnWidth(1,150)
         table.setColumnWidth(2,150)
         table.setColumnWidth(3,150)
+        table.setColumnWidth(4,60)
 
         return table
 
@@ -239,8 +244,10 @@ class Client(QMainWindow):
     
         action = menu.exec(self.tracks_table.viewport().mapToGlobal(position))
         if action == add_action:
-            row = self.tracks_table.currentRow()
-            # Logic to append self.tracks[row] to self.queue
+            # TODO: add into queue by fetching track by id
+            # current_row = self.tracks_table.currentRow()
+            # filepath = self.tracks_table.item(current_row,3).text()
+            # self.queue.insert(self.queue_index+1,filepath)
 
 def start_client():
     app = QApplication()
