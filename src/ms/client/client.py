@@ -1,7 +1,7 @@
 import sys
 from PySide6.QtWidgets import (
     QApplication, QMainWindow, QTableWidget, QTableWidgetItem, 
-    QVBoxLayout, QWidget, QAbstractItemView, QHBoxLayout, QPushButton
+    QVBoxLayout, QWidget, QAbstractItemView, QHBoxLayout, QPushButton, QLineEdit
 )
 from PySide6.QtMultimedia import QMediaPlayer, QAudioOutput
 from PySide6.QtCore import Qt, QUrl
@@ -35,17 +35,27 @@ class Client(QMainWindow):
         self.is_playing = False
 
         # --- Database Setup ---
-        db = Database()
-        tracks = db.list_library(console_out=False)
+        self.db = Database()
+        self.tracks = self.db.list_library(console_out=False)
         
         # --- UI Setup ---
+
+        # Tracks Table
+        tracks_layout =QVBoxLayout()
+
+        self.search_input = QLineEdit()
+        self.search_input.setPlaceholderText("Search by Title, Artist, or Album...")
+        self.search_input.textChanged.connect(self.filter_table) 
         
-        # 1. Table View
-        self.tracks_table = self.gen_tracks_view(tracks)
-        # Connect table click handler (double click for auto-play)
+        self.tracks_table = self.gen_tracks_table()
         self.tracks_table.cellDoubleClicked.connect(lambda: self.cell_clicked(self.tracks_table))
 
-        # 2. Control Buttons Container (Horizontal Layout)
+        self.populate_table(self.tracks)
+
+        tracks_layout.addWidget(self.search_input)
+        tracks_layout.addWidget(self.tracks_table)
+        
+        # Controls
         control_layout = QHBoxLayout()
         
         self.toggle_playback_button = QPushButton("▶ Play")
@@ -53,38 +63,76 @@ class Client(QMainWindow):
 
         control_layout.addWidget(self.toggle_playback_button)
         control_layout.addStretch(1) # Pushes buttons to the left
-
-        # 3. Main Layout (Vertical Box)
+        
+        # Main layout
         layout = QVBoxLayout()
         layout.addLayout(control_layout) # Add the control layout below the table
-        layout.addWidget(self.tracks_table)
+        layout.addLayout(tracks_layout) # Add the control layout below the table
         
-        # Container widget to hold the layout
         container = QWidget()
         container.setLayout(layout)
         self.setCentralWidget(container)
 
+    def filter_table(self, query: str):
+        """
+        Filters the QTableWidget based on the input query.
+        The table is cleared and repopulated with matching tracks.
+        """
+        query = query.lower().strip()
+        
+        # If the query is empty, display all tracks
+        if not query:
+            self.tracks_table.setRowCount(len(self.tracks))
+            self.tracks_table.setColumnCount(4)
+            self.populate_table(self.tracks)
+            return
+
+        # Find all matching tracks
+        filtered_tracks = []
+        for track in self.tracks:
+            # Check if the query matches Title, Artist, or Album
+            if (query in str(track.title).lower() or 
+                query in track.artist.lower() or 
+                query in track.album.lower()):
+                filtered_tracks.append(track)
+        
+        # Repopulate the table with the filtered results
+        self.tracks_table.setRowCount(len(filtered_tracks))
+        self.tracks_table.setColumnCount(4)
+        self.populate_table(filtered_tracks)
+        
+        Util.print(f"Search results found: {len(filtered_tracks)} tracks.")
 
 
-    def gen_tracks_view(self,tracks: list) -> QTableWidget:
+    def populate_table(self, tracks: list):
+        """Helper function to populate the table with a given list of tracks."""
+        # Clear existing content first
+        self.tracks_table.setSortingEnabled(False)
+        self.tracks_table.setRowCount(len(tracks))
+        self.tracks_table.setColumnCount(4)
+
+        # Repopulate using the existing logic from gen_tracks_view
+        for row_index, track in enumerate(tracks):
+            # Column 0: Title
+            title_item = QTableWidgetItem(f"{'❤ ' if track.favorite else ''}{track.title}")
+            
+            self.tracks_table.setItem(row_index, 0, title_item)
+            
+            # Column 1: Artist
+            self.tracks_table.setItem(row_index, 1, QTableWidgetItem(track.artist))
+            
+            # Column 2: Album
+            self.tracks_table.setItem(row_index, 2, QTableWidgetItem(track.album))
+            
+            # Column 3: File path
+            self.tracks_table.setItem(row_index, 3, QTableWidgetItem(track.filepath))
+
+        self.tracks_table.setSortingEnabled(True)
+
+
+    def gen_tracks_table(self) -> QTableWidget:
         # Table
-        table = QTableWidget(len(tracks),4) 
-
-        # Fills table with all songs from tracks
-        for row in range(len(tracks)):
-            for col in range(4):
-                if col == 0:
-                    if tracks[row].favorite:
-                        # NEEDS MORE WORK LATER
-                        table.setItem(row,col,QTableWidgetItem("❤ " + tracks[row].title))
-                    else:
-                        table.setItem(row,col,QTableWidgetItem(tracks[row].title))
-                elif col == 1:
-                    table.setItem(row,col,QTableWidgetItem(tracks[row].artist))
-                elif col == 2:
-                    table.setItem(row,col,QTableWidgetItem(tracks[row].album))
-                else:
-                    table.setItem(row,col,QTableWidgetItem(tracks[row].filepath))
+        table = QTableWidget(len(self.tracks),4) 
                     
         table.setHorizontalHeaderLabels(["Title", "Artist", "Album","File path"])
         table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers) 
@@ -96,6 +144,7 @@ class Client(QMainWindow):
         table.setColumnWidth(0,200)
         table.setColumnWidth(1,150)
         table.setColumnWidth(2,150)
+        table.setColumnWidth(3,150)
 
         return table
 
