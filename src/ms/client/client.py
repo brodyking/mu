@@ -65,24 +65,37 @@ class Client(QMainWindow):
         self.setCentralWidget(container)
 
 
-    def gen_tracks_view(self,tracks: list) -> QTableWidget:
-        # Table (unchanged)
-        table = QTableWidget(len(tracks),4) 
-        table.setHorizontalHeaderLabels(["Title", "Artist", "Album","File path"])
-        table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers) 
-        table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows) 
-        table.verticalHeader().hide()
 
+    def gen_tracks_view(self,tracks: list) -> QTableWidget:
+        # Table
+        table = QTableWidget(len(tracks),4) 
+
+        # Fills table with all songs from tracks
         for row in range(len(tracks)):
             for col in range(4):
                 if col == 0:
-                    table.setItem(row,col,QTableWidgetItem(tracks[row].title))
+                    if tracks[row].favorite:
+                        # NEEDS MORE WORK LATER
+                        table.setItem(row,col,QTableWidgetItem("❤ " + tracks[row].title))
+                    else:
+                        table.setItem(row,col,QTableWidgetItem(tracks[row].title))
                 elif col == 1:
                     table.setItem(row,col,QTableWidgetItem(tracks[row].artist))
                 elif col == 2:
                     table.setItem(row,col,QTableWidgetItem(tracks[row].album))
                 else:
                     table.setItem(row,col,QTableWidgetItem(tracks[row].filepath))
+                    
+        table.setHorizontalHeaderLabels(["Title", "Artist", "Album","File path"])
+        table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers) 
+        table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows) 
+        table.verticalHeader().hide()
+
+        table.setSortingEnabled(True)
+        table.sortByColumn(1,Qt.SortOrder.AscendingOrder)
+        table.setColumnWidth(0,200)
+        table.setColumnWidth(1,150)
+        table.setColumnWidth(2,150)
 
         return table
 
