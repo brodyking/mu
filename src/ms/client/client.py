@@ -27,9 +27,14 @@ class Client(QMainWindow):
         self.audio_output = QAudioOutput()
         self.audio_output.setVolume(0.7)
 
+        # --- Set up the queue ---
+        self.queue = []
+        self.queue_index = -1
+
         # --- Set up the player ---
         self.player = QMediaPlayer()
         self.player.setAudioOutput(self.audio_output)
+        self.player.mediaStatusChanged.connect(self.player_status_change)
         
         # --- Initialize control state ---
         self.is_playing = False
@@ -44,6 +49,7 @@ class Client(QMainWindow):
         tracks_layout =QVBoxLayout()
 
         self.search_input = QLineEdit()
+        self.search_input.setStyleSheet("QLineEdit { padding: 5px; }")
         self.search_input.setPlaceholderText("Search by Title, Artist, or Album...")
         self.search_input.textChanged.connect(self.filter_table) 
         
@@ -61,7 +67,15 @@ class Client(QMainWindow):
         self.toggle_playback_button = QPushButton("▶ Play")
         self.toggle_playback_button.clicked.connect(lambda: self.toggle_playback())
 
+        self.play_next_button = QPushButton("Next ▶▶")
+        self.play_next_button.clicked.connect(lambda: self.play_next_in_queue())
+
+        self.play_previous_button = QPushButton("◀◀ Previous")
+        self.play_previous_button.clicked.connect(lambda: self.play_previous_in_queue())
+
+        control_layout.addWidget(self.play_previous_button)
         control_layout.addWidget(self.toggle_playback_button)
+        control_layout.addWidget(self.play_next_button)
         control_layout.addStretch(1) # Pushes buttons to the left
         
         # Main layout
@@ -135,9 +149,13 @@ class Client(QMainWindow):
         table = QTableWidget(len(self.tracks),4) 
                     
         table.setHorizontalHeaderLabels(["Title", "Artist", "Album","File path"])
+        table.verticalHeader().hide()
+
         table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers) 
         table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows) 
-        table.verticalHeader().hide()
+
+        table.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+        table.customContextMenuRequested.connect(self.show_context_menu)
 
         table.setSortingEnabled(True)
         table.sortByColumn(1,Qt.SortOrder.AscendingOrder)
@@ -153,6 +171,10 @@ class Client(QMainWindow):
         current_row = table.currentRow()
 
         filepath_col = table.item(current_row,3)
+
+        self.queue = self.tracks
+        self.queue_index = current_row
+        
         if filepath_col is not None:
             filepath = filepath_col.text()
             self.load_track_source(filepath)
@@ -187,6 +209,38 @@ class Client(QMainWindow):
         self.is_playing = False
         self.toggle_playback_button.setText("▶ Play")
         Util.print("Playback paused")
+
+    def player_status_change(self, status):
+        if status == QMediaPlayer.MediaStatus.EndOfMedia:
+            self.play_next_in_queue()
+
+    def play_next_in_queue(self):
+        if self.queue_index + 1 < len(self.queue):
+            self.queue_index += 1
+            next_track = self.queue[self.queue_index]
+            self.load_track_source(next_track.filepath)
+            self.start_playback()
+        else:
+            Util.print("End of queue reached.")
+
+    def play_previous_in_queue(self):
+        if self.queue_index - 1 > 0:
+            self.queue_index -= 1
+            previous_track = self.queue[self.queue_index]
+            self.load_track_source(previous_track.filepath)
+            self.start_playback()
+        else:
+            Util.print("Start of queue reached.")
+
+    def show_context_menu(self, position):
+        from PySide6.QtWidgets import QMenu
+        menu = QMenu()
+        add_action = menu.addAction("Add to Queue")
+    
+        action = menu.exec(self.tracks_table.viewport().mapToGlobal(position))
+        if action == add_action:
+            row = self.tracks_table.currentRow()
+            # Logic to append self.tracks[row] to self.queue
 
 def start_client():
     app = QApplication()
