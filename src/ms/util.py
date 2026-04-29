@@ -57,12 +57,11 @@ class Util:
 		        return text[:width-2] + ".."
 		    return text.ljust(width)
 
-		prefix = Color.green("[] ") if ok else Color.red("[] ")
+		prefix = Color.green("[✓] ") if ok else Color.red("[✘] ")
 		counter = f"[{str(count[0]).rjust(len(str(count[1])),"0")}/{count[1]}] " if len(count) == 2 else ""
-		favorited = Color.red("󰋑 ") if track is not None and track.favorite else Color.light_gray("♥ ")
+		favorited = Color.red("❤ ") if track is not None and track.favorite else Color.light_gray("♥ ")
 
 		searchresult = (
-			f"[] "
 			f"{Color.light_gray('#'+str(track.id).rjust(4, "0"))} "
 		    f"{favorited}{Color.red(fmt(f"{track.title}", 25))} | "
 			f"{fmt(track.artist, 15)} | "
