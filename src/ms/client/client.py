@@ -20,7 +20,7 @@ class Client(QMainWindow):
         Util.print("Starting client")
 
         # --- Window ---
-        self.setWindowTitle("ms")
+        self.setWindowTitle("ms - based music server")
         self.resize(600, 400)
 
         # --- Audio Setup ---
@@ -95,20 +95,20 @@ class Client(QMainWindow):
             filepath = filepath_col.text()
             self.load_track_source(filepath)
             # Play when double-clicked
-            self.play_music()
+            self.start_playback()
 
     def load_track_source(self, filepath: str):
         """Loads the file path into the player source."""
         self.player.setSource(QUrl.fromLocalFile(filepath))
+        Util.print(f"Loaded {filepath}")
 
     def toggle_playback(self):
         if self.is_playing:
-            self.pause_music();
+            self.stop_playback();
         else:
-            self.play_music();
+            self.start_playback();
         
-    def play_music(self):
-        """Called when the Play button is pressed."""
+    def start_playback(self):
         if self.player.duration() == 0 and not self.player.error():
             # if nothing is loaded, prompt the user or do nothing
             Util.print("No track loaded. please select a song first.",ok=False)
@@ -118,13 +118,13 @@ class Client(QMainWindow):
             self.player.play()
             self.is_playing = True
             self.toggle_playback_button.setText("⏸ Pause")
+            Util.print("Playback started")
 
-    def pause_music(self):
-        """Called when the Pause button is pressed."""
+    def stop_playback(self):
         self.player.pause()
         self.is_playing = False
         self.toggle_playback_button.setText("▶ Play")
-
+        Util.print("Playback paused")
 
 def start_client():
     app = QApplication()
