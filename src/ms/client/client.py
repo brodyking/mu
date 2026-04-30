@@ -248,6 +248,7 @@ class Client(QMainWindow):
             # current_row = self.tracks_table.currentRow()
             # filepath = self.tracks_table.item(current_row,3).text()
             # self.queue.insert(self.queue_index+1,filepath)
+            pass
 
 def start_client():
     app = QApplication()
@@ -260,4 +261,3 @@ def start_client():
 
 if __name__ == "__main__":
     start_client()
-
