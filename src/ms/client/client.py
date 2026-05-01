@@ -22,6 +22,7 @@ class Client(QMainWindow):
         # --- Window ---
         self.setWindowTitle("ms - based music server")
         self.resize(600, 400)
+        self.setMinimumWidth(600) 
 
         # --- Audio Setup ---
         self.audio_output = QAudioOutput()
@@ -83,13 +84,13 @@ class Client(QMainWindow):
         # Controls
         control_layout = QHBoxLayout()
         
-        self.toggle_playback_button = QPushButton("▶ Play")
+        self.toggle_playback_button = QPushButton("▶")
         self.toggle_playback_button.clicked.connect(lambda: self.toggle_playback())
 
-        self.play_next_button = QPushButton("Next ▶▶")
+        self.play_next_button = QPushButton("▶▶")
         self.play_next_button.clicked.connect(lambda: self.play_next_in_queue())
 
-        self.play_previous_button = QPushButton("◀◀ Previous")
+        self.play_previous_button = QPushButton("◀◀")
         self.play_previous_button.clicked.connect(lambda: self.play_previous_in_queue())
 
         control_layout.addWidget(self.play_previous_button)
@@ -225,13 +226,13 @@ class Client(QMainWindow):
         if not self.player.isPlaying():
             self.player.play()
             self.is_playing = True
-            self.toggle_playback_button.setText("⏸ Pause")
+            self.toggle_playback_button.setText("⏸")
             Util.print("Playback started")
 
     def stop_playback(self):
         self.player.pause()
         self.is_playing = False
-        self.toggle_playback_button.setText("▶ Play")
+        self.toggle_playback_button.setText("▶")
         Util.print("Playback paused")
 
     def update_nowplaying(self):
