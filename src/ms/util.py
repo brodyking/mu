@@ -38,6 +38,13 @@ class Color:
 class Util:
 
 	@staticmethod
+	def fmt(text, width):
+	    text = str(text or "")
+	    if len(text) > width:
+	        return text[:width-2] + ".."
+	    return text.ljust(width)
+
+	@staticmethod
 	def print(content: str, **kwargs):
 		"""
 			Prints to the terminal
@@ -51,21 +58,15 @@ class Util:
 		count = kwargs.get('count', []) # Used to display progress in anticipation of another print.
 		track = kwargs.get('track', None) # 
 
-		def fmt(text, width):
-		    text = str(text or "")
-		    if len(text) > width:
-		        return text[:width-2] + ".."
-		    return text.ljust(width)
-
 		prefix = Color.green("[✓] ") if ok else Color.red("[✘] ")
 		counter = f"[{str(count[0]).rjust(len(str(count[1])),"0")}/{count[1]}] " if len(count) == 2 else ""
 		favorited = Color.red("❤ ") if track is not None and track.favorite else Color.light_gray("♥ ")
 
 		searchresult = (
 			f"{Color.light_gray('#'+str(track.id).rjust(4, "0"))} "
-		    f"{favorited}{Color.red(fmt(f"{track.title}", 25))} | "
-			f"{fmt(track.artist, 15)} | "
-		    f"{fmt(track.album, 15)} | "
+		    f"{favorited}{Color.red(Util.fmt(f"{track.title}", 25))} | "
+			f"{Util.fmt(track.artist, 15)} | "
+		    f"{Util.fmt(track.album, 15)} | "
 		    f"{Color.blue(track.filepath)}"
 		) if track is not None else ""
 		

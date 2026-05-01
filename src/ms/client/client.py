@@ -234,14 +234,16 @@ class Client(QMainWindow):
         self.toggle_playback_button.setText("▶ Play")
         Util.print("Playback paused")
 
+    def update_now_playing(self):
+        Util.print(f"Now playing track: {self.currentTrack.title}")
+        self.metadata_track_label.setText(Util.fmt(self.currentTrack.title,50))
+        self.metadata_artist_label.setText(Util.fmt(self.currentTrack.artist,50))
+        self.album_art.setPixmap(QPixmap(self.currentTrack.albumart).scaled(50,50,Qt.KeepAspectRatio,Qt.TransformationMode.SmoothTransformation))
+
     def player_status_change(self, status):
         if status == QMediaPlayer.MediaStatus.LoadedMedia:
-            Util.print(f"Playing track: {self.currentTrack.title}")
-            self.metadata_track_label.setText(self.currentTrack.title)
-            self.metadata_artist_label.setText(self.currentTrack.artist)
-
-        self.album_art.setPixmap(QPixmap(self.currentTrack.albumart).scaled(50,50,Qt.KeepAspectRatio,Qt.TransformationMode.SmoothTransformation))
-            
+            self.update_now_playing()
+           
         if status == QMediaPlayer.MediaStatus.EndOfMedia:
             self.play_next_in_queue()
 
