@@ -214,9 +214,11 @@ class Database:
             results = cursor.fetchall()
 
         if not export_json and not export_path:
+            export = []
             for i, result in enumerate(results):
                 if console_out: Util.print("", track=Track(result), count=[i + 1, len(results)])
-            return results
+                export.append(Track(result))
+            return export
         elif export_json:
             json_export = json.dumps(results)
             print(json_export)
