@@ -65,20 +65,20 @@ class Client(QMainWindow):
         tracks_layout.addWidget(self.tracks_table)
 
         # Album Art
-        self.album_art = QLabel()
-        self.album_art.setPixmap(QPixmap("").scaled(50,50,Qt.KeepAspectRatio,Qt.TransformationMode.SmoothTransformation))
+        self.nowplaying_album_art = QLabel()
+        self.nowplaying_album_art.setPixmap(QPixmap("").scaled(50,50,Qt.KeepAspectRatio,Qt.TransformationMode.SmoothTransformation))
 
         # Current track metadata
-        metadata_layout = QVBoxLayout()
+        nowplaying_layout = QVBoxLayout()
 
-        self.metadata_track_label = QLabel(self,text="")
-        self.metadata_artist_label = QLabel(self,text="")
+        self.nowplaying_track_label = QLabel(self,text="")
+        self.nowplaying_artist_label = QLabel(self,text="")
 
-        self.metadata_track_label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
-        self.metadata_artist_label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
+        self.nowplaying_track_label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
+        self.nowplaying_artist_label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
 
-        metadata_layout.addWidget(self.metadata_track_label)
-        metadata_layout.addWidget(self.metadata_artist_label)
+        nowplaying_layout.addWidget(self.nowplaying_track_label)
+        nowplaying_layout.addWidget(self.nowplaying_artist_label)
         
         # Controls
         control_layout = QHBoxLayout()
@@ -99,8 +99,8 @@ class Client(QMainWindow):
 
         # Top bar
         top_bar_layout = QHBoxLayout()
-        top_bar_layout.addWidget(self.album_art)
-        top_bar_layout.addLayout(metadata_layout)
+        top_bar_layout.addWidget(self.nowplaying_album_art)
+        top_bar_layout.addLayout(nowplaying_layout)
         top_bar_layout.addStretch()
         top_bar_layout.addLayout(control_layout)
         
@@ -234,15 +234,15 @@ class Client(QMainWindow):
         self.toggle_playback_button.setText("▶ Play")
         Util.print("Playback paused")
 
-    def update_now_playing(self):
+    def update_nowplaying(self):
         Util.print(f"Now playing track: {self.currentTrack.title}")
-        self.metadata_track_label.setText(Util.fmt(self.currentTrack.title,50))
-        self.metadata_artist_label.setText(Util.fmt(self.currentTrack.artist,50))
-        self.album_art.setPixmap(QPixmap(self.currentTrack.albumart).scaled(50,50,Qt.KeepAspectRatio,Qt.TransformationMode.SmoothTransformation))
+        self.nowplaying_track_label.setText(Util.fmt(self.currentTrack.title,50))
+        self.nowplaying_artist_label.setText(Util.fmt(self.currentTrack.artist,50))
+        self.nowplaying_album_art.setPixmap(QPixmap(self.currentTrack.albumart).scaled(50,50,Qt.KeepAspectRatio,Qt.TransformationMode.SmoothTransformation))
 
     def player_status_change(self, status):
         if status == QMediaPlayer.MediaStatus.LoadedMedia:
-            self.update_now_playing()
+            self.update_nowplaying()
            
         if status == QMediaPlayer.MediaStatus.EndOfMedia:
             self.play_next_in_queue()
@@ -258,7 +258,7 @@ class Client(QMainWindow):
             Util.print("End of queue reached.")
 
     def play_previous_in_queue(self):
-        if self.queue_index - 1 > 0:
+        if self.queue_index - 1 >= 0:
             self.queue_index -= 1
             previous_track = self.queue[self.queue_index]
             self.currentTrack = previous_track
