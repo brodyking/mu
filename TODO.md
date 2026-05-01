@@ -8,7 +8,7 @@
 - [x] Start of UI
 - [x] Add window icon and menubar to client
 - [x] Version numbers
-- [ ] Add to queue by ID (use search with id:)
+- [x] Add to queue by ID (use search with id:)
 - [ ] Time to completion for all DB methods
 - [ ] Find faster build method
 - [ ] Rename files while importing
