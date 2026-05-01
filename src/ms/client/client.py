@@ -123,26 +123,20 @@ class Client(QMainWindow):
         
         # If the query is empty, display all tracks
         if not query:
+            self.tracks = self.db.list_library(console_out=False)
             self.tracks_table.setRowCount(len(self.tracks))
             self.tracks_table.setColumnCount(5)
             self.populate_table(self.tracks)
             return
 
-        # Find all matching tracks
-        filtered_tracks = []
-        for track in self.tracks:
-            # Check if the query matches Title, Artist, or Album
-            if (query in str(track.title).lower() or 
-                query in track.artist.lower() or 
-                query in track.album.lower()):
-                filtered_tracks.append(track)
+        self.tracks = self.db.search(query,console_out=False)
         
         # Repopulate the table with the filtered results
-        self.tracks_table.setRowCount(len(filtered_tracks))
+        self.tracks_table.setRowCount(len(self.tracks))
         self.tracks_table.setColumnCount(5)
-        self.populate_table(filtered_tracks)
+        self.populate_table(self.tracks)
         
-        Util.print(f"Search results found: {len(filtered_tracks)} tracks.")
+        Util.print(f"Search results found: {len(self.tracks)} tracks.")
 
 
     def populate_table(self, tracks: list):
@@ -212,7 +206,7 @@ class Client(QMainWindow):
             filepath = filepath_col.text()
             id = id_col.text()
             self.load_track_source(filepath)
-            self.currentTrack = Track(self.db.search(f"id:{id}",console_out=False)[0])
+            self.currentTrack = self.db.search(f"id:{id}",console_out=False)[0]
             # Play when double-clicked
             self.start_playback()
 
@@ -279,7 +273,7 @@ class Client(QMainWindow):
         if action == add_action:
             current_row = self.tracks_table.currentRow()
             id = self.tracks_table.item(current_row,4).text()
-            track = Track(self.db.search(f"id:{id}",console_out=False)[0])
+            track = self.db.search(f"id:{id}",console_out=False)[0]
             self.queue.insert(self.queue_index+1,track)
 
 def start_client():
