@@ -10,6 +10,7 @@ from PySide6.QtGui import QIcon
 # Assuming these modules exist in your environment
 from ms.database import Database
 from ms.util import Util
+from ms.track import Track
 
 import ms.client.resources_rc
 
@@ -244,11 +245,10 @@ class Client(QMainWindow):
     
         action = menu.exec(self.tracks_table.viewport().mapToGlobal(position))
         if action == add_action:
-            # TODO: add into queue by fetching track by id
-            # current_row = self.tracks_table.currentRow()
-            # filepath = self.tracks_table.item(current_row,3).text()
-            # self.queue.insert(self.queue_index+1,filepath)
-            pass
+            current_row = self.tracks_table.currentRow()
+            id = self.tracks_table.item(current_row,4).text()
+            track = Track(self.db.search(f"id:{id}")[0])
+            self.queue.insert(self.queue_index+1,track)
 
 def start_client():
     app = QApplication()
