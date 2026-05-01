@@ -1,13 +1,12 @@
 import sys
 from PySide6.QtWidgets import (
     QApplication, QMainWindow, QTableWidget, QTableWidgetItem, 
-    QVBoxLayout, QWidget, QAbstractItemView, QHBoxLayout, QPushButton, QLineEdit
+    QVBoxLayout, QWidget, QAbstractItemView, QHBoxLayout, QPushButton, QLineEdit, QLabel
 )
 from PySide6.QtMultimedia import QMediaPlayer, QAudioOutput
 from PySide6.QtCore import Qt, QUrl
-from PySide6.QtGui import QIcon
+from PySide6.QtGui import QIcon, QPixmap
 
-# Assuming these modules exist in your environment
 from ms.database import Database
 from ms.util import Util
 from ms.track import Track
@@ -31,6 +30,9 @@ class Client(QMainWindow):
         # --- Set up the queue ---
         self.queue = []
         self.queue_index = -1
+
+        # --- Set up current track ---
+        self.currentTrack = None
 
         # --- Set up the player ---
         self.player = QMediaPlayer()
@@ -61,6 +63,23 @@ class Client(QMainWindow):
 
         tracks_layout.addWidget(self.search_input)
         tracks_layout.addWidget(self.tracks_table)
+
+        # Album Art
+        album_art_pixmap = QPixmap("/Users/brody/Music/ms/albumart/0bf2e49821a1970e9812e1d2dd80403f64898ee614e5f07ca945af54ec319a79.jpg").scaled(50,50)
+        album_art = QLabel()
+        album_art.setPixmap(album_art_pixmap)
+
+        # Current track metadata
+        metadata_layout = QVBoxLayout()
+
+        metadata_track = QLabel(self,text="Track name")
+        metadata_artist = QLabel(self,text="Arist name")
+
+        metadata_track.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
+        metadata_artist.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
+
+        metadata_layout.addWidget(metadata_track)
+        metadata_layout.addWidget(metadata_artist)
         
         # Controls
         control_layout = QHBoxLayout()
@@ -77,11 +96,18 @@ class Client(QMainWindow):
         control_layout.addWidget(self.play_previous_button)
         control_layout.addWidget(self.toggle_playback_button)
         control_layout.addWidget(self.play_next_button)
-        control_layout.addStretch(1) # Pushes buttons to the left
+        control_layout.setAlignment(Qt.AlignmentFlag.AlignRight)
+
+        # Top bar
+        top_bar_layout = QHBoxLayout()
+        top_bar_layout.addWidget(album_art)
+        top_bar_layout.addLayout(metadata_layout)
+        top_bar_layout.addStretch()
+        top_bar_layout.addLayout(control_layout)
         
         # Main layout
         layout = QVBoxLayout()
-        layout.addLayout(control_layout) # Add the control layout below the table
+        layout.addLayout(top_bar_layout) # Add the control layout below the table
         layout.addLayout(tracks_layout) # Add the control layout below the table
         
         container = QWidget()
@@ -177,13 +203,16 @@ class Client(QMainWindow):
         current_row = table.currentRow()
 
         filepath_col = table.item(current_row,3)
+        id_col = table.item(current_row,4)
 
         self.queue = self.tracks
         self.queue_index = current_row
         
-        if filepath_col is not None:
+        if filepath_col is not None and id_col is not None:
             filepath = filepath_col.text()
+            id = id_col.text()
             self.load_track_source(filepath)
+            self.currentTrack = Track(self.db.search(f"id:{id}",console_out=False)[0])
             # Play when double-clicked
             self.start_playback()
 
@@ -217,6 +246,8 @@ class Client(QMainWindow):
         Util.print("Playback paused")
 
     def player_status_change(self, status):
+        if status == QMediaPlayer.MediaStatus.LoadedMedia:
+            Util.print(f"Playing track: {self.currentTrack.title}")
         if status == QMediaPlayer.MediaStatus.EndOfMedia:
             self.play_next_in_queue()
 
@@ -224,6 +255,7 @@ class Client(QMainWindow):
         if self.queue_index + 1 < len(self.queue):
             self.queue_index += 1
             next_track = self.queue[self.queue_index]
+            self.currentTrack = next_track
             self.load_track_source(next_track.filepath)
             self.start_playback()
         else:
@@ -247,7 +279,7 @@ class Client(QMainWindow):
         if action == add_action:
             current_row = self.tracks_table.currentRow()
             id = self.tracks_table.item(current_row,4).text()
-            track = Track(self.db.search(f"id:{id}")[0])
+            track = Track(self.db.search(f"id:{id}",console_out=False)[0])
             self.queue.insert(self.queue_index+1,track)
 
 def start_client():
