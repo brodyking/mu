@@ -65,21 +65,20 @@ class Client(QMainWindow):
         tracks_layout.addWidget(self.tracks_table)
 
         # Album Art
-        album_art_pixmap = QPixmap("/Users/brody/Music/ms/albumart/0bf2e49821a1970e9812e1d2dd80403f64898ee614e5f07ca945af54ec319a79.jpg").scaled(50,50)
-        album_art = QLabel()
-        album_art.setPixmap(album_art_pixmap)
+        self.album_art = QLabel()
+        self.album_art.setPixmap(QPixmap("").scaled(50,50,Qt.KeepAspectRatio,Qt.TransformationMode.SmoothTransformation))
 
         # Current track metadata
         metadata_layout = QVBoxLayout()
 
-        metadata_track = QLabel(self,text="Track name")
-        metadata_artist = QLabel(self,text="Arist name")
+        self.metadata_track_label = QLabel(self,text="")
+        self.metadata_artist_label = QLabel(self,text="")
 
-        metadata_track.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
-        metadata_artist.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
+        self.metadata_track_label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
+        self.metadata_artist_label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
 
-        metadata_layout.addWidget(metadata_track)
-        metadata_layout.addWidget(metadata_artist)
+        metadata_layout.addWidget(self.metadata_track_label)
+        metadata_layout.addWidget(self.metadata_artist_label)
         
         # Controls
         control_layout = QHBoxLayout()
@@ -100,7 +99,7 @@ class Client(QMainWindow):
 
         # Top bar
         top_bar_layout = QHBoxLayout()
-        top_bar_layout.addWidget(album_art)
+        top_bar_layout.addWidget(self.album_art)
         top_bar_layout.addLayout(metadata_layout)
         top_bar_layout.addStretch()
         top_bar_layout.addLayout(control_layout)
@@ -242,6 +241,11 @@ class Client(QMainWindow):
     def player_status_change(self, status):
         if status == QMediaPlayer.MediaStatus.LoadedMedia:
             Util.print(f"Playing track: {self.currentTrack.title}")
+            self.metadata_track_label.setText(self.currentTrack.title)
+            self.metadata_artist_label.setText(self.currentTrack.artist)
+
+        self.album_art.setPixmap(QPixmap(self.currentTrack.albumart).scaled(50,50,Qt.KeepAspectRatio,Qt.TransformationMode.SmoothTransformation))
+            
         if status == QMediaPlayer.MediaStatus.EndOfMedia:
             self.play_next_in_queue()
 
