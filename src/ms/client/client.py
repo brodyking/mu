@@ -54,7 +54,7 @@ class Client(QMainWindow):
         self.search_input = QLineEdit()
         self.search_input.setStyleSheet("QLineEdit { padding: 5px; }")
         self.search_input.setPlaceholderText("Search by Title, Artist, or Album...")
-        self.search_input.textChanged.connect(self.filter_table) 
+        self.search_input.textChanged.connect(self.filter_table)
         
         self.tracks_table = self.gen_tracks_table()
         self.tracks_table.cellDoubleClicked.connect(lambda: self.cell_clicked(self.tracks_table))
@@ -115,7 +115,7 @@ class Client(QMainWindow):
 
     def filter_table(self, query: str):
         """
-        Filters the QTableWidget based on the input query.
+        Filters the table based on the input query.
         The table is cleared and repopulated with matching tracks.
         """
         query = query.lower().strip()
@@ -123,12 +123,8 @@ class Client(QMainWindow):
         # If the query is empty, display all tracks
         if not query:
             self.tracks = self.db.list_library(console_out=False)
-            self.tracks_table.setRowCount(len(self.tracks))
-            self.tracks_table.setColumnCount(5)
-            self.populate_table(self.tracks)
-            return
-
-        self.tracks = self.db.search(query,console_out=False)
+        else:
+            self.tracks = self.db.search(query,console_out=False)
         
         # Repopulate the table with the filtered results
         self.tracks_table.setRowCount(len(self.tracks))
@@ -263,6 +259,7 @@ class Client(QMainWindow):
         if self.queue_index - 1 > 0:
             self.queue_index -= 1
             previous_track = self.queue[self.queue_index]
+            self.currentTrack = previous_track
             self.load_track_source(previous_track.filepath)
             self.start_playback()
         else:
