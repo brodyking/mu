@@ -193,6 +193,14 @@ class Client(QMainWindow):
 
         self.tracks_table.setSortingEnabled(True)
 
+    def get_column_data(self,table_widget, col_index):
+        column_list = []
+        # rowCount() reflects the current state of the UI
+        for row in range(table_widget.rowCount()):
+            item = table_widget.item(row, col_index)
+            if item is not None:
+                column_list.append(item.text())
+        return column_list
 
     def gen_tracks_table(self) -> QTableWidget:
         # Table
@@ -224,7 +232,8 @@ class Client(QMainWindow):
         filepath_col = table.item(current_row,3)
         id_col = table.item(current_row,4)
 
-        self.queue = self.tracks
+        self.queue = self.get_column_data(table,4)
+        print(self.queue)
         self.queue_index = current_row
         
         if filepath_col is not None and id_col is not None:
@@ -285,9 +294,9 @@ class Client(QMainWindow):
     def play_next_in_queue(self):
         if self.queue_index + 1 < len(self.queue):
             self.queue_index += 1
-            next_track = self.queue[self.queue_index]
-            self.currentTrack = next_track
-            self.load_track_source(next_track.filepath)
+            next_track_id = self.queue[self.queue_index]
+            self.currentTrack = self.db.search(f"id:{next_track_id}",console_out=False)[0]
+            self.load_track_source(self.currentTrack.filepath)
             self.start_playback()
         else:
             Util.print("End of queue reached.")
@@ -295,12 +304,12 @@ class Client(QMainWindow):
     def play_previous_in_queue(self):
         if self.queue_index - 1 >= 0:
             self.queue_index -= 1
-            previous_track = self.queue[self.queue_index]
-            self.currentTrack = previous_track
-            self.load_track_source(previous_track.filepath)
+            previous_track_id = self.queue[self.queue_index]
+            self.currentTrack = self.db.search(f"id:{previous_track_id}",console_out=False)[0]
+            self.load_track_source(self.currentTrack.filepath)
             self.start_playback()
         else:
-            Util.print("Start of queue reached.")
+            Util.print("End of queue reached.")
 
     def show_context_menu(self, position):
         from PySide6.QtWidgets import QMenu
