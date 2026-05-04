@@ -1,7 +1,7 @@
 import sys
 from PySide6.QtWidgets import (
     QApplication, QMainWindow, QTableWidget, QTableWidgetItem, 
-    QVBoxLayout, QWidget, QAbstractItemView, QHBoxLayout, QPushButton, QLineEdit, QLabel
+    QVBoxLayout, QWidget, QAbstractItemView, QHBoxLayout, QPushButton, QLineEdit, QLabel, QSlider
 )
 from PySide6.QtMultimedia import QMediaPlayer, QAudioOutput
 from PySide6.QtCore import Qt, QUrl
@@ -10,6 +10,7 @@ from PySide6.QtGui import QIcon, QPixmap
 from ms.database import Database
 from ms.util import Util
 from ms.track import Track
+from ms.client.clickable_slider import ClickableSlider
 
 import ms.client.resources_rc
 
@@ -67,7 +68,7 @@ class Client(QMainWindow):
 
         # Album Art
         self.nowplaying_album_art = QLabel()
-        self.nowplaying_album_art.setPixmap(QPixmap("").scaled(50,50,Qt.KeepAspectRatio,Qt.TransformationMode.SmoothTransformation))
+        self.nowplaying_album_art.setPixmap(QPixmap("").scaled(75,75,Qt.KeepAspectRatio,Qt.TransformationMode.SmoothTransformation))
 
         # Current track metadata
         nowplaying_layout = QVBoxLayout()
@@ -78,8 +79,19 @@ class Client(QMainWindow):
         self.nowplaying_track_label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
         self.nowplaying_artist_label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
 
+        self.nowplaying_progress_bar = ClickableSlider(Qt.Horizontal)
+
+        # 2. Sync Player -> Slider (Automatic progress updates)
+        self.player.durationChanged.connect(lambda max: self.nowplaying_progress_bar.setRange(0,max)) # Set max time
+        self.player.positionChanged.connect(self.nowplaying_progress_bar.setValue) # Update handle position
+
+        # 3. Sync Slider -> Player (User scrubbing)
+        self.nowplaying_progress_bar.sliderMoved.connect(self.player.setPosition) # Jump to clicked time
+
+        
         nowplaying_layout.addWidget(self.nowplaying_track_label)
         nowplaying_layout.addWidget(self.nowplaying_artist_label)
+        nowplaying_layout.addWidget(self.nowplaying_progress_bar)
         
         # Controls
         control_layout = QHBoxLayout()
@@ -227,6 +239,8 @@ class Client(QMainWindow):
             self.player.play()
             self.is_playing = True
             self.toggle_playback_button.setText("⏸")
+
+
             Util.print("Playback started")
 
     def stop_playback(self):
@@ -239,12 +253,14 @@ class Client(QMainWindow):
         Util.print(f"Now playing track: {self.currentTrack.title}")
         self.nowplaying_track_label.setText(Util.fmt(self.currentTrack.title,50))
         self.nowplaying_artist_label.setText(Util.fmt(self.currentTrack.artist,50))
-        self.nowplaying_album_art.setPixmap(QPixmap(self.currentTrack.albumart).scaled(50,50,Qt.KeepAspectRatio,Qt.TransformationMode.SmoothTransformation))
+        self.nowplaying_album_art.setPixmap(QPixmap(self.currentTrack.albumart).scaled(75,75,Qt.KeepAspectRatio,Qt.TransformationMode.SmoothTransformation))
+
+
 
     def player_status_change(self, status):
         if status == QMediaPlayer.MediaStatus.LoadedMedia:
             self.update_nowplaying()
-           
+
         if status == QMediaPlayer.MediaStatus.EndOfMedia:
             self.play_next_in_queue()
 
