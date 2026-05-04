@@ -12,6 +12,8 @@
 - [x] Version numbers
 - [x] Add to queue by ID (use search with id:)
 - [x] Tabbed view
+- [x] Queue tab
+- [ ] Search only on enter pressed
 - [ ] Favorite by context menu and while playing
 - [ ] Progress/Skip to time while playing
 

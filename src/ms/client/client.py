@@ -54,21 +54,29 @@ class Client(QMainWindow):
         
 
     def initUI(self):
+        # --- Queue table ---
+        queue_layout =QVBoxLayout()
+
+        self.queue_table = self.gen_tracks_table(sorting=False)
+        self.queue_table.cellDoubleClicked.connect(lambda: self.cell_clicked(self.queue_table))
+
+        queue_layout.addWidget(self.queue_table)
+        
         # --- Tracks table ---
 
         tracks_layout =QVBoxLayout()
 
-        self.search_input = QLineEdit()
-        self.search_input.setStyleSheet("QLineEdit { padding: 5px; }")
-        self.search_input.setPlaceholderText("Search by Title, Artist, or Album...")
-        self.search_input.textChanged.connect(self.filter_table)
+        self.tracks_search_input = QLineEdit()
+        self.tracks_search_input.setStyleSheet("QLineEdit { padding: 3px; }")
+        self.tracks_search_input.setPlaceholderText("Search by Title, Artist, or Album...")
+        self.tracks_search_input.textChanged.connect(self.filter_table)
         
         self.tracks_table = self.gen_tracks_table()
         self.tracks_table.cellDoubleClicked.connect(lambda: self.cell_clicked(self.tracks_table))
 
-        self.populate_table(self.tracks)
+        self.populate_table(self.tracks_table,self.tracks)
 
-        tracks_layout.addWidget(self.search_input)
+        tracks_layout.addWidget(self.tracks_search_input)
         tracks_layout.addWidget(self.tracks_table)
 
 
@@ -128,6 +136,7 @@ class Client(QMainWindow):
         self.stacked = QStackedLayout()
         # Queue Page
         queue_page = QWidget()
+        queue_page.setLayout(queue_layout)
         self.stacked.addWidget(queue_page)
         # Tracks Page
         tracks_page = QWidget()
@@ -156,8 +165,6 @@ class Client(QMainWindow):
         top_bar_layout.addLayout(top_bar_top_layout)
         top_bar_layout.addWidget(self.nowplaying_progress_bar)
         top_bar_layout.addLayout(top_bar_bottom_layout)
-
-
        
         # Main layout
         layout = QVBoxLayout()
@@ -186,17 +193,22 @@ class Client(QMainWindow):
         # Repopulate the table with the filtered results
         self.tracks_table.setRowCount(len(self.tracks))
         self.tracks_table.setColumnCount(5)
-        self.populate_table(self.tracks)
+        self.populate_table(self.tracks_table,self.tracks)
         
         Util.print(f"Search results found: {len(self.tracks)} tracks.")
 
-
-    def populate_table(self, tracks: list):
+    def populate_table_queue(self):
+        queue_tracks = []
+        for id in self.queue[self.queue_index:]:
+            queue_tracks.append(self.db.search(f"id:{id}",console_out=False)[0])
+        self.populate_table(self.queue_table,queue_tracks)
+        
+    def populate_table(self,table, tracks: list):
         """Helper function to populate the table with a given list of tracks."""
         # Clear existing content first
-        self.tracks_table.setSortingEnabled(False)
-        self.tracks_table.setRowCount(len(tracks))
-        self.tracks_table.setColumnCount(5)
+        table.setSortingEnabled(False)
+        table.setRowCount(len(tracks))
+        table.setColumnCount(5)
 
 
         # Repopulate using the existing logic from gen_tracks_view
@@ -204,21 +216,21 @@ class Client(QMainWindow):
             # Column 0: Title
             title_item = QTableWidgetItem(f"{'❤ ' if track.favorite else ''}{track.title}")
             
-            self.tracks_table.setItem(row_index, 0, title_item)
+            table.setItem(row_index, 0, title_item)
             
             # Column 1: Artist
-            self.tracks_table.setItem(row_index, 1, QTableWidgetItem(track.artist))
+            table.setItem(row_index, 1, QTableWidgetItem(track.artist))
             
             # Column 2: Album
-            self.tracks_table.setItem(row_index, 2, QTableWidgetItem(track.album))
+            table.setItem(row_index, 2, QTableWidgetItem(track.album))
             
             # Column 3: File path
-            self.tracks_table.setItem(row_index, 3, QTableWidgetItem(track.filepath))
+            table.setItem(row_index, 3, QTableWidgetItem(track.filepath))
 
             # Column 4: Id
-            self.tracks_table.setItem(row_index, 4, QTableWidgetItem(str(track.id)))
+            table.setItem(row_index, 4, QTableWidgetItem(str(track.id)))
 
-        self.tracks_table.setSortingEnabled(True)
+        table.setSortingEnabled(True)
 
     def get_column_data(self,table_widget, col_index):
         column_list = []
@@ -229,7 +241,7 @@ class Client(QMainWindow):
                 column_list.append(item.text())
         return column_list
 
-    def gen_tracks_table(self) -> QTableWidget:
+    def gen_tracks_table(self,sorting=True) -> QTableWidget:
         # Table
         table = QTableWidget(len(self.tracks),5) 
                     
@@ -242,7 +254,7 @@ class Client(QMainWindow):
         table.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         table.customContextMenuRequested.connect(self.show_context_menu)
 
-        table.setSortingEnabled(True)
+        if sorting: table.setSortingEnabled(True)
         table.sortByColumn(1,Qt.SortOrder.AscendingOrder)
         table.setColumnWidth(0,200)
         table.setColumnWidth(1,150)
@@ -314,6 +326,7 @@ class Client(QMainWindow):
     def player_status_change(self, status):
         if status == QMediaPlayer.MediaStatus.LoadedMedia:
             self.update_nowplaying()
+            self.populate_table_queue()
 
         if status == QMediaPlayer.MediaStatus.EndOfMedia:
             self.play_next_in_queue()
