@@ -320,8 +320,7 @@ class Client(QMainWindow):
         if action == add_action:
             current_row = self.tracks_table.currentRow()
             id = self.tracks_table.item(current_row,4).text()
-            track = self.db.search(f"id:{id}",console_out=False)[0]
-            self.queue.insert(self.queue_index+1,track)
+            self.queue.insert(self.queue_index+1,id)
 
 def start_client():
     app = QApplication()
