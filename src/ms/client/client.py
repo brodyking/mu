@@ -1,7 +1,7 @@
 import sys
 from PySide6.QtWidgets import (
     QApplication, QMainWindow, QTableWidget, QTableWidgetItem, 
-    QVBoxLayout, QWidget, QAbstractItemView, QHBoxLayout, QPushButton, QLineEdit, QLabel, QSlider
+    QVBoxLayout, QWidget, QAbstractItemView, QHBoxLayout, QPushButton, QLineEdit, QLabel, QSlider, QStackedLayout
 )
 from PySide6.QtMultimedia import QMediaPlayer, QAudioOutput
 from PySide6.QtCore import Qt, QUrl
@@ -105,15 +105,12 @@ class Client(QMainWindow):
         control_layout = QHBoxLayout()
         
         self.toggle_playback_button = QPushButton("▶")
-        self.toggle_playback_button.setFixedSize(40,40)
         self.toggle_playback_button.clicked.connect(lambda: self.toggle_playback())
 
         self.play_next_button = QPushButton("▶▶")
-        self.play_next_button.setFixedSize(40,40)
         self.play_next_button.clicked.connect(lambda: self.play_next_in_queue())
 
         self.play_previous_button = QPushButton("◀◀")
-        self.play_previous_button.setFixedSize(40,40)
         self.play_previous_button.clicked.connect(lambda: self.play_previous_in_queue())
 
         control_layout.addWidget(self.play_previous_button)
@@ -121,7 +118,24 @@ class Client(QMainWindow):
         control_layout.addWidget(self.play_next_button)
         control_layout.setAlignment(Qt.AlignmentFlag.AlignRight)
 
+        # Tab buttons
+        tracks_button = QPushButton("Tracks")
+        queue_button = QPushButton("Queue")
+
         # --- Layouts ---
+
+        # Main Stacked Layout
+        self.stacked = QStackedLayout()
+        # Queue Page
+        queue_page = QWidget()
+        self.stacked.addWidget(queue_page)
+        # Tracks Page
+        tracks_page = QWidget()
+        tracks_page.setLayout(tracks_layout)
+        self.stacked.addWidget(tracks_page)
+        # Set default to tracks
+        self.stacked.setCurrentIndex(1)
+        
 
         top_bar_top_layout = QHBoxLayout()
         top_bar_top_layout.addWidget(self.nowplaying_album_art)
@@ -129,20 +143,33 @@ class Client(QMainWindow):
         top_bar_top_layout.addStretch()
         top_bar_top_layout.addLayout(control_layout)
 
+        top_bar_bottom_layout = QHBoxLayout()
+        top_bar_bottom_layout.addWidget(queue_button)
+        top_bar_bottom_layout.addWidget(tracks_button)
+        queue_button.pressed.connect(lambda: self.stacked.setCurrentIndex(0))
+        tracks_button.pressed.connect(lambda: self.stacked.setCurrentIndex(1))
+
         # Top bar
         top_bar_layout = QVBoxLayout()
+        top_bar_layout.setSpacing(11)
+        top_bar_layout.setContentsMargins(11,11,11,0)
         top_bar_layout.addLayout(top_bar_top_layout)
         top_bar_layout.addWidget(self.nowplaying_progress_bar)
-        
+        top_bar_layout.addLayout(top_bar_bottom_layout)
+
+
+       
         # Main layout
         layout = QVBoxLayout()
+        layout.setContentsMargins(0,0,0,0)
+        layout.setSpacing(0)
         layout.addLayout(top_bar_layout) # Add the control layout below the table
-        layout.addLayout(tracks_layout) # Add the control layout below the table
+        layout.addLayout(self.stacked) # Add the control layout below the table
         
         container = QWidget()
         container.setLayout(layout)
         self.setCentralWidget(container)
-
+                    
     def filter_table(self, query: str):
         """
         Filters the table based on the input query.
