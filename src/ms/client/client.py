@@ -19,6 +19,10 @@ class Client(QMainWindow):
         super().__init__()
 
         Util.print("Starting client")
+        self.initApplication()
+        self.initUI()
+
+    def initApplication(self):
 
         # --- Window ---
         self.setWindowTitle("ms - based music server")
@@ -48,9 +52,10 @@ class Client(QMainWindow):
         self.db = Database()
         self.tracks = self.db.list_library(console_out=False)
         
-        # --- UI Setup ---
 
-        # Tracks Table
+    def initUI(self):
+        # --- Tracks table ---
+
         tracks_layout =QVBoxLayout()
 
         self.search_input = QLineEdit()
@@ -66,32 +71,35 @@ class Client(QMainWindow):
         tracks_layout.addWidget(self.search_input)
         tracks_layout.addWidget(self.tracks_table)
 
+
+        # --- Now Playing -- 
+
         # Album Art
         self.nowplaying_album_art = QLabel()
         self.nowplaying_album_art.setPixmap(QPixmap("").scaled(75,75,Qt.KeepAspectRatio,Qt.TransformationMode.SmoothTransformation))
 
         # Current track metadata
-        nowplaying_layout = QVBoxLayout()
+        nowplaying_track_metadata_layout = QVBoxLayout()
 
         self.nowplaying_track_label = QLabel(self,text="")
         self.nowplaying_artist_label = QLabel(self,text="")
+        self.nowplaying_album_label = QLabel(self,text="")
 
         self.nowplaying_track_label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
         self.nowplaying_artist_label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
+        self.nowplaying_album_label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
 
+        nowplaying_track_metadata_layout.addWidget(self.nowplaying_track_label)
+        nowplaying_track_metadata_layout.addWidget(self.nowplaying_artist_label)
+        nowplaying_track_metadata_layout.addWidget(self.nowplaying_album_label)
+
+        # Progress Bar
         self.nowplaying_progress_bar = ClickableSlider(Qt.Horizontal)
 
-        # 2. Sync Player -> Slider (Automatic progress updates)
         self.player.durationChanged.connect(lambda max: self.nowplaying_progress_bar.setRange(0,max)) # Set max time
         self.player.positionChanged.connect(self.nowplaying_progress_bar.setValue) # Update handle position
 
-        # 3. Sync Slider -> Player (User scrubbing)
         self.nowplaying_progress_bar.sliderMoved.connect(self.player.setPosition) # Jump to clicked time
-
-        
-        nowplaying_layout.addWidget(self.nowplaying_track_label)
-        nowplaying_layout.addWidget(self.nowplaying_artist_label)
-        nowplaying_layout.addWidget(self.nowplaying_progress_bar)
         
         # Controls
         control_layout = QHBoxLayout()
@@ -110,12 +118,18 @@ class Client(QMainWindow):
         control_layout.addWidget(self.play_next_button)
         control_layout.setAlignment(Qt.AlignmentFlag.AlignRight)
 
+        # --- Layouts ---
+
+        top_bar_top_layout = QHBoxLayout()
+        top_bar_top_layout.addWidget(self.nowplaying_album_art)
+        top_bar_top_layout.addLayout(nowplaying_track_metadata_layout)
+        top_bar_top_layout.addStretch()
+        top_bar_top_layout.addLayout(control_layout)
+
         # Top bar
-        top_bar_layout = QHBoxLayout()
-        top_bar_layout.addWidget(self.nowplaying_album_art)
-        top_bar_layout.addLayout(nowplaying_layout)
-        top_bar_layout.addStretch()
-        top_bar_layout.addLayout(control_layout)
+        top_bar_layout = QVBoxLayout()
+        top_bar_layout.addLayout(top_bar_top_layout)
+        top_bar_layout.addWidget(self.nowplaying_progress_bar)
         
         # Main layout
         layout = QVBoxLayout()
@@ -253,6 +267,7 @@ class Client(QMainWindow):
         Util.print(f"Now playing track: {self.currentTrack.title}")
         self.nowplaying_track_label.setText(Util.fmt(self.currentTrack.title,50))
         self.nowplaying_artist_label.setText(Util.fmt(self.currentTrack.artist,50))
+        self.nowplaying_album_label.setText(Util.fmt(self.currentTrack.album,50))
         self.nowplaying_album_art.setPixmap(QPixmap(self.currentTrack.albumart).scaled(75,75,Qt.KeepAspectRatio,Qt.TransformationMode.SmoothTransformation))
 
 
