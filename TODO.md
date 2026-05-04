@@ -1,5 +1,7 @@
 # TODO
 
+## Short term
+
 - [x] MPV Support
 - [x] Favoriting
 - [x] Full Search Functionality
@@ -9,9 +11,12 @@
 - [x] Add window icon and menubar to client
 - [x] Version numbers
 - [x] Add to queue by ID (use search with id:)
+- [ ] Favorite by context menu and while playing
+- [ ] Progress/Skip to time while playing
+
+## Long term
 - [ ] Time to completion for all DB methods
 - [ ] Find faster build method
 - [ ] Rename files while importing
 - [ ] Play albums in order
 - [ ] Playlists
-- [ ] Favoriting in search
