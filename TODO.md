@@ -11,6 +11,7 @@
 - [x] Add window icon and menubar to client
 - [x] Version numbers
 - [x] Add to queue by ID (use search with id:)
+- [x] Tabbed view
 - [ ] Favorite by context menu and while playing
 - [ ] Progress/Skip to time while playing
 
