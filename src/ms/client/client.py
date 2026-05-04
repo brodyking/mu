@@ -105,12 +105,15 @@ class Client(QMainWindow):
         control_layout = QHBoxLayout()
         
         self.toggle_playback_button = QPushButton("▶")
+        self.toggle_playback_button.setFixedSize(40,40)
         self.toggle_playback_button.clicked.connect(lambda: self.toggle_playback())
 
         self.play_next_button = QPushButton("▶▶")
+        self.play_next_button.setFixedSize(40,40)
         self.play_next_button.clicked.connect(lambda: self.play_next_in_queue())
 
         self.play_previous_button = QPushButton("◀◀")
+        self.play_previous_button.setFixedSize(40,40)
         self.play_previous_button.clicked.connect(lambda: self.play_previous_in_queue())
 
         control_layout.addWidget(self.play_previous_button)
