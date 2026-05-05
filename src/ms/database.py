@@ -37,10 +37,13 @@ class Database:
             	"id"	INTEGER NOT NULL UNIQUE,
             	"favorite" INT DEFAULT 0,
             	"title"	TEXT,
-            	"tracknumber"	INTEGER,
             	"artist"	TEXT,
-            	"albumartist"	TEXT,
             	"album"	TEXT,
+            	"plays" INT DEFAULT 0,
+            	"time" TEXT,
+            	"dateadded" TEXT,
+            	"tracknumber"	INTEGER,
+            	"albumartist"	TEXT,
             	"discnumber"	INTEGER,
             	"genre"	TEXT,
             	"date"	TEXT,
@@ -89,6 +92,8 @@ class Database:
                     title       = :title,
                     artist      = :artist,
                     album       = :album,
+                    time        = :time,
+                    dateadded   = :dateadded,
                     albumartist = :albumartist,
                     tracknumber = :tracknumber,
                     discnumber  = :discnumber,
@@ -177,10 +182,21 @@ class Database:
     
         prefixes = {
             "id:": "id",
+            "favorite:": "favorite",
             "title:": "title",
             "artist:": "artist",
+            "album:": "album",
+            "plays:": "plays",
+            "time:": "time",
+            "dateadded:": "dateadded",
+            "tracknumber:": "tracknumber",
             "albumartist:": "albumartist",
-            "album:": "album"
+            "discnumber:": "discnumber",
+            "genre:": "genre",
+            "date:": "date",
+            "filepath:": "filepath",
+            "filename:": "filename",
+            "albumart:": "albumart"
         }
 
         # Finds the target column if user is using a prefix.

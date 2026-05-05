@@ -208,27 +208,30 @@ class Client(QMainWindow):
         # Clear existing content first
         table.setSortingEnabled(False)
         table.setRowCount(len(tracks))
-        table.setColumnCount(5)
+        table.setColumnCount(15)
 
 
         # Repopulate using the existing logic from gen_tracks_view
         for row_index, track in enumerate(tracks):
             # Column 0: Title
-            title_item = QTableWidgetItem(f"{'❤ ' if track.favorite else ''}{track.title}")
-            
-            table.setItem(row_index, 0, title_item)
-            
-            # Column 1: Artist
-            table.setItem(row_index, 1, QTableWidgetItem(track.artist))
-            
-            # Column 2: Album
-            table.setItem(row_index, 2, QTableWidgetItem(track.album))
-            
-            # Column 3: File path
-            table.setItem(row_index, 3, QTableWidgetItem(track.filepath))
+            fav_icon = QTableWidgetItem(f"{'❤ ' if track.favorite else ''}")
 
-            # Column 4: Id
-            table.setItem(row_index, 4, QTableWidgetItem(str(track.id)))
+            table.setItem(row_index, 0, QTableWidgetItem(str(track.id)))
+            table.setItem(row_index, 1, fav_icon)
+            table.setItem(row_index, 2, QTableWidgetItem(track.title))
+            table.setItem(row_index, 3, QTableWidgetItem(track.artist))
+            table.setItem(row_index, 4, QTableWidgetItem(track.album))
+            table.setItem(row_index, 5, QTableWidgetItem(track.plays))
+            table.setItem(row_index, 6, QTableWidgetItem(track.time))
+            table.setItem(row_index, 7, QTableWidgetItem(track.dateadded))
+            table.setItem(row_index, 8, QTableWidgetItem(track.tracknumber))
+            table.setItem(row_index, 9, QTableWidgetItem(track.albumartist))
+            table.setItem(row_index, 10, QTableWidgetItem(track.discnumber))
+            table.setItem(row_index, 11, QTableWidgetItem(track.genre))
+            table.setItem(row_index, 12, QTableWidgetItem(track.date))
+            table.setItem(row_index, 13, QTableWidgetItem(track.filepath))
+            table.setItem(row_index, 14, QTableWidgetItem(track.filename))
+            table.setItem(row_index, 15, QTableWidgetItem(track.albumart))
 
         table.setSortingEnabled(True)
 
@@ -243,9 +246,9 @@ class Client(QMainWindow):
 
     def gen_tracks_table(self,sorting=True) -> QTableWidget:
         # Table
-        table = QTableWidget(len(self.tracks),5) 
+        table = QTableWidget(len(self.tracks),16) 
                     
-        table.setHorizontalHeaderLabels(["Title", "Artist", "Album","File path","ID"])
+        table.setHorizontalHeaderLabels(["Id", "Favorite", "Title","Artist","Album","Plays","Time","Date Added","Track Number", "Album Artist", "Disc Number", "Genre", "Date", "File Path", "File Name", "Album Art"])
         table.verticalHeader().hide()
 
         table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers) 
@@ -256,11 +259,22 @@ class Client(QMainWindow):
 
         if sorting: table.setSortingEnabled(True)
         table.sortByColumn(1,Qt.SortOrder.AscendingOrder)
-        table.setColumnWidth(0,200)
-        table.setColumnWidth(1,150)
-        table.setColumnWidth(2,150)
-        table.setColumnWidth(3,150)
-        table.setColumnWidth(4,60)
+        table.setColumnWidth(0,60) # Id
+        table.setColumnWidth(1,30) # Favorite
+        table.setColumnWidth(2,200) # Title
+        table.setColumnWidth(3,150) # Artist
+        table.setColumnWidth(4,150) # Album
+        table.setColumnWidth(5,60) # Plays
+        table.setColumnWidth(6,100) # Time
+        table.setColumnWidth(7,100) # Date Added
+        table.setColumnWidth(8,60) # Track Number
+        table.setColumnWidth(9,150) # Album Artist
+        table.setColumnWidth(10,60) # Disc Number
+        table.setColumnWidth(11,100) # Genre
+        table.setColumnWidth(12,100) # Date
+        table.setColumnWidth(13,150) # File Path
+        table.setColumnWidth(14,100) # File Name
+        table.setColumnWidth(15,150) # Album Art
 
         return table
 
@@ -268,11 +282,10 @@ class Client(QMainWindow):
     def cell_clicked(self,table):
         current_row = table.currentRow()
 
-        filepath_col = table.item(current_row,3)
-        id_col = table.item(current_row,4)
+        filepath_col = table.item(current_row,13)
+        id_col = table.item(current_row,0)
 
-        self.queue = self.get_column_data(table,4)
-        print(self.queue)
+        self.queue = self.get_column_data(table,0)
         self.queue_index = current_row
         
         if filepath_col is not None and id_col is not None:
@@ -315,7 +328,7 @@ class Client(QMainWindow):
         Util.print("Playback paused")
 
     def update_nowplaying(self):
-        Util.print(f"Now playing track: {self.currentTrack.title}")
+        print(self.currentTrack)
         self.nowplaying_track_label.setText(Util.fmt(self.currentTrack.title,50))
         self.nowplaying_artist_label.setText(Util.fmt(self.currentTrack.artist,50))
         self.nowplaying_album_label.setText(Util.fmt(self.currentTrack.album,50))
@@ -335,6 +348,7 @@ class Client(QMainWindow):
         if self.queue_index + 1 < len(self.queue):
             self.queue_index += 1
             next_track_id = self.queue[self.queue_index]
+            print(next_track_id)
             self.currentTrack = self.db.search(f"id:{next_track_id}",console_out=False)[0]
             self.load_track_source(self.currentTrack.filepath)
             self.start_playback()
