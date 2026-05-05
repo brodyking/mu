@@ -23,12 +23,16 @@ class Client(QMainWindow):
         self.initUI()
 
     def initApplication(self):
-
+        """Creates client variables and connection to Database."""
         # --- Window ---
         self.setWindowTitle("ms - based music server")
         self.resize(600, 400)
         self.setMinimumWidth(600) 
 
+        # --- Database Setup ---
+        self.db = Database()
+        self.tracks = self.db.list_library(console_out=False)
+        
         # --- Audio Setup ---
         self.audio_output = QAudioOutput()
         self.audio_output.setVolume(0.7)
@@ -48,12 +52,8 @@ class Client(QMainWindow):
         # --- Initialize control state ---
         self.is_playing = False
 
-        # --- Database Setup ---
-        self.db = Database()
-        self.tracks = self.db.list_library(console_out=False)
-        
-
     def initUI(self):
+        """Creates all UI elements """
         # --- Queue table ---
         queue_layout =QVBoxLayout()
 
@@ -179,8 +179,8 @@ class Client(QMainWindow):
                     
     def filter_table(self, query: str):
         """
-        Filters the table based on the input query.
-        The table is cleared and repopulated with matching tracks.
+            Filters the table based on the input query.
+            The table is cleared and repopulated with matching tracks.
         """
         query = query.lower().strip()
         
@@ -198,6 +198,7 @@ class Client(QMainWindow):
         Util.print(f"Search results found: {len(self.tracks)} tracks.")
 
     def populate_table_queue(self):
+        """Populates the queue table."""
         queue_tracks = []
         for id in self.queue[self.queue_index:]:
             queue_tracks.append(self.db.search(f"id:{id}",console_out=False)[0])
@@ -235,7 +236,8 @@ class Client(QMainWindow):
 
         table.setSortingEnabled(True)
 
-    def get_column_data(self,table_widget, col_index):
+    def get_column_data(self,table_widget, col_index: int) -> list:
+        """Returns all values in a specificed coloum in order"""
         column_list = []
         # rowCount() reflects the current state of the UI
         for row in range(table_widget.rowCount()):
@@ -245,6 +247,7 @@ class Client(QMainWindow):
         return column_list
 
     def gen_tracks_table(self,sorting=True) -> QTableWidget:
+        """Generates the tracks table"""
         # Table
         table = QTableWidget(len(self.tracks),16) 
                     
@@ -302,12 +305,14 @@ class Client(QMainWindow):
         Util.print(f"Loaded {filepath}")
 
     def toggle_playback(self):
+        """Toggles playback"""
         if self.is_playing:
             self.stop_playback();
         else:
             self.start_playback();
         
     def start_playback(self):
+        """Starts playback"""
         if self.player.duration() == 0 and not self.player.error():
             # if nothing is loaded, prompt the user or do nothing
             Util.print("No track loaded. please select a song first.",ok=False)
@@ -322,21 +327,22 @@ class Client(QMainWindow):
             Util.print("Playback started")
 
     def stop_playback(self):
+        """Stops playback"""
         self.player.pause()
         self.is_playing = False
         self.toggle_playback_button.setText("▶")
         Util.print("Playback paused")
 
     def update_nowplaying(self):
+        """Update now playing"""
         print(self.currentTrack)
         self.nowplaying_track_label.setText(Util.fmt(self.currentTrack.title,50))
         self.nowplaying_artist_label.setText(Util.fmt(self.currentTrack.artist,50))
         self.nowplaying_album_label.setText(Util.fmt(self.currentTrack.album,50))
         self.nowplaying_album_art.setPixmap(QPixmap(self.currentTrack.albumart).scaled(75,75,Qt.KeepAspectRatio,Qt.TransformationMode.SmoothTransformation))
 
-
-
     def player_status_change(self, status):
+        """Called when the players staus changes"""
         if status == QMediaPlayer.MediaStatus.LoadedMedia:
             self.update_nowplaying()
             self.populate_table_queue()
@@ -345,6 +351,7 @@ class Client(QMainWindow):
             self.play_next_in_queue()
 
     def play_next_in_queue(self):
+        """Plays the next track in queue"""
         if self.queue_index + 1 < len(self.queue):
             self.queue_index += 1
             next_track_id = self.queue[self.queue_index]
@@ -356,6 +363,7 @@ class Client(QMainWindow):
             Util.print("End of queue reached.")
 
     def play_previous_in_queue(self):
+        """Plays the previous in queue"""
         if self.queue_index - 1 >= 0:
             self.queue_index -= 1
             previous_track_id = self.queue[self.queue_index]
@@ -366,6 +374,7 @@ class Client(QMainWindow):
             Util.print("End of queue reached.")
 
     def show_context_menu(self, position):
+        """Shows the context menu"""
         from PySide6.QtWidgets import QMenu
         menu = QMenu()
         add_action = menu.addAction("Add to Queue")
