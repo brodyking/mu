@@ -17,7 +17,6 @@ import ms.client.resources_rc
 class Client(QMainWindow):
     def __init__(self):
         super().__init__()
-
         Util.print("Starting client")
         self.initApplication()
         self.initUI()
@@ -31,18 +30,18 @@ class Client(QMainWindow):
 
         # --- Database Setup ---
         self.db = Database()
-        self.tracks = self.db.list_library(console_out=False)
+        self.tracks = self.db.list_library(console_out=False) # Holds all tracks. Use self.get_track(id) to access.
         
         # --- Audio Setup ---
         self.audio_output = QAudioOutput()
         self.audio_output.setVolume(0.7)
 
         # --- Set up the queue ---
-        self.queue = []
+        self.queue = [] # Holds the ID's of all tracks in the current queue
         self.queue_index = -1
 
         # --- Set up current track ---
-        self.currentTrack = None
+        self.current_track = None
 
         # --- Set up the player ---
         self.player = QMediaPlayer()
@@ -74,7 +73,7 @@ class Client(QMainWindow):
         self.tracks_table = self.gen_tracks_table()
         self.tracks_table.cellDoubleClicked.connect(lambda: self.cell_clicked(self.tracks_table))
 
-        self.populate_table(self.tracks_table,self.tracks)
+        self.populate_tracks_table(self.tracks_table,self.tracks)
 
         tracks_layout.addWidget(self.tracks_search_input)
         tracks_layout.addWidget(self.tracks_table)
@@ -176,6 +175,9 @@ class Client(QMainWindow):
         container = QWidget()
         container.setLayout(layout)
         self.setCentralWidget(container)
+
+    def get_track(self,id:int) -> Track:
+        return self.tracks[int(id)]
                     
     def filter_table(self, query: str):
         """
@@ -192,20 +194,13 @@ class Client(QMainWindow):
         
         # Repopulate the table with the filtered results
         self.tracks_table.setRowCount(len(self.tracks))
-        self.tracks_table.setColumnCount(5)
-        self.populate_table(self.tracks_table,self.tracks)
+        self.tracks_table.setColumnCount(15)
+        self.populate_tracks_table(self.tracks_table,self.tracks)
         
         Util.print(f"Search results found: {len(self.tracks)} tracks.")
 
-    def populate_table_queue(self):
-        """Populates the queue table."""
-        queue_tracks = []
-        for id in self.queue[self.queue_index:]:
-            queue_tracks.append(self.db.search(f"id:{id}",console_out=False)[0])
-        self.populate_table(self.queue_table,queue_tracks)
-        
-    def populate_table(self,table, tracks: list):
-        """Helper function to populate the table with a given list of tracks."""
+    def populate_tracks_table(self,table, tracks: list, sorting:bool=True):
+        """Helper function to populate the table with a given list of track ids."""
         # Clear existing content first
         table.setSortingEnabled(False)
         table.setRowCount(len(tracks))
@@ -213,7 +208,8 @@ class Client(QMainWindow):
 
 
         # Repopulate using the existing logic from gen_tracks_view
-        for row_index, track in enumerate(tracks):
+        for row_index, id in enumerate(tracks):
+            track = self.get_track(id)
             # Column 0: Title
             fav_icon = QTableWidgetItem(f"{'❤ ' if track.favorite else ''}")
 
@@ -234,7 +230,7 @@ class Client(QMainWindow):
             table.setItem(row_index, 14, QTableWidgetItem(track.filename))
             table.setItem(row_index, 15, QTableWidgetItem(track.albumart))
 
-        table.setSortingEnabled(True)
+        table.setSortingEnabled(sorting)
 
     def get_column_data(self,table_widget, col_index: int) -> list:
         """Returns all values in a specificed coloum in order"""
@@ -292,17 +288,16 @@ class Client(QMainWindow):
         self.queue_index = current_row
         
         if filepath_col is not None and id_col is not None:
-            filepath = filepath_col.text()
             id = id_col.text()
-            self.load_track_source(filepath)
-            self.currentTrack = self.db.search(f"id:{id}",console_out=False)[0]
+            self.load_track_source(id)
             # Play when double-clicked
             self.start_playback()
 
-    def load_track_source(self, filepath: str):
+    def load_track_source(self, id: int):
         """Loads the file path into the player source."""
-        self.player.setSource(QUrl.fromLocalFile(filepath))
-        Util.print(f"Loaded {filepath}")
+        self.player.setSource(QUrl.fromLocalFile(self.get_track(id).filepath))
+        self.current_track = self.get_track(id)
+        Util.print(f"Loaded {self.get_track(id).title}")
 
     def toggle_playback(self):
         """Toggles playback"""
@@ -322,8 +317,6 @@ class Client(QMainWindow):
             self.player.play()
             self.is_playing = True
             self.toggle_playback_button.setText("⏸")
-
-
             Util.print("Playback started")
 
     def stop_playback(self):
@@ -335,17 +328,16 @@ class Client(QMainWindow):
 
     def update_nowplaying(self):
         """Update now playing"""
-        print(self.currentTrack)
-        self.nowplaying_track_label.setText(Util.fmt(self.currentTrack.title,50))
-        self.nowplaying_artist_label.setText(Util.fmt(self.currentTrack.artist,50))
-        self.nowplaying_album_label.setText(Util.fmt(self.currentTrack.album,50))
-        self.nowplaying_album_art.setPixmap(QPixmap(self.currentTrack.albumart).scaled(75,75,Qt.KeepAspectRatio,Qt.TransformationMode.SmoothTransformation))
+        self.nowplaying_track_label.setText(Util.fmt(self.current_track.title,50))
+        self.nowplaying_artist_label.setText(Util.fmt(self.current_track.artist,50))
+        self.nowplaying_album_label.setText(Util.fmt(self.current_track.album,50))
+        self.nowplaying_album_art.setPixmap(QPixmap(self.current_track.albumart).scaled(75,75,Qt.KeepAspectRatio,Qt.TransformationMode.SmoothTransformation))
 
     def player_status_change(self, status):
         """Called when the players staus changes"""
         if status == QMediaPlayer.MediaStatus.LoadedMedia:
             self.update_nowplaying()
-            self.populate_table_queue()
+            self.populate_tracks_table(self.queue_table,self.queue[self.queue_index:],sorting=False)
 
         if status == QMediaPlayer.MediaStatus.EndOfMedia:
             self.play_next_in_queue()
@@ -355,9 +347,7 @@ class Client(QMainWindow):
         if self.queue_index + 1 < len(self.queue):
             self.queue_index += 1
             next_track_id = self.queue[self.queue_index]
-            print(next_track_id)
-            self.currentTrack = self.db.search(f"id:{next_track_id}",console_out=False)[0]
-            self.load_track_source(self.currentTrack.filepath)
+            self.load_track_source(next_track_id)
             self.start_playback()
         else:
             Util.print("End of queue reached.")
@@ -367,8 +357,7 @@ class Client(QMainWindow):
         if self.queue_index - 1 >= 0:
             self.queue_index -= 1
             previous_track_id = self.queue[self.queue_index]
-            self.currentTrack = self.db.search(f"id:{previous_track_id}",console_out=False)[0]
-            self.load_track_source(self.currentTrack.filepath)
+            self.load_track_source(previous_track_id)
             self.start_playback()
         else:
             Util.print("End of queue reached.")

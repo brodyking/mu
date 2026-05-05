@@ -267,10 +267,10 @@ class Database:
             print(json_export)
             return json_export
         else:
-            track_export = []
+            track_export = {}
             for i, result in enumerate(results):
                 track = Track(result)
-                track_export.append(track)
+                track_export[track.id] = track
                 if console_out: Util.print("",track=track,count=[i+1,len(results)])
             return track_export
 
