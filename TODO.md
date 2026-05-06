@@ -18,6 +18,7 @@
 - [ ] Progress/Skip to time while playing
 
 ## Long term
+- [ ] Playcounts (prob added from search + play cmd)
 - [ ] Time to completion for all DB methods
 - [ ] Find faster build method
 - [ ] Rename files while importing
