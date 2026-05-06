@@ -178,7 +178,7 @@ class Client(QMainWindow):
 
     def get_track(self,id:int) -> Track:
         return self.tracks[int(id)]
-                    
+
     def filter_table(self, query: str):
         """
             Filters the table based on the input query.
@@ -205,12 +205,8 @@ class Client(QMainWindow):
         table.setSortingEnabled(False)
         table.setRowCount(len(tracks))
         table.setColumnCount(15)
-
-
-        # Repopulate using the existing logic from gen_tracks_view
         for row_index, id in enumerate(tracks):
             track = self.get_track(id)
-            # Column 0: Title
             fav_icon = QTableWidgetItem(f"{'❤ ' if track.favorite else ''}")
 
             table.setItem(row_index, 0, QTableWidgetItem(str(track.id)))
@@ -233,7 +229,7 @@ class Client(QMainWindow):
         table.setSortingEnabled(sorting)
 
     def get_column_data(self,table_widget, col_index: int) -> list:
-        """Returns all values in a specificed coloum in order"""
+        """Returns all values in a specificed column in order"""
         column_list = []
         # rowCount() reflects the current state of the UI
         for row in range(table_widget.rowCount()):
@@ -295,9 +291,24 @@ class Client(QMainWindow):
 
     def load_track_source(self, id: int):
         """Loads the file path into the player source."""
-        self.player.setSource(QUrl.fromLocalFile(self.get_track(id).filepath))
-        self.current_track = self.get_track(id)
-        Util.print(f"Loaded {self.get_track(id).title}")
+        track = self.get_track(id)
+        self.player.setSource(QUrl.fromLocalFile(track.filepath))
+        self.current_track = track
+        Util.print(f"Loaded {track.title}")
+
+    def update_queue_table(self):
+        self.populate_tracks_table(self.queue_table,self.queue[self.queue_index:],sorting=False)
+    
+    def add_to_queue(self,id,play_next:bool=True):
+        """Adds a track to the queue by ID."""
+        current_row = self.tracks_table.currentRow()
+        id = self.tracks_table.item(current_row,0).text()
+        if play_next:
+            self.queue.insert(self.queue_index+1,id)
+        else:
+            self.queue.append(id)
+        self.update_queue_table()
+        Util.print(f"{self.get_track(id)} has been queued next.")
 
     def toggle_playback(self):
         """Toggles playback"""
@@ -337,8 +348,7 @@ class Client(QMainWindow):
         """Called when the players staus changes"""
         if status == QMediaPlayer.MediaStatus.LoadedMedia:
             self.update_nowplaying()
-            self.populate_tracks_table(self.queue_table,self.queue[self.queue_index:],sorting=False)
-
+            self.update_queue_table()
         if status == QMediaPlayer.MediaStatus.EndOfMedia:
             self.play_next_in_queue()
 
@@ -366,13 +376,17 @@ class Client(QMainWindow):
         """Shows the context menu"""
         from PySide6.QtWidgets import QMenu
         menu = QMenu()
-        add_action = menu.addAction("Add to Queue")
+        queue_next = menu.addAction("Queue next")
+        queue_last = menu.addAction("Queue last")
+
+        current_row = self.tracks_table.currentRow()
+        id = self.tracks_table.item(current_row,0).text()
     
         action = menu.exec(self.tracks_table.viewport().mapToGlobal(position))
-        if action == add_action:
-            current_row = self.tracks_table.currentRow()
-            id = self.tracks_table.item(current_row,4).text()
-            self.queue.insert(self.queue_index+1,id)
+        if action == queue_next:
+            self.add_to_queue(id)
+        elif action == queue_last:
+            self.add_to_queue(id,play_next=False)
 
 def start_client():
     app = QApplication()
