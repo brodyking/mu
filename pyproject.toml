@@ -15,5 +15,5 @@ requires-python = ">=3.12.13"
 description = "Based Music Server"
 dependencies = [
     "mutagen",
-    "pyside6"
+    "textual"
 ]

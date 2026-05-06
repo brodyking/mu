@@ -3,7 +3,7 @@ from ms.database import Database
 from pathlib import Path
 import argparse
 from ms.util import Util
-from ms.client.client import Client, start_client
+from ms.tui.tui import start_tui
 
 VERSION = "0.0.2"
 
@@ -18,7 +18,7 @@ def main():
     subparsers.add_parser("scan", help="imports all files in Source folder", description="Imports all the files in the Source folder.")
 
     # Client
-    subparsers.add_parser("client", help="start the gui client", description="Start the GUI client.")
+    subparsers.add_parser("tui", help="start the tui client", description="Start the TUI client.")
 
     # Version
     subparsers.add_parser("version", help="get current version", description="Get the current verson.")
@@ -54,7 +54,7 @@ def main():
 
     actions = {
         "scan": lambda: db.scan_source_folder(),
-        "client": lambda: start_client(),
+        "tui": lambda: start_tui(),
         "version": lambda: Util.print(f"Current version: {VERSION}"),
         "reset": lambda: db.reset_db(
             skip_confirmation=args.skipconfirmation
