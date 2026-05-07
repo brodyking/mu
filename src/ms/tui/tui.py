@@ -6,17 +6,34 @@ from ms.database import Database
 from ms.util import Util
 
 # A separate class to wrap the table and other widgets (like search)
-class DataContainer(Static):
+class VimDataTable(DataTable):
+    BINDINGS = [
+        ("j", "cursor_down", "Down"),
+        ("k", "cursor_up", "Up"),
+        ("h", "cursor_left", "Left"),
+        ("l", "cursor_right", "Right"),
+        ("g", "scroll_home", "Top"),
+        ("G", "scroll_end", "Bottom")
+    ]
+
+class TracksDataTable(Static):
+    
     def __init__(self, tracks: list):
         super().__init__()
         self.tracks = tracks
 
     def compose(self) -> ComposeResult:
-        # yield Input(placeholder="Search rows...")
-        yield DataTable(cursor_type="row", id="main-table")
+        yield Input(placeholder="Search rows...", id="search-bar", classes="hidden")
+        yield VimDataTable(cursor_type="row", id="main-table")
+
+    def on_data_table_row_selected(self,event: DataTable.RowSelected) -> None:
+        row_key = event.row_key
+        table = self.query_one(VimDataTable)
+        row_data = table.get_row(row_key)
+        self.app.notify(f"Track clicked: {row_data[0]}, {row_data[2]}")
 
     def on_mount(self) -> None:
-        table = self.query_one(DataTable)
+        table = self.query_one(VimDataTable)
         table.add_columns(
             "Id",
             "",
@@ -66,6 +83,8 @@ class DataContainer(Static):
             )
         table.add_rows(rows)
 
+        self.query_one("#main-table").focus()
+
     # def on_input_changed(self, event: Input.Changed) -> None:
         # """Example: Simple search filtering (logic would go here)"""
         # search_value = event.value.lower()
@@ -74,10 +93,15 @@ class DataContainer(Static):
 
 
 class Tui(App):
+
+    CSS = """
+        .hidden { display: none; }
+    """
+
     BINDINGS = [
         ("d", "toggle_dark", "Toggle dark mode"),
-        ("s", "sort_table", "Sort by Value"),
         ("q", "quit", "Quit"),
+        ("/", "focus_search","Search")
     ]
 
     def __init__(self):
@@ -87,8 +111,7 @@ class Tui(App):
         self.theme = "textual-dark"
 
     def compose(self) -> ComposeResult:
-        yield Header()
-        yield DataContainer(self.tracks)
+        yield TracksDataTable(self.tracks)
         yield Footer()
 
     def action_toggle_dark(self) -> None:
@@ -96,11 +119,15 @@ class Tui(App):
             "textual-dark" if self.theme == "textual-light" else "textual-light"
         )
 
-    def action_sort_table(self) -> None:
-        """Sorts the table by the 4th column (Value)"""
-        table = self.query_one(DataTable)
-        # Textual handles the re-sorting internally without a full app redraw
-        table.sort("Value", reverse=True)
+    def action_focus_search(self) -> None:
+        search_bar = self.query_one("#search-bar")
+        search_bar.remove_class("hidden")
+        search_bar.focus()
+
+    def on_input_submitted(self,event:Input.Submitted) -> None:
+        search_bar = self.query_one("#search-bar")
+        search_bar.add_class("hidden")
+        self.query_one("#main-table").focus()
 
 
 def start_tui():
