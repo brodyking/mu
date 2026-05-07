@@ -21,6 +21,7 @@ class TracksDataTable(Static):
     def __init__(self, tracks: list):
         super().__init__()
         self.tracks = tracks
+        self.full_rows = []
 
     def compose(self) -> ComposeResult:
         yield Input(placeholder="Search rows...", id="search-bar", classes="hidden")
@@ -31,6 +32,22 @@ class TracksDataTable(Static):
         table = self.query_one(VimDataTable)
         row_data = table.get_row(row_key)
         self.app.notify(f"Track clicked: {row_data[0]}, {row_data[2]}")
+
+    def filter_table(self, search_term: str) -> None:
+        table = self.query_one(VimDataTable)
+        search_term = search_term.lower()
+
+        if not search_term:
+            filtered_rows = self.full_rows
+        else:
+            # Filter rows based on Title (index 2) or Artist (index 3)
+            filtered_rows = [
+                row for row in self.full_rows 
+                if search_term in str(row[2]).lower() or search_term in str(row[3]).lower()
+            ]
+
+        table.clear()
+        table.add_rows(filtered_rows)
 
     def on_mount(self) -> None:
         table = self.query_one(VimDataTable)
@@ -81,9 +98,9 @@ class TracksDataTable(Static):
                     track.albumart
                 )
             )
+        self.full_rows = rows
         table.add_rows(rows)
-
-        self.query_one("#main-table").focus()
+        table.focus()
 
     # def on_input_changed(self, event: Input.Changed) -> None:
         # """Example: Simple search filtering (logic would go here)"""
@@ -123,6 +140,10 @@ class Tui(App):
         search_bar = self.query_one("#search-bar")
         search_bar.remove_class("hidden")
         search_bar.focus()
+
+    def on_input_changed(self,event: Input.Changed) -> None:
+        container = self.query_one(TracksDataTable)
+        container.filter_table(event.value)
 
     def on_input_submitted(self,event:Input.Submitted) -> None:
         search_bar = self.query_one("#search-bar")
