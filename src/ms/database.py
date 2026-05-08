@@ -13,9 +13,9 @@ class Database:
         """
 
         # Sets the file paths for db_path, source_path, and albumart_path
-        self.db_path = Path.home() / "Music" / "ms" / "ms.db" if "db_path" not in kwargs else kwargs.get("db_path") 
-        self.source_path = Path.home() / "Music" / "ms" / "source" if "source_folder_path" not in kwargs else kwargs.get("source_path") 
-        self.albumart_path = Path.home() / "Music" / "ms" / "albumart" if "source_folder_path" not in kwargs else kwargs.get("albumart_path") 
+        self.db_path = Path(Path.home() / "Music" / "ms" / "ms.db") if "db_path" not in kwargs else Path(str(kwargs.get("db_path"))) 
+        self.source_path = Path(Path.home() / "Music" / "ms" / "source") if "source_folder_path" not in kwargs else Path(str(kwargs.get("source_path")))
+        self.albumart_path = Path(Path.home() / "Music" / "ms" / "albumart") if "source_folder_path" not in kwargs else Path(str(kwargs.get("albumart_path")))
 
         # Validates that the locations exist and have the necessary files.
         self.validate_library()
@@ -123,6 +123,7 @@ class Database:
             try:
                 metadata = File.read_metadata(filepath)
                 self.upsert_track(connection,metadata)
+                print(metadata)
                 Util.print(f"{filepath.name}",count=[i+1,len(mp3s)])
             except Exception as e:
                 Util.print(f"{filepath.name}\n{e}",count=[i+1,len(mp3s)],ok=False)
