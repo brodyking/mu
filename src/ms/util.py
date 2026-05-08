@@ -1,4 +1,5 @@
 import subprocess
+from ms.track import Track
 
 class Color:
 	# Standard Colors (Lower Intensity)
@@ -87,10 +88,13 @@ class Util:
 
 
 	@staticmethod
-	def mpv(track_paths: list) -> None:
+	def mpv(tracks: list) -> None:
 		"""
 		Plays a list of files in mpv
 		"""
+		track_paths = []
+		for track in tracks:
+			track_paths.append(track.filepath)
 		Util.print(f"Starting mpv playback for {track_paths}")
 		subprocess.run(["mpv"] + track_paths)
 

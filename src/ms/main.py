@@ -29,12 +29,11 @@ def main():
     
     # List
     list_parser = subparsers.add_parser("list", help="list all files in the library",description="List all your files, or just your favorites in your library.")
-    list_parser.add_argument("-j","--json",action='store_true',help="output in json")
     list_parser.add_argument("-f","--favorited",action='store_true',help="list only your favorites")
 
     # Favorite
     favorite_parser = subparsers.add_parser("favorite", help="favorite or unfavorite a track",description="Favorite or unfavorite a track.")
-    favorite_parser.add_argument("trackid",help="the name of the track you wish to favorite (use id: to select by id)")
+    favorite_parser.add_argument("term",help="the name of the track you wish to favorite (use id: to select by id)")
 
     # Importing
     import_parser = subparsers.add_parser("import", help="import individual files",description="Import file(s) to ms. Directories or individual files can be selected.")
@@ -43,8 +42,6 @@ def main():
     # Searching
     search_parser = subparsers.add_parser("search", help="search the library",description="Search your library. You can search with prefixes aswell. By typing id:, album:, title:, artist:, or albumartist: in front, you can narrow your search.")
     search_parser.add_argument("term",help="the name of the item(s) you are searching for. supports prefixes (id:,album:,etc.)")
-    search_parser.add_argument("-j","--json",action='store_true',help="output in json")
-    search_parser.add_argument("-p","--path",action='store_true',help="return the filepath(s)")
 
     # Playing
     play_parser = subparsers.add_parser("play", help="play track(s) with mpv",description="Open track(s) with mpv. Finds tracks the same way as search.")
@@ -60,21 +57,18 @@ def main():
             skip_confirmation=args.skipconfirmation
         ),
         "favorite": lambda: db.favorite_track(
-            args.trackid,
+            str(args.term),
         ),
         "list": lambda: db.list_library(
-            export_json=args.json,
             only_favorited=args.favorited,
         ),
         "import": lambda: db.import_media(
-            args.filepath,
+            str(args.filepath),
         ),
         "search": lambda: db.search(
-            args.term,
-            export_json=args.json,
-            export_path=args.path,
+            str(args.term),
         ),
-        "play": lambda: Util.mpv(db.search(args.term,export_path=True))
+        "play": lambda: Util.mpv(db.search(str(args.term)))
     }
 
     if args.action in actions:
