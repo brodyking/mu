@@ -110,6 +110,10 @@ class Database:
 
         connection.commit()
 
+    def upsert_track_once(self,metadata:dict) -> None:
+        connection = sqlite3.connect(str(self.db_path))
+        self.upsert_track(connection,metadata)
+
     def scan_folder(self,path) -> None:
         """
            Scans the path for music files.
@@ -175,7 +179,7 @@ class Database:
 
     def search(self, term: str,console_out:bool=True) -> list:
         """
-            Searches the database for tracks with prefix support.
+            Searches the database for tracks with prefix support. If no prefix is given, it will search by id.
             Returns a list of tracks.
         """
     
@@ -200,6 +204,9 @@ class Database:
 
         # Finds the target column if user is using a prefix.
         target_column = next((col for pref, col in prefixes.items() if term.startswith(pref)), None)
+        if target_column is None:
+            Util.print("The search query is missing a prefix. Please specify how you are searching by typing the prefix followed by a colon. Ex: title:,artist:",ok=False)
+            raise ValueError("Search query missing prefix.")
         with sqlite3.connect(str(self.db_path)) as connection:
             cursor = connection.cursor()
 
