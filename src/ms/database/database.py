@@ -2,7 +2,7 @@ import sqlite3
 from pathlib import Path
 from ms.database.file import File
 from ms.database.track import Track
-from ms.util import Util
+from ms.util import Interface
 import shutil
 
 class Database:
@@ -66,12 +66,12 @@ class Database:
            Deletes all tracks from database. Keeps files.
            skip_confirmation bypasses the prompt before deletion. 
         """
-        if skip_confirmation or Util.promptBool("Are you sure you want to erase the database file? This action cannot be undone."):
+        if skip_confirmation or Interface.promptBool("Are you sure you want to erase the database file? This action cannot be undone."):
             connection = sqlite3.connect(str(self.db_path))
             connection.execute("DELETE FROM tracks;")
             connection.execute("UPDATE sqlite_sequence SET seq = 0 WHERE name = 'tracks';")
             connection.commit();
-            Util.print('Database has been reset. Your files are still in ~/ms/source/. Type "ms scan" to rebuild.')
+            Interface.print('Database has been reset. Your files are still in ~/ms/source/. Type "ms scan" to rebuild.')
 
     def upsert_track(self,connection,metadata:dict) -> None:
         """
@@ -128,9 +128,9 @@ class Database:
                 metadata = File.read_metadata(filepath) # Gets dict of files metadata
                 self.upsert_track(connection,metadata) # Updates the track
                 print(metadata)
-                Util.print(f"{filepath.name}",count=[i+1,len(mp3s)])
+                Interface.print(f"{filepath.name}",count=[i+1,len(mp3s)])
             except Exception as e:
-                Util.print(f"{filepath.name}\n{e}",count=[i+1,len(mp3s)],ok=False)
+                Interface.print(f"{filepath.name}\n{e}",count=[i+1,len(mp3s)],ok=False)
 
         connection.commit()
 
@@ -171,9 +171,9 @@ class Database:
             try:
                 metadata = self.copy_file(filepath)
                 self.upsert_track(connection,metadata)
-                if console_out: Util.print(f"{filepath.name}",count=[i+1,len(mp3s)])
+                if console_out: Interface.print(f"{filepath.name}",count=[i+1,len(mp3s)])
             except Exception as e:
-                Util.print(f"{filepath.name}\n{e}",count=[i+1,len(mp3s)],ok=False)
+                Interface.print(f"{filepath.name}\n{e}",count=[i+1,len(mp3s)],ok=False)
 
         connection.commit()
 
@@ -191,7 +191,7 @@ class Database:
         # Finds the target column if user is using a prefix.
         target_column = term.split(":",1)[0] if term.split(":",1)[0] in prefixes else None
         if target_column is None:
-            Util.print("The search query is missing a prefix. Please specify how you are searching by typing the prefix followed by a colon. Ex: title:,artist:",ok=False)
+            Interface.print("The search query is missing a prefix. Please specify how you are searching by typing the prefix followed by a colon. Ex: title:,artist:",ok=False)
             raise ValueError("The search query is missing a prefix. Please specify how you are searching by typing the prefix followed by a colon. Ex: title:,artist:")
         with sqlite3.connect(str(self.db_path)) as connection:
             cursor = connection.cursor()
@@ -221,7 +221,7 @@ class Database:
             results = cursor.fetchall()
             export = []
             for i, result in enumerate(results):
-                if console_out: Util.print("", track=Track(result), count=[i + 1, len(results)])
+                if console_out: Interface.print("", track=Track(result), count=[i + 1, len(results)])
                 export.append(Track(result))
             return export
 
@@ -241,7 +241,7 @@ class Database:
         for i, result in enumerate(results):
             track = Track(result)
             track_export[track.id] = track
-            if console_out: Util.print("",track=track,count=[i+1,len(results)])
+            if console_out: Interface.print("",track=track,count=[i+1,len(results)])
         return track_export
 
 
@@ -264,6 +264,6 @@ class Database:
         for result in results:
             if result is not None:
                 track = Track(result)
-                if console_out: Util.print("", track=track)
+                if console_out: Interface.print("", track=track)
         return results
 

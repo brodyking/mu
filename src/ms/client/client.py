@@ -3,7 +3,6 @@ from textual.widgets import Footer, Header, DataTable, Input, Static
 from textual.containers import Vertical
 
 from ms.database.database import Database
-from ms.util import Util
 from ms.client.tracksdatatable import TracksDataTable
 
 
@@ -21,9 +20,9 @@ class Client(App):
 
     def __init__(self):
         super().__init__()
-        self.db = Database()
-        self.tracks = self.db.list_library(console_out=False)
-        self.theme = "catppuccin-mocha"
+        self.db:Database = Database()
+        self.tracks:dict = self.db.list_library(console_out=False)
+        self.theme:str = "catppuccin-mocha"
 
     def compose(self) -> ComposeResult:
         yield TracksDataTable(self.tracks)

@@ -5,7 +5,7 @@ from mutagen.id3 import ID3, APIC
 from mutagen import MutagenError
 from pathlib import Path
 import hashlib
-from ms.util import Format
+
 class File:
     
     @staticmethod

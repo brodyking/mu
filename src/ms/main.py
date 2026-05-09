@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 import argparse
-from ms.util import Util
+from ms.util import Interface, Mpv
 from ms.client.client import start_client
 from ms.database.database import Database
 VERSION = "0.0.2"
@@ -51,7 +51,7 @@ def main():
     actions = {
         "scan": lambda: db.scan_source_folder(),
         "client": lambda: start_client(),
-        "version": lambda: Util.print(f"Current version: {VERSION}"),
+        "version": lambda: Interface.print(f"Current version: {VERSION}"),
         "reset": lambda: db.reset_db(
             skip_confirmation=args.skipconfirmation
         ),
@@ -67,7 +67,7 @@ def main():
         "search": lambda: db.search(
             str(args.term),
         ),
-        "play": lambda: Util.mpv(db.search(str(args.term)))
+        "play": lambda: Mpv.play(db.search(str(args.term)))
     }
 
     if args.action in actions:

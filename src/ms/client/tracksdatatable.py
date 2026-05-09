@@ -1,6 +1,6 @@
 from textual.app import ComposeResult
 from textual.widgets import DataTable, Input, Static
-from ms.util import Util
+from ms.util import Interface
 
 # A separate class to wrap the table and other widgets (like search)
 class VimDataTable(DataTable):
@@ -15,7 +15,7 @@ class VimDataTable(DataTable):
 
 class TracksDataTable(Static):
     
-    def __init__(self, tracks: list):
+    def __init__(self, tracks: dict):
         super().__init__()
         self.tracks = tracks
         self.full_rows:list = []
@@ -79,17 +79,17 @@ class TracksDataTable(Static):
                 (
                     track.id,
                     favorite,
-                    Util.fmt(track.title,50),
-                    Util.fmt(track.artist,30),
-                    Util.fmt(track.album,50),
-                    Util.fmt(track.plays,5),
-                    Util.fmt(track.time,10),
-                    Util.fmt(track.dateadded,20),
-                    Util.fmt(track.tracknumber,10),
-                    Util.fmt(track.albumartist,30),
-                    Util.fmt(track.discnumber,10),
-                    Util.fmt(track.genre,20),
-                    Util.fmt(track.date,20),
+                    Interface.fmt(track.title,50),
+                    Interface.fmt(track.artist,30),
+                    Interface.fmt(track.album,50),
+                    Interface.fmt(track.plays,5),
+                    Interface.fmt(track.time,10),
+                    Interface.fmt(track.dateadded,20),
+                    Interface.fmt(track.tracknumber,10),
+                    Interface.fmt(track.albumartist,30),
+                    Interface.fmt(track.discnumber,10),
+                    Interface.fmt(track.genre,20),
+                    Interface.fmt(track.date,20),
                     track.filepath,
                     track.filename,
                     track.albumart
