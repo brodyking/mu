@@ -1,8 +1,8 @@
 import sqlite3
 from pathlib import Path
-from ms.file import File
+from ms.database.file import File
+from ms.database.track import Track
 from ms.util import Util
-from ms.track import Track
 import shutil
 
 class Database:
@@ -121,8 +121,8 @@ class Database:
 
         for i, filepath in enumerate(mp3s,1):
             try:
-                metadata = File.read_metadata(filepath)
-                self.upsert_track(connection,metadata)
+                metadata = File.read_metadata(filepath) # Gets dict of files metadata
+                self.upsert_track(connection,metadata) # Updates the track
                 print(metadata)
                 Util.print(f"{filepath.name}",count=[i+1,len(mp3s)])
             except Exception as e:

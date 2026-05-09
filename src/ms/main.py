@@ -1,10 +1,9 @@
 import json
-from ms.database import Database
 from pathlib import Path
 import argparse
 from ms.util import Util
-from ms.tui.tui import start_tui
-
+from ms.client.client import start_client
+from ms.database.database import Database
 VERSION = "0.0.2"
 
 def main():
@@ -18,7 +17,7 @@ def main():
     subparsers.add_parser("scan", help="imports all files in Source folder", description="Imports all the files in the Source folder.")
 
     # Client
-    subparsers.add_parser("tui", help="start the tui client", description="Start the TUI client.")
+    subparsers.add_parser("client", help="start the tui client", description="Start the TUI client.")
 
     # Version
     subparsers.add_parser("version", help="get current version", description="Get the current verson.")
@@ -51,7 +50,7 @@ def main():
 
     actions = {
         "scan": lambda: db.scan_source_folder(),
-        "tui": lambda: start_tui(),
+        "client": lambda: start_client(),
         "version": lambda: Util.print(f"Current version: {VERSION}"),
         "reset": lambda: db.reset_db(
             skip_confirmation=args.skipconfirmation

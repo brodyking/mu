@@ -2,12 +2,12 @@ from textual.app import App, ComposeResult
 from textual.widgets import Footer, Header, DataTable, Input, Static
 from textual.containers import Vertical
 
-from ms.database import Database
+from ms.database.database import Database
 from ms.util import Util
-from ms.tui.tracksdatatable import TracksDataTable
+from ms.client.tracksdatatable import TracksDataTable
 
 
-class Tui(App):
+class Client(App):
 
     CSS = """
         .hidden { display: none; }
@@ -49,10 +49,10 @@ class Tui(App):
         self.query_one("#main-table").focus()
 
 
-def start_tui():
-    app = Tui()
+def start_client():
+    app = Client()
     app.run()
 
 
 if __name__ == "__main__":
-    start_tui()
+    start_client()

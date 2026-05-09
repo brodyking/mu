@@ -1,9 +1,11 @@
+from datetime import date
 from mutagen.easyid3 import EasyID3
+from mutagen.mp3 import MP3
 from mutagen.id3 import ID3, APIC
 from mutagen import MutagenError
 from pathlib import Path
 import hashlib
-
+from ms.util import Format
 class File:
     
     @staticmethod
@@ -19,16 +21,22 @@ class File:
                 return None
 
         try:
+            audio = MP3(str(filepath))
+            length = audio.info.length if (audio and audio.info) else 0
+            time_mins, time_secs = divmod(int(length), 60)
+
             tags = EasyID3(filepath)
         except MutagenError:
             tags = {}
 
         return {
-            "filepath": str(filepath),
-            "filename": filepath.name,
             "title": get(tags, "title"),
             "artist": get(tags, "artist"),
             "album": get(tags, "album"),
+            "time": f"{time_mins}:{time_secs:02d}",
+            "dateadded": date.today(),
+            "filepath": str(filepath),
+            "filename": filepath.name,
             "albumartist": get(tags, "albumartist"),
             "tracknumber": get(tags, "tracknumber"),
             "discnumber": get(tags, "discnumber"),

@@ -1,5 +1,14 @@
 import subprocess
-from ms.track import Track
+from ms.database.track import Track
+
+class Format:
+    def format(text, width):
+        """Add spaces to string or add .."""
+        text = str(text or "")
+        if len(text) > width:
+            return text[:width-2] + ".."
+        return text.ljust(width)
+
 
 class Color:
 	# Standard Colors (Lower Intensity)
