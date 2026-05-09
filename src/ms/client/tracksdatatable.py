@@ -21,14 +21,8 @@ class TracksDataTable(Static):
         self.full_rows:list = []
 
     def compose(self) -> ComposeResult:
-        yield Input(placeholder="Search rows...", id="search-bar", classes="hidden")
+        yield Input(placeholder="Filter tracks...", id="search-bar")
         yield VimDataTable(cursor_type="row", id="main-table")
-
-    def on_data_table_row_selected(self,event: DataTable.RowSelected) -> None:
-        row_key = event.row_key
-        table = self.query_one(VimDataTable)
-        row_data = table.get_row(row_key)
-        self.app.notify(f"Track clicked: {row_data[0]}, {row_data[2]}")
 
     def filter_table(self, search_term: str) -> None:
         table = self.query_one(VimDataTable)
