@@ -182,31 +182,17 @@ class Database:
             Searches the database for tracks with prefix support. If no prefix is given, it will search by id.
             Returns a list of tracks.
         """
-    
-        prefixes = {
-            "id:": "id",
-            "favorite:": "favorite",
-            "title:": "title",
-            "artist:": "artist",
-            "album:": "album",
-            "plays:": "plays",
-            "time:": "time",
-            "dateadded:": "dateadded",
-            "tracknumber:": "tracknumber",
-            "albumartist:": "albumartist",
-            "discnumber:": "discnumber",
-            "genre:": "genre",
-            "date:": "date",
-            "filepath:": "filepath",
-            "filename:": "filename",
-            "albumart:": "albumart"
-        }
+
+        # All col's in the database
+        prefixes = [
+            "id", "favorite","title", "artist", "album", "plays", "time", "dateadded", "tracknumber", "albumartist", "discnumber", "genre", "date", "filepath", "filename", "albumart"
+        ]
 
         # Finds the target column if user is using a prefix.
-        target_column = next((col for pref, col in prefixes.items() if term.startswith(pref)), None)
+        target_column = term.split(":",1)[0] if term.split(":",1)[0] in prefixes else None
         if target_column is None:
             Util.print("The search query is missing a prefix. Please specify how you are searching by typing the prefix followed by a colon. Ex: title:,artist:",ok=False)
-            raise ValueError("Search query missing prefix.")
+            raise ValueError("The search query is missing a prefix. Please specify how you are searching by typing the prefix followed by a colon. Ex: title:,artist:")
         with sqlite3.connect(str(self.db_path)) as connection:
             cursor = connection.cursor()
 
