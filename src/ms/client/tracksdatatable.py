@@ -20,9 +20,12 @@ class TracksDataTable(Static):
         self.tracks = tracks
         self.full_rows:list = []
 
+        self.search = Input(placeholder="Filter tracks...", id="tracks-data-table-search")
+        self.main_table = VimDataTable(cursor_type="row", id="tracks-data-table-table")
+
     def compose(self) -> ComposeResult:
-        yield Input(placeholder="Filter tracks...", id="search-bar")
-        yield VimDataTable(cursor_type="row", id="main-table")
+        yield self.search
+        yield self.main_table
 
     def filter_table(self, search_term: str) -> None:
         table = self.query_one(VimDataTable)
@@ -61,8 +64,6 @@ class TracksDataTable(Static):
             "Album Art",
         )
 
-        # Generating 50,000 rows of sample data
-        # DataTable.add_rows is optimized for bulk inserts
         rows = []
         for trackid in self.tracks:
             track = self.tracks[trackid]
@@ -92,9 +93,3 @@ class TracksDataTable(Static):
         self.full_rows = rows
         table.add_rows(rows)
         table.focus()
-
-    # def on_input_changed(self, event: Input.Changed) -> None:
-        # """Example: Simple search filtering (logic would go here)"""
-        # search_value = event.value.lower()
-        # Note: For 50k rows, you'd typically clear and re-add
-        # or use a filtered view to maintain performance.

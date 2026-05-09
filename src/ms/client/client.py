@@ -38,27 +38,30 @@ class Client(App):
         self.theme:str = "catppuccin-mocha"
 
         self.now_playing = NowPlaying()
+        self.tracks_data_table = TracksDataTable(self.tracks)
 
     def compose(self) -> ComposeResult:
         with Vertical():
             yield self.now_playing
-            yield TracksDataTable(self.tracks)
+            yield self.tracks_data_table
             yield Footer()
 
+    # Focuses search with "/" key
     def action_focus_search(self) -> None:
-        self.query_one("#search-bar").focus()
+        self.tracks_data_table.search.focus()
 
+    # When search bar's input is changed
     def on_input_changed(self,event: Input.Changed) -> None:
-        container = self.query_one(TracksDataTable)
-        container.filter_table(event.value)
+        self.tracks_data_table.filter_table(event.value)
 
+    # When the input is submitted, focus the main table of tracks
     def on_input_submitted(self,event:Input.Submitted) -> None:
-        self.query_one("#main-table").focus()
+        self.tracks_data_table.main_table.focus()
 
+    # When a track is clicked on the main table
     def on_data_table_row_selected(self,event: DataTable.RowSelected) -> None:
         row_key = event.row_key
-        table = self.query_one("#main-table")
-        row_data = table.get_row(row_key)
+        row_data = self.tracks_data_table.main_table.get_row(row_key)
         self.app.notify(f"Track clicked: {row_data[0]}, {row_data[2]}")
 
         self.now_playing.set_track(row_data[2],row_data[3],row_data[4])

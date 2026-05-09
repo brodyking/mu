@@ -10,8 +10,6 @@ class NowPlayingTrackInfo(Static):
         self.artist= Label("",id="now-playing-track-info-artist")
         self.album= Label("",id="now-playing-track-info-album")
 
-        
-
     def set_info(self,title,artist,album):
         self.title.update(title)
         self.artist.update(artist)
