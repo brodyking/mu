@@ -34,11 +34,23 @@ class TracksDataTable(Static):
         if not search_term:
             filtered_rows = self.full_rows
         else:
-            # Filter rows based on Title (index 2) or Artist (index 3)
-            filtered_rows = [
-                row for row in self.full_rows 
-                if search_term in str(row[2]).lower() or search_term in str(row[3]).lower()
-            ]
+
+            prefixes = {
+                "id": 0, "favorite":1,"title":2, "artist":3, "album":4, "plays":5, "time":6, "dateadded":7, "tracknumber":8, "albumartist":9, "discnumber":10, "genre":11, "date":12, "filepath":13, "filename":14, "albumart":15
+            }
+
+            if ":" in search_term and search_term.split(":",1)[0] in prefixes.keys():
+                # Filter rows based on prefix provided
+                filtered_rows = [
+                    row for row in self.full_rows 
+                    if search_term.split(":",1)[1] in str(row[prefixes.get(search_term.split(":",1)[0])]).lower()
+                ]
+            else:
+                # Filter rows based on Title (index 2) or Artist (index 3)
+                filtered_rows = [
+                    row for row in self.full_rows 
+                    if search_term in str(row[2]).lower() or search_term in str(row[3]).lower()
+                ]
 
         table.clear()
         table.add_rows(filtered_rows)
