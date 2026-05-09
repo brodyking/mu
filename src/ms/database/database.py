@@ -252,26 +252,25 @@ class Database:
         return track_export
 
 
-    def favorite_track(self,term: str,console_out:bool=True) -> Track | None:
+    def favorite(self,term: str,console_out:bool=True) -> list:
         """
           Lets a user favorite a track by title or id if search starts with id:  
         """
 
+        tracks = self.search(term,console_out=False)
+        
         connection = sqlite3.connect(self.db_path)
         cursor = connection.cursor()
+        results = []
+        for track in tracks:
+            cursor.execute("UPDATE tracks SET favorite = 1 - favorite WHERE id = ?", (track.id,))
+            cursor.execute("SELECT * FROM tracks WHERE id = ?", (track.id,))
+            results.append(cursor.fetchone())
 
-        if term.startswith("id:"):
-            target_id = term.split(":")[1]
-            cursor.execute("UPDATE tracks SET favorite = 1 - favorite WHERE id = ?", (target_id,))
-            cursor.execute("SELECT * FROM tracks WHERE id = ?", (target_id,))
-        else:
-            cursor.execute("UPDATE tracks SET favorite = 1 - favorite WHERE title = ?", (term,))
-            cursor.execute("SELECT * FROM tracks WHERE title LIKE ?", (term,))
-        result = cursor.fetchone()
         connection.commit()
-        if result is not None:
-            track = Track(result)
-            if console_out: Util.print("", track=track)
-            return track
-        return None
+        for result in results:
+            if result is not None:
+                track = Track(result)
+                if console_out: Util.print("", track=track)
+        return results
 

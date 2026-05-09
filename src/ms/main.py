@@ -31,7 +31,7 @@ def main():
     list_parser.add_argument("-f","--favorited",action='store_true',help="list only your favorites")
 
     # Favorite
-    favorite_parser = subparsers.add_parser("favorite", help="favorite or unfavorite a track",description="Favorite or unfavorite a track.")
+    favorite_parser = subparsers.add_parser("favorite", help="favorite or unfavorite tack(s)",description="Favorite or unfavorite a track. Uses same prefixes as search.")
     favorite_parser.add_argument("term",help="the name of the track you wish to favorite (use id: to select by id)")
 
     # Importing
@@ -55,7 +55,7 @@ def main():
         "reset": lambda: db.reset_db(
             skip_confirmation=args.skipconfirmation
         ),
-        "favorite": lambda: db.favorite_track(
+        "favorite": lambda: db.favorite(
             str(args.term),
         ),
         "list": lambda: db.list_library(
