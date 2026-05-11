@@ -1,10 +1,21 @@
+
+# ms client source code
+# (c) 2026 all rights reserved
+
+# Textualize
 from textual.app import App, ComposeResult
 from textual.widgets import Footer, Header, DataTable, Input, Static
 from textual.containers import Vertical
-
+from textual.coordinate import Coordinate
+# Database connection
 from ms.database.database import Database
-from ms.client.tracksdatatable import TracksDataTable, VimDataTable
-from ms.client.nowplaying import NowPlaying
+
+# Logic and Objects
+from ms.client.queue import Queue
+
+# Widgets
+from ms.client.widgets.tracksdatatable import TracksDataTable, VimDataTable
+from ms.client.widgets.nowplaying import NowPlaying
 
 class Client(App):
 
@@ -39,6 +50,7 @@ class Client(App):
 
         self.now_playing = NowPlaying()
         self.tracks_data_table = TracksDataTable(self.tracks)
+        self.queue = Queue(self.tracks)
 
     def compose(self) -> ComposeResult:
         with Vertical():
@@ -58,13 +70,34 @@ class Client(App):
     def on_input_submitted(self,event:Input.Submitted) -> None:
         self.tracks_data_table.main_table.focus()
 
-    # When a track is clicked on the main table
-    def on_data_table_row_selected(self,event: DataTable.RowSelected) -> None:
-        row_key = event.row_key
-        row_data = self.tracks_data_table.main_table.get_row(row_key)
-        self.app.notify(f"Track clicked: {row_data[0]}, {row_data[2]}")
+    def on_data_table_row_selected(self, event: DataTable.RowSelected) -> None:
+        table = event.data_table
+    
+        row_count = table.row_count # Get the total number of rows currently in the table
+        start_index = event.cursor_row # Get the starting row index from the event
+    
+        # Loop through the integer indices from the start to the end
+        first_col_list = []
+        for row_idx in range(start_index, row_count):
+            try:
+                cell_value = table.get_cell_at(Coordinate(row_idx, 0))
+                first_col_list.append(str(cell_value))
+            except Exception:
+                continue
 
-        self.now_playing.set_track(row_data[2],row_data[3],row_data[4])
+        # Handle Now Playing logic
+        try:
+            col2 = table.get_cell_at(Coordinate(start_index, 2))
+            col3 = table.get_cell_at(Coordinate(start_index, 3))
+            col4 = table.get_cell_at(Coordinate(start_index, 4))
+
+            self.now_playing.set_track(col2, col3, col4)
+            self.queue.start_queue(first_col_list)
+            print(self.queue.queue)
+
+            self.app.notify(f"Playing: {col2}")
+        except Exception as e:
+            self.app.notify(f"Error fetching cell data: {e}", severity="error")
 
 
 def start_client():
