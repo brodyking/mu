@@ -22,7 +22,8 @@ class Client(App):
 
     CSS = """
         NowPlaying {
-            height: 3;      /* Reserves exactly 5 rows for your track info */
+            height: 4;      /* Reserves exactly 5 rows for your track info */
+            margin: 1;
             dock: top;      /* Optional: keeps it pinned to the top */
             background: $boost;
         }
