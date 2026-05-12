@@ -11,10 +11,11 @@ from textual.coordinate import Coordinate
 from ms.database.database import Database
 
 # Logic and Objects
-from ms.client.queue import Queue
+from ms.client.queuelist import QueueList
 
 # Widgets
 from ms.client.widgets.tracksdatatable import TracksDataTable, VimDataTable
+from ms.client.widgets.queuedatatable import QueueDataTable
 from ms.client.widgets.nowplaying import NowPlaying
 
 class Client(App):
@@ -50,8 +51,9 @@ class Client(App):
         self.theme:str = "catppuccin-mocha"
 
         self.now_playing = NowPlaying()
-        self.tracks_data_table = TracksDataTable(self.tracks)
-        self.queue = Queue(self.tracks)
+        self.tracks_data_table = TracksDataTable(self.tracks,"tracks-data-table-search","tracks-data-table-main-table")
+        self.queue_list = QueueList(self.tracks)
+        self.queue_data_table = QueueDataTable("queue-data-table-search","queue-data-table-main-table")
         self.tabs = TabbedContent(id="tabs")
         self.tabs.can_focus_children = False
 
@@ -60,43 +62,30 @@ class Client(App):
             yield self.now_playing
             with self.tabs:
                 with TabPane("Queue (q)",id="queue-tab"):
-                    yield Label("This is the queue")
+                    yield self.queue_data_table
                 with TabPane("Tracks (t)",id="tracks-tab"):
                     yield self.tracks_data_table
             yield Footer()
 
     # Switches tab with h or l
     def action_goto_tab(self, tabid: int) -> None:
-
-        self.now_playing.focus()
-        
         all_tabs = ["queue-tab", "tracks-tab"]
-    
         try:
             self.tabs.active = all_tabs[tabid]
 
             if self.tabs.active == "tracks-tab":
                 self.tracks_data_table.main_table.focus()
             elif self.tabs.active == "queue-tab":
-                self.now_playing.focus()
-            
+                self.queue_data_table.main_table.focus()
         except ValueError:
             pass
 
-    def on_tabbed_content_tab_activated(self, event: TabbedContent.TabActivated) -> None:
-        print(self.tabs.focus)
-
-    # When search bar's input is changed
-    def on_input_changed(self,event: Input.Changed) -> None:
-        self.tracks_data_table.filter_table(event.value)
-
-    # When the input is submitted, focus the main table of tracks
-    def on_input_submitted(self,event:Input.Submitted) -> None:
-        self.tracks_data_table.main_table.focus()
-
+    # When a track is clicked
     def on_data_table_row_selected(self, event: DataTable.RowSelected) -> None:
-        table = event.data_table
-    
+        if self.tabs.active == "tracks-tab":
+            table = self.tracks_data_table.main_table
+        else:
+            table = self.queue_data_table.main_table    
         row_count = table.row_count # Get the total number of rows currently in the table
         start_index = event.cursor_row # Get the starting row index from the event
     
@@ -116,8 +105,8 @@ class Client(App):
             col4 = table.get_cell_at(Coordinate(start_index, 4))
 
             self.now_playing.set_track(col2, col3, col4)
-            self.queue.start_queue(first_col_list)
-            print(self.queue.queue)
+            self.queue_list.start_queue(first_col_list)
+            self.queue_data_table.update_queue(self.queue_list.get_queue())
 
             self.app.notify(f"Playing: {col2}")
         except Exception as e:

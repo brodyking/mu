@@ -1,6 +1,6 @@
 from ms.database.track import Track
 
-class Queue:
+class QueueList:
     def __init__(self,tracks:dict) -> None:
         self.tracks = tracks # Dict of all tracks
         self.queue = [] # List of track Ids in the queue (full of ints)
@@ -20,7 +20,7 @@ class Queue:
     def get_queue(self) -> list:
         """Returns the queue of tracks remaining in the queue"""
         output = []
-        for id in self.queue[self.pos:]:
+        for id in self.queue[self.pos+1:]:
             output.append(self.tracks[id])
         return output
 

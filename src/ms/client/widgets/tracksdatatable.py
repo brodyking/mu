@@ -15,13 +15,13 @@ class TracksDataTable(Static):
         ("/", "focus_search","Search")
     ]
     
-    def __init__(self, tracks: dict):
+    def __init__(self, tracks: dict,search_id:str,main_table_id:str):
         super().__init__()
         self.tracks = tracks
         self.full_rows:list = []
 
-        self.search = Input(placeholder="Filter tracks (/)", id="tracks-data-table-search")
-        self.main_table = VimDataTable(cursor_type="row", id="tracks-data-table-table")
+        self.search = Input(placeholder="Filter tracks (/)", id=search_id)
+        self.main_table = VimDataTable(cursor_type="row", id=main_table_id)
 
     def compose(self) -> ComposeResult:
         yield self.search
@@ -31,8 +31,17 @@ class TracksDataTable(Static):
     def action_focus_search(self) -> None:
         self.search.focus()
 
+    # When search bar's input is changed
+    def on_input_changed(self,event: Input.Changed) -> None:
+        self.filter_table(event.value)
+
+    # When the input is submitted, focus the main table of tracks
+    def on_input_submitted(self,event:Input.Submitted) -> None:
+        self.main_table.focus()
+
+
     def filter_table(self, search_term: str) -> None:
-        table = self.query_one(VimDataTable)
+        table = self.main_table
         search_term = search_term.lower()
 
         if not search_term:
@@ -60,7 +69,7 @@ class TracksDataTable(Static):
         table.add_rows(filtered_rows)
 
     def on_mount(self) -> None:
-        table = self.query_one(VimDataTable)
+        table = self.main_table
         table.add_columns(
             "Id",
             "",
