@@ -7,25 +7,29 @@ class VimDataTable(DataTable):
     BINDINGS = [
         ("j", "cursor_down", "Down"),
         ("k", "cursor_up", "Up"),
-        ("h", "cursor_left", "Left"),
-        ("l", "cursor_right", "Right"),
-        ("g", "scroll_home", "Top"),
-        ("G", "scroll_end", "Bottom")
     ]
 
 class TracksDataTable(Static):
+
+    BINDINGS = [
+        ("/", "focus_search","Search")
+    ]
     
     def __init__(self, tracks: dict):
         super().__init__()
         self.tracks = tracks
         self.full_rows:list = []
 
-        self.search = Input(placeholder="Filter tracks...", id="tracks-data-table-search")
+        self.search = Input(placeholder="Filter tracks (/)", id="tracks-data-table-search")
         self.main_table = VimDataTable(cursor_type="row", id="tracks-data-table-table")
 
     def compose(self) -> ComposeResult:
         yield self.search
         yield self.main_table
+
+    # Focuses search with "/" key
+    def action_focus_search(self) -> None:
+        self.search.focus()
 
     def filter_table(self, search_term: str) -> None:
         table = self.query_one(VimDataTable)
@@ -105,3 +109,4 @@ class TracksDataTable(Static):
         self.full_rows = rows
         table.add_rows(rows)
         table.focus()
+

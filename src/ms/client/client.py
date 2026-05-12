@@ -4,7 +4,7 @@
 
 # Textualize
 from textual.app import App, ComposeResult
-from textual.widgets import Footer, Header, DataTable, Input, Static
+from textual.widgets import Footer, Header, DataTable, Input, Static, TabbedContent, TabPane, Label
 from textual.containers import Vertical
 from textual.coordinate import Coordinate
 # Database connection
@@ -38,8 +38,9 @@ class Client(App):
     """
 
     BINDINGS = [
-        ("q", "quit", "Quit"),
-        ("/", "focus_search","Search")
+        ("q", "goto_tab(0)", "Queue"),
+        ("t", "goto_tab(1)", "Tracks"),
+        ("Q", "quit", "Quit"),
     ]
 
     def __init__(self):
@@ -51,16 +52,39 @@ class Client(App):
         self.now_playing = NowPlaying()
         self.tracks_data_table = TracksDataTable(self.tracks)
         self.queue = Queue(self.tracks)
+        self.tabs = TabbedContent(id="tabs")
+        self.tabs.can_focus_children = False
 
     def compose(self) -> ComposeResult:
         with Vertical():
             yield self.now_playing
-            yield self.tracks_data_table
+            with self.tabs:
+                with TabPane("Queue (q)",id="queue-tab"):
+                    yield Label("This is the queue")
+                with TabPane("Tracks (t)",id="tracks-tab"):
+                    yield self.tracks_data_table
             yield Footer()
 
-    # Focuses search with "/" key
-    def action_focus_search(self) -> None:
-        self.tracks_data_table.search.focus()
+    # Switches tab with h or l
+    def action_goto_tab(self, tabid: int) -> None:
+
+        self.now_playing.focus()
+        
+        all_tabs = ["queue-tab", "tracks-tab"]
+    
+        try:
+            self.tabs.active = all_tabs[tabid]
+
+            if self.tabs.active == "tracks-tab":
+                self.tracks_data_table.main_table.focus()
+            elif self.tabs.active == "queue-tab":
+                self.now_playing.focus()
+            
+        except ValueError:
+            pass
+
+    def on_tabbed_content_tab_activated(self, event: TabbedContent.TabActivated) -> None:
+        print(self.tabs.focus)
 
     # When search bar's input is changed
     def on_input_changed(self,event: Input.Changed) -> None:
