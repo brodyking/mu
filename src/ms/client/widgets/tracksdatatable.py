@@ -71,7 +71,9 @@ class TracksDataTable(Static):
                 ]
 
         table.clear()
-        table.add_rows(filtered_rows)
+        
+        for row in filtered_rows:
+            table.add_row(*row,key=str(row[0]))
 
     def on_mount(self) -> None:
         table = self.main_table

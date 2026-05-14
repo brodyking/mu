@@ -10,6 +10,7 @@ from textual.coordinate import Coordinate
 # Database connection
 from ms.client.widgets import queuedatatable
 from ms.database.database import Database
+from ms.database.track import Track
 
 # Logic and Objects
 from ms.client.queuelist import QueueList
@@ -135,11 +136,14 @@ class Client(App):
         if table:
             if table.main_table.cursor_row is not None:
                 row_data = table.main_table.get_row_at(table.main_table.cursor_row) 
-                track_id = row_data[0]
+
                 result = self.db.favorite(f"id:{row_data[0]}")[0]
-                self.tracks[track_id] = result
-                self.queue_list.tracks = dict(self.tracks)
+                track_id = row_data[0]
                 is_favorite = result[1]
+
+                self.tracks[track_id] = Track(result)
+                self.queue_list.tracks[track_id] = Track(result)
+                self.tracks_data_table.tracks = Track(result)
 
                 self.tracks_data_table.set_track_favorite(track_id,is_favorite)
                 self.queue_data_table.set_track_favorite(track_id,is_favorite)

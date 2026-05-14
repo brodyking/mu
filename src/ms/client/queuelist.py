@@ -13,7 +13,7 @@ class QueueList:
     def start_queue(self,track_ids) -> Track:
         """Initializes the list of tracks, and returns the first one"""
         self.queue = [int(id) for id in track_ids]
-        self.pos = 0
+        self.pos = 0        
 
         return self.get_current_track()
 
