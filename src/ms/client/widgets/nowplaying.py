@@ -6,9 +6,9 @@ from textual.containers import Horizontal, Vertical
 class NowPlayingTrackInfo(Static):
     def __init__(self,*args,**kwargs):
         super().__init__(*args,**kwargs)
-        self.title = Label("",id="now-playing-track-info-title")
-        self.artist= Label("",id="now-playing-track-info-artist")
-        self.album= Label("",id="now-playing-track-info-album")
+        self.title = Label("󰈣",id="now-playing-track-info-title")
+        self.artist= Label("󰠃",id="now-playing-track-info-artist")
+        self.album= Label("󱍙",id="now-playing-track-info-album")
 
     def set_info(self,title,artist,album):
         self.title.update(title)
@@ -31,7 +31,7 @@ class NowPlaying(Static):
         yield self.track_info
                 
     def set_track(self,title,artist,album):
-        self.track_info.set_info(title,artist,album)
+        self.track_info.set_info(f"󰈣  {title}",f"󰠃  {artist}",f"󱍙  {album}")
     
     def on_mount(self) -> None:
         pass

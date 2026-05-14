@@ -65,9 +65,9 @@ class Client(App):
         with Vertical():
             yield self.now_playing
             with self.tabs:
-                with TabPane("Queue (q)",id="queue-tab"):
+                with TabPane("󰲸 Queue (q)",id="queue-tab"):
                     yield self.queue_data_table
-                with TabPane("Tracks (t)",id="tracks-tab"):
+                with TabPane("󰎇 Tracks (t)",id="tracks-tab"):
                     yield self.tracks_data_table
             yield Footer()
 
