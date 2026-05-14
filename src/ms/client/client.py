@@ -4,17 +4,18 @@
 
 # Textualize
 from textual.app import App, ComposeResult
-from textual.widgets import Footer, Header, DataTable, Input, Static, TabbedContent, TabPane, Label
+from textual.widgets import Footer, DataTable, TabbedContent, TabPane 
 from textual.containers import Vertical
 from textual.coordinate import Coordinate
 # Database connection
+from ms.client.widgets import queuedatatable
 from ms.database.database import Database
 
 # Logic and Objects
 from ms.client.queuelist import QueueList
 
 # Widgets
-from ms.client.widgets.tracksdatatable import TracksDataTable, VimDataTable
+from ms.client.widgets.tracksdatatable import TracksDataTable
 from ms.client.widgets.queuedatatable import QueueDataTable
 from ms.client.widgets.nowplaying import NowPlaying
 
@@ -43,13 +44,14 @@ class Client(App):
         ("q", "goto_tab(0)", "Queue"),
         ("t", "goto_tab(1)", "Tracks"),
         ("Q", "quit", "Quit"),
+        ("f", "favorite" , "Favorite")
     ]
 
     def __init__(self):
         super().__init__()
         self.db:Database = Database()
         self.tracks:dict = self.db.list_library(console_out=False)
-        self.theme:str = "catppuccin-mocha"
+        self.theme = "catppuccin-mocha"
 
         self.now_playing = NowPlaying()
         self.tracks_data_table = TracksDataTable(self.tracks,"tracks-data-table-search","tracks-data-table-main-table")
@@ -113,6 +115,34 @@ class Client(App):
         except Exception as e:
             self.app.notify(f"Error fetching cell data: {e}", severity="error")
 
+    def update_track_lists(self,tracks:dict) -> None:
+        self.tracks = tracks
+        self.queue_list.tracks = dict(self.tracks) 
+        self.tracks_data_table.tracks = dict(self.tracks)
+
+    # When f is pressed while browsing tracks
+    def action_favorite(self) -> None:
+
+        # Check if a table is focused
+        if self.focused == self.tracks_data_table.main_table:
+            table = self.tracks_data_table
+        elif self.focused == self.queue_data_table.main_table:
+            table = self.queue_data_table
+        else:
+            table = None 
+        
+        # Favorite track
+        if table:
+            if table.main_table.cursor_row is not None:
+                row_data = table.main_table.get_row_at(table.main_table.cursor_row) 
+                track_id = row_data[0]
+                result = self.db.favorite(f"id:{row_data[0]}")[0]
+                self.tracks[track_id] = result
+                self.queue_list.tracks = dict(self.tracks)
+                is_favorite = result[1]
+
+                self.tracks_data_table.set_track_favorite(track_id,is_favorite)
+                self.queue_data_table.set_track_favorite(track_id,is_favorite)
 
 def start_client():
     app = Client()

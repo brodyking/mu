@@ -39,6 +39,11 @@ class TracksDataTable(Static):
     def on_input_submitted(self,event:Input.Submitted) -> None:
         self.main_table.focus()
 
+    def set_track_favorite(self, track_id, is_favorite) -> None:
+        try:
+            self.main_table.update_cell(str(track_id),"favorite","❤" if is_favorite else " ")
+        except:
+            return
 
     def filter_table(self, search_term: str) -> None:
         table = self.main_table
@@ -70,52 +75,55 @@ class TracksDataTable(Static):
 
     def on_mount(self) -> None:
         table = self.main_table
-        table.add_columns(
-            "Id",
-            "",
-            "Title",
-            "Artist",
-            "Album",
-            "Plays",
-            "Time",
-            "Date Added",
-            "Track Number",
-            "Album Artist",
-            "Disc Number",
-            "Genre",
-            "Date",
-            "File Path",
-            "File Name",
-            "Album Art",
-        )
 
-        rows = []
+        columns = [
+            ("Id", "id"),
+            ("", "favorite"),
+            ("Title", "title"),
+            ("Artist", "artist"),
+            ("Album", "album"),
+            ("Plays", "plays"),
+            ("Time", "time"),
+            ("Date Added", "dateadded"),
+            ("Track Number", "tracknumber"),
+            ("Album Artist", "albumartist"),
+            ("Disc Number", "discnumber"),
+            ("Genre", "genre"),
+            ("Date", "date"),
+            ("File Path", "filepath"),
+            ("File Name", "filename"),
+            ("Album Art", "albumart"),
+        ]
+
+        for label, key in columns:
+            table.add_column(label, key=key)
+
+        self.full_rows = []
         for trackid in self.tracks:
             track = self.tracks[trackid]
-
             favorite = "❤" if track.favorite else " "
             
-            rows.append(
-                (
-                    track.id,
-                    favorite,
-                    Interface.fmt(track.title,50),
-                    Interface.fmt(track.artist,30),
-                    Interface.fmt(track.album,50),
-                    Interface.fmt(track.plays,5),
-                    Interface.fmt(track.time,10),
-                    Interface.fmt(track.dateadded,20),
-                    Interface.fmt(track.tracknumber,10),
-                    Interface.fmt(track.albumartist,30),
-                    Interface.fmt(track.discnumber,10),
-                    Interface.fmt(track.genre,20),
-                    Interface.fmt(track.date,20),
-                    track.filepath,
-                    track.filename,
-                    track.albumart
-                )
+            row_tuple = (
+                track.id,
+                favorite,
+                Interface.fmt(track.title, 50),
+                Interface.fmt(track.artist, 30),
+                Interface.fmt(track.album, 50),
+                Interface.fmt(track.plays, 5),
+                Interface.fmt(track.time, 10),
+                Interface.fmt(track.dateadded, 20),
+                Interface.fmt(track.tracknumber, 10),
+                Interface.fmt(track.albumartist, 30),
+                Interface.fmt(track.discnumber, 10),
+                Interface.fmt(track.genre, 20),
+                Interface.fmt(track.date, 20),
+                track.filepath,
+                track.filename,
+                track.albumart,
             )
-        self.full_rows = rows
-        table.add_rows(rows)
+            self.full_rows.append(row_tuple)
+            table.add_row(*row_tuple, key=str(track.id))
+            
         table.focus()
+
 

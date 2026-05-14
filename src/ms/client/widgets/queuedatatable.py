@@ -6,12 +6,13 @@ class QueueDataTable(TracksDataTable):
         super().__init__(dict(),*args,**kwargs)
 
     def update_queue(self, tracks):
-        self.tracks = tracks    
-        # Rebuild full_rows from the new track list
-        rows = []
+        self.tracks = tracks
+        self.full_rows = []
+        self.main_table.clear()
         for track in self.tracks:
             favorite = "❤" if track.favorite else " "
-            rows.append((
+            
+            row_tuple = (
                 track.id,
                 favorite,
                 Interface.fmt(track.title, 50),
@@ -27,9 +28,8 @@ class QueueDataTable(TracksDataTable):
                 Interface.fmt(track.date, 20),
                 track.filepath,
                 track.filename,
-                track.albumart
-            ))
-    
-        self.full_rows = rows
-        self.main_table.clear()
-        self.main_table.add_rows(rows)
+                track.albumart,
+            )
+            self.full_rows.append(row_tuple)
+            self.main_table.add_row(*row_tuple, key=str(track.id))
+
