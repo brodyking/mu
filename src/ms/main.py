@@ -1,5 +1,3 @@
-import json
-from pathlib import Path
 import argparse
 from ms.util import Interface, Mpv
 from ms.client.client import start_client
