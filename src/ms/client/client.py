@@ -23,12 +23,6 @@ from ms.client.widgets.nowplaying import NowPlaying
 class Client(App):
 
     CSS = """
-        NowPlaying {
-            height: 4;      /* Reserves exactly 5 rows for your track info */
-            margin: 1;
-            dock: top;      /* Optional: keeps it pinned to the top */
-            background: $boost;
-        }
 
         TracksDataTable {
             height: 1fr;    /* Tells the table to take up the "fractional" remaining space */
@@ -87,6 +81,7 @@ class Client(App):
             pass
 
     def play_track(self,track: Track,queue_ids: list) -> None:
+        """Plays a given track."""
         self.now_playing.set_track(track.title, track.artist, track.album)
         self.queue_list.start_queue(queue_ids)
         self.queue_data_table.update_queue(self.queue_list.get_queue())
