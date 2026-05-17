@@ -12,7 +12,7 @@ class Controls(Static):
             ⏮ (U+23EE)
             """
         super().__init__(*args,**kwargs)
-        self.previous = Button("⏮ ",id="now-playing-controls-previous",action="app.skip_track(1)")
+        self.previous = Button("⏮ ",id="now-playing-controls-previous",action="app.skip_track(-1)")
         self.toggle = Button("⏸",id="now-playing-controls-toggle")
         self.next= Button("⏭",id="now-playing-controls-next",action="app.skip_track(1)")
     
