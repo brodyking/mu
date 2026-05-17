@@ -13,7 +13,7 @@ class QueueList:
     def start_queue(self,track_ids) -> Track:
         """Initializes the list of tracks, and returns the first one"""
         self.queue = [int(id) for id in track_ids]
-        self.pos = 0        
+        self.pos = 0
 
         return self.get_current_track()
 
@@ -24,14 +24,13 @@ class QueueList:
             output.append(self.tracks[id])
         return output
 
-    def next_track(self) -> Track:
+    def skip_track(self,offset:int=1) -> Track:
         """Returns the next track and shifts the queue, or returns current track if none next."""
-        if self.pos+1 < len(self.queue):
-            self.pos +=1
-        return self.tracks[self.queue[self.pos]]
+        
+        if not self.queue:
+            raise ValueError("The queue is empty.") # Or handle how you prefer
 
-    def previous_track(self) -> Track:
-        """Returns the next track and shifts the queue, or returns current track if none before."""
-        if self.pos-1 > -1:
-            self.pos -=1
+        # Use modulo to cleanly wrap around both positive and negative offsets
+        self.pos = (self.pos + offset) % len(self.queue)
+        
         return self.tracks[self.queue[self.pos]]

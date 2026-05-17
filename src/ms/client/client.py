@@ -45,7 +45,9 @@ class Client(App):
         ("q", "goto_tab(0)", "Queue"),
         ("t", "goto_tab(1)", "Tracks"),
         ("Q", "quit", "Quit"),
-        ("f", "favorite" , "Favorite")
+        ("f", "favorite" , "Favorite"),
+        ("l", "skip_track(1)", "Next"),
+        ("h", "skip_track(-1)", "Previous")
     ]
 
     def __init__(self):
@@ -85,8 +87,19 @@ class Client(App):
             pass
 
     def play_track(self,track: Track,queue_ids: list) -> None:
-            self.now_playing.set_track(track.title, track.artist, track.album)
-            self.queue_list.start_queue(queue_ids)
+        self.now_playing.set_track(track.title, track.artist, track.album)
+        self.queue_list.start_queue(queue_ids)
+        self.queue_data_table.update_queue(self.queue_list.get_queue())
+
+        self.app.notify(f"Playing: {track.title}")
+
+    def action_skip_track(self,offset:int) -> None:
+        """Skips to a song in the queue by an offest if the song exists"""
+        if len(self.queue_list.queue) <= 0:
+            return
+        track = self.queue_list.skip_track(offset)
+        if track:
+            self.now_playing.set_track(track.title,track.artist,track.album)
             self.queue_data_table.update_queue(self.queue_list.get_queue())
 
             self.app.notify(f"Playing: {track.title}")
