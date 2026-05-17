@@ -2,6 +2,8 @@ from textual.app import ComposeResult
 from textual.widgets import Static, Label, Button
 from textual.containers import Horizontal, Vertical
 
+from ms.database.track import Track
+
 class Controls(Static):
     def __init__(self,*args,**kwargs):
         """
@@ -10,14 +12,22 @@ class Controls(Static):
             ⏯ 
             ⏭ 
             ⏮ (U+23EE)
+
+            
+            
             """
         super().__init__(*args,**kwargs)
+        self.favorite = Button("",id="now-playing-controls-favorite",action="app.favorite_track(-1)")
         self.previous = Button("⏮ ",id="now-playing-controls-previous",action="app.skip_track(-1)")
         self.toggle = Button("⏸",id="now-playing-controls-toggle")
         self.next= Button("⏭",id="now-playing-controls-next",action="app.skip_track(1)")
+
+    def set_favorite(self,is_favorite:bool) -> None:
+        self.favorite.label = "" if is_favorite else ""
     
     def compose(self) -> ComposeResult:
         with Horizontal():
+            yield self.favorite
             yield self.previous
             yield self.toggle
             yield self.next
@@ -81,8 +91,10 @@ class NowPlaying(Static):
             yield self.track_info
             yield self.controls
                 
-    def set_track(self,title,artist,album):
-        self.track_info.set_info(f"󰈣  {title}",f"󰠃  {artist}",f"󱍙  {album}")
+    def set_track(self,track:Track):
+        print(track.get_dict())
+        self.track_info.set_info(f"󰈣  {track.title}",f"󰠃  {track.artist}",f"󱍙  {track.album}")
+        self.controls.set_favorite(track.favorite)
     
     def on_mount(self) -> None:
         pass

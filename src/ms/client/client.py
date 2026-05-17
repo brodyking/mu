@@ -39,7 +39,7 @@ class Client(App):
         ("q", "goto_tab(0)", "Queue"),
         ("t", "goto_tab(1)", "Tracks"),
         ("Q", "quit", "Quit"),
-        ("f", "favorite" , "Favorite"),
+        ("f", "favorite_track" , "Favorite"),
         ("l", "skip_track(1)", "Next"),
         ("h", "skip_track(-1)", "Previous")
     ]
@@ -82,11 +82,10 @@ class Client(App):
 
     def play_track(self,track: Track,queue_ids: list) -> None:
         """Plays a given track."""
-        self.now_playing.set_track(track.title, track.artist, track.album)
+        self.now_playing.set_track(track)
         self.queue_list.start_queue(queue_ids)
         self.queue_data_table.update_queue(self.queue_list.get_queue())
 
-        self.app.notify(f"Playing: {track.title}")
 
     def action_skip_track(self,offset:int) -> None:
         """Skips to a song in the queue by an offest if the song exists"""
@@ -94,10 +93,9 @@ class Client(App):
             return
         track = self.queue_list.skip_track(offset)
         if track:
-            self.now_playing.set_track(track.title,track.artist,track.album)
+            self.now_playing.set_track(track)
             self.queue_data_table.update_queue(self.queue_list.get_queue())
 
-            self.app.notify(f"Playing: {track.title}")
 
     # When a track is clicked
     def on_data_table_row_selected(self, event: DataTable.RowSelected) -> None:
@@ -121,8 +119,10 @@ class Client(App):
                 continue
  
         try:
-             self.play_track(
-                Track(table.get_row_at(event.cursor_row)),
+            id = table.get_cell_at(Coordinate(event.cursor_row,0))
+            print(id)
+            self.play_track(
+                self.tracks[id],
                 queue_ids
             )
         except Exception as e:
@@ -134,29 +134,43 @@ class Client(App):
         self.tracks_data_table.tracks = dict(self.tracks)
 
     # When f is pressed while browsing tracks
-    def action_favorite(self) -> None:
+    def action_favorite_track(self) -> None:
         # Check if a table is focused
+        track_id = None
+        table = None
+        result = None
         if self.focused == self.tracks_data_table.main_table:
             table = self.tracks_data_table
         elif self.focused == self.queue_data_table.main_table:
             table = self.queue_data_table
-        else:
-            table = None 
-        
+        elif len(self.queue_list.queue) > 0:
+            track_id = self.queue_list.get_current_track().id
+
         # Favorite track
         if table:
+            # If track favorited with f key while browsing
             if table.main_table.cursor_row is not None:
-                row_data = table.main_table.get_row_at(table.main_table.cursor_row) 
+                track_id = table.main_table.get_cell_at(Coordinate(table.main_table.cursor_row,0))
 
-                result = self.db.favorite(f"id:{row_data[0]}")[0]
-                track_id = row_data[0]
-                is_favorite = result[1]
+        else:
+            # If track is favorited using the buttons on controls while playing
+            if len(self.queue_list.queue) > 0:
+                track_id = self.queue_list.get_current_track().id
+        
+        result = self.db.favorite(f"id:{track_id}")[0] if track_id else None
+        
+        if result:
+            print(result)
+            new_track = Track(result)
+            self.tracks[track_id] = new_track 
+            self.queue_list.tracks[track_id] = new_track 
 
-                self.tracks[track_id] = Track(result)
-                self.queue_list.tracks[track_id] = Track(result)
+            if not table: self.now_playing.controls.set_favorite(new_track.favorite)
 
-                self.tracks_data_table.set_track_favorite(track_id,is_favorite)
-                self.queue_data_table.set_track_favorite(track_id,is_favorite)
+            self.tracks_data_table.set_track_favorite(track_id,new_track.favorite)
+            self.queue_data_table.set_track_favorite(track_id,new_track.favorite)
+
+
 
 def start_client():
     app = Client()
