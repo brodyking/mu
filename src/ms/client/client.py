@@ -84,8 +84,18 @@ class Client(App):
         except ValueError:
             pass
 
+    def play_track(self,track: Track,queue_ids: list) -> None:
+            self.now_playing.set_track(track.title, track.artist, track.album)
+            self.queue_list.start_queue(queue_ids)
+            self.queue_data_table.update_queue(self.queue_list.get_queue())
+
+            self.app.notify(f"Playing: {track.title}")
+
     # When a track is clicked
     def on_data_table_row_selected(self, event: DataTable.RowSelected) -> None:
+        """Logic when a cell is clicked. Starts now playing and the queue."""
+
+        # Select tab based on what is active
         if self.tabs.active == "tracks-tab":
             table = self.tracks_data_table.main_table
         else:
@@ -94,25 +104,19 @@ class Client(App):
         start_index = event.cursor_row # Get the starting row index from the event
     
         # Loop through the integer indices from the start to the end
-        first_col_list = []
-        for row_idx in range(start_index, row_count):
+        queue_ids = []
+        for row_id in range(start_index, row_count):
             try:
-                cell_value = table.get_cell_at(Coordinate(row_idx, 0))
-                first_col_list.append(str(cell_value))
+                cell_value = table.get_cell_at(Coordinate(row_id, 0))
+                queue_ids.append(str(cell_value))
             except Exception:
                 continue
-
-        # Handle Now Playing logic
+ 
         try:
-            col2 = table.get_cell_at(Coordinate(start_index, 2))
-            col3 = table.get_cell_at(Coordinate(start_index, 3))
-            col4 = table.get_cell_at(Coordinate(start_index, 4))
-
-            self.now_playing.set_track(col2, col3, col4)
-            self.queue_list.start_queue(first_col_list)
-            self.queue_data_table.update_queue(self.queue_list.get_queue())
-
-            self.app.notify(f"Playing: {col2}")
+             self.play_track(
+                Track(table.get_row_at(event.cursor_row)),
+                queue_ids
+            )
         except Exception as e:
             self.app.notify(f"Error fetching cell data: {e}", severity="error")
 
@@ -123,7 +127,6 @@ class Client(App):
 
     # When f is pressed while browsing tracks
     def action_favorite(self) -> None:
-
         # Check if a table is focused
         if self.focused == self.tracks_data_table.main_table:
             table = self.tracks_data_table
@@ -143,7 +146,6 @@ class Client(App):
 
                 self.tracks[track_id] = Track(result)
                 self.queue_list.tracks[track_id] = Track(result)
-                self.tracks_data_table.tracks = Track(result)
 
                 self.tracks_data_table.set_track_favorite(track_id,is_favorite)
                 self.queue_data_table.set_track_favorite(track_id,is_favorite)
