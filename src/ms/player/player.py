@@ -9,7 +9,7 @@ class Player:
         self.player = vlc.MediaListPlayer(self.instance)
 
     def set_queue(self,filepaths: list[str]) -> None:
-
+        """Creates the queue from a list of file paths"""
         self.player.stop() # type: ignore
 
         self.media_list = vlc.MediaList()
@@ -19,16 +19,15 @@ class Player:
         self.player.set_media_list(self.media_list) # type: ignore
 
     def start_playback(self) -> None:
+        """Starts playback"""
         self.player.play() # type: ignore
 
     def toggle_playback(self) -> None:
+        """Toggles playback"""
         self.player.pause() # type: ignore
 
     def skip_by_offset(self,offset_int):
-        """
-        Skips forward or backward by a given integer offset.
-        Positive integers move forward; negative integers move backward.
-        """
+        """Skips forward or backward by a given integer offset."""
         # 1. Get the underlying media list
         total_tracks = self.media_list.count() # type: ignore
         
