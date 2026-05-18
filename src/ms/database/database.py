@@ -225,6 +225,21 @@ class Database:
                 export.append(Track(result))
             return export
 
+    def increment_play_count(self, term:str,amount:int=1,console_out:bool=True) -> list:
+        """Increment track(s) play counts by either 1 or a custom amount"""
+        tracks: list[Track] = self.search(f"{term}",console_out=False)
+        connection = sqlite3.connect(self.db_path)
+        cursor = connection.cursor()
+        results = []
+        for track in tracks:
+            cursor.execute("UPDATE tracks SET plays = ? WHERE id = ?",(track.plays + amount,track.id))
+            cursor.execute("SELECT * FROM tracks WHERE id = ?",(track.id,))
+            results.append(cursor.fetchone())
+        connection.commit()
+        if console_out:
+            for result in results:
+                if result is not None: Interface.print("",track=Track(result))
+        return results
 
     def list_library(self,only_favorited: bool=False,console_out:bool=True) -> dict:
         """
@@ -261,9 +276,8 @@ class Database:
             results.append(cursor.fetchone())
 
         connection.commit()
-        for result in results:
-            if result is not None:
-                track = Track(result)
-                if console_out: Interface.print("", track=track)
+        if console_out:
+            for result in results:
+                if result is not None: Interface.print("", track=Track(result))
         return results
 
