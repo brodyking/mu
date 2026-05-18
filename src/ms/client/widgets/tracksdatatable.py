@@ -9,11 +9,26 @@ class VimDataTable(DataTable):
         ("k", "cursor_up", "Up"),
     ]
 
+    CSS = """
+    VimDataTable {
+        width: auto;
+        padding: 0;
+        margin: 0;
+    }
+    """
+
 class TracksDataTable(Static):
 
     BINDINGS = [
         ("/", "focus_search","Search")
     ]
+
+    CSS = """
+    TracksDataTable {
+        width: auto;
+        height: auto;
+    }
+    """
     
     def __init__(self, tracks: dict,search_id:str,main_table_id:str):
         super().__init__()
@@ -78,27 +93,29 @@ class TracksDataTable(Static):
     def on_mount(self) -> None:
         table = self.main_table
 
+      # Add the maximum width to your column metadata definition
         columns = [
-            ("Id", "id"),
-            ("", "favorite"),
-            ("Title", "title"),
-            ("Artist", "artist"),
-            ("Album", "album"),
-            ("Plays", "plays"),
-            ("Time", "time"),
-            ("Date Added", "dateadded"),
-            ("Track Number", "tracknumber"),
-            ("Album Artist", "albumartist"),
-            ("Disc Number", "discnumber"),
-            ("Genre", "genre"),
-            ("Date", "date"),
-            ("File Path", "filepath"),
-            ("File Name", "filename"),
-            ("Album Art", "albumart"),
+            ("Id", "id", None),
+            ("", "favorite", 2),
+            ("Title", "title", 25),
+            ("Artist", "artist", 15),
+            ("Album", "album", 15),
+            ("Plays", "plays", 5),
+            ("Time", "time", 5),
+            ("Date Added", "dateadded", 10),
+            ("Track Number", "tracknumber", 5),
+            ("Album Artist", "albumartist", 15),
+            ("Disc Number", "discnumber", 3),
+            ("Genre", "genre", 15),
+            ("Date", "date", 15),
+            ("File Path", "filepath", None),
+            ("File Name", "filename", None),
+            ("Album Art", "albumart", None),
         ]
 
-        for label, key in columns:
-            table.add_column(label, key=key)
+        # Use the max_width argument in add_column
+        for label, key, max_w in columns:
+            table.add_column(label, key=key, width=max_w)
 
         self.full_rows = []
         for trackid in self.tracks:
@@ -108,17 +125,17 @@ class TracksDataTable(Static):
             row_tuple = (
                 track.id,
                 favorite,
-                Interface.fmt(track.title, 50),
-                Interface.fmt(track.artist, 30),
-                Interface.fmt(track.album, 50),
-                Interface.fmt(track.plays, 5),
-                Interface.fmt(track.time, 10),
-                Interface.fmt(track.dateadded, 20),
-                Interface.fmt(track.tracknumber, 10),
-                Interface.fmt(track.albumartist, 30),
-                Interface.fmt(track.discnumber, 10),
-                Interface.fmt(track.genre, 20),
-                Interface.fmt(track.date, 20),
+                track.title,
+                track.artist,
+                track.album,
+                track.plays,
+                track.time,
+                track.dateadded,
+                track.tracknumber,
+                track.albumartist,
+                track.discnumber,
+                track.genre,
+                track.date,
                 track.filepath,
                 track.filename,
                 track.albumart,
