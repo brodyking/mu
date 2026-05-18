@@ -93,7 +93,7 @@ class Client(App):
         self.queue_data_table.update_queue(self.queue_list.get_queue())
         
         filepaths = []
-        queue = self.queue_list.get_queue()
+        queue = self.queue_list.get_queue(offset=0)
         for track in queue:
             filepaths.append(track.filepath)
         

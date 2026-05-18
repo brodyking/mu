@@ -17,10 +17,14 @@ class QueueList:
 
         return self.get_current_track()
 
-    def get_queue(self) -> list:
-        """Returns the queue of tracks remaining in the queue"""
+    def get_queue(self,offset=1) -> list:
+        """
+        Returns the queue of tracks remaining in the queue.
+        By default, it will return all tracks after the currently playing one.
+        You can change this with offset.
+        """
         output = []
-        for id in self.queue[self.pos+1:]:
+        for id in self.queue[self.pos+offset:]:
             output.append(self.tracks[id])
         return output
 
