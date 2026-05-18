@@ -11,6 +11,8 @@ from textual.coordinate import Coordinate
 from ms.client.widgets import queuedatatable
 from ms.database.database import Database
 from ms.database.track import Track
+# Playback
+from ms.player.player import Player
 
 # Logic and Objects
 from ms.client.queuelist import QueueList
@@ -41,7 +43,8 @@ class Client(App):
         ("Q", "quit", "Quit"),
         ("f", "favorite_track" , "Favorite"),
         ("l", "skip_track(1)", "Next"),
-        ("h", "skip_track(-1)", "Previous")
+        ("h", "skip_track(-1)", "Previous"),
+        ("space", "pause_track", "Pause/Play")
     ]
 
     def __init__(self):
@@ -57,6 +60,8 @@ class Client(App):
         self.tabs = TabbedContent(id="tabs")
         self.tabs.can_focus_children = False
 
+        self.player = Player()
+
     def compose(self) -> ComposeResult:
         with Vertical():
             yield self.now_playing
@@ -69,6 +74,7 @@ class Client(App):
 
     # Switches tab with h or l
     def action_goto_tab(self, tabid: int) -> None:
+        """Switches to a dedicated tab"""
         all_tabs = ["queue-tab", "tracks-tab"]
         try:
             self.tabs.active = all_tabs[tabid]
@@ -85,7 +91,17 @@ class Client(App):
         self.now_playing.set_track(track)
         self.queue_list.start_queue(queue_ids)
         self.queue_data_table.update_queue(self.queue_list.get_queue())
+        
+        filepaths = []
+        queue = self.queue_list.get_queue()
+        for track in queue:
+            filepaths.append(track.filepath)
+        
+        self.player.set_queue(filepaths)
+        self.player.start_playback()
 
+    def action_pause_track(self) -> None:
+        self.player.toggle_playback()
 
     def action_skip_track(self,offset:int) -> None:
         """Skips to a song in the queue by an offest if the song exists"""
@@ -95,7 +111,7 @@ class Client(App):
         if track:
             self.now_playing.set_track(track)
             self.queue_data_table.update_queue(self.queue_list.get_queue())
-
+            self.player.skip_by_offset(offset)
 
     # When a track is clicked
     def on_data_table_row_selected(self, event: DataTable.RowSelected) -> None:
@@ -120,7 +136,6 @@ class Client(App):
  
         try:
             id = table.get_cell_at(Coordinate(event.cursor_row,0))
-            print(id)
             self.play_track(
                 self.tracks[id],
                 queue_ids
@@ -160,7 +175,6 @@ class Client(App):
         result = self.db.favorite(f"id:{track_id}")[0] if track_id else None
         
         if result:
-            print(result)
             new_track = Track(result)
             self.tracks[track_id] = new_track 
             self.queue_list.tracks[track_id] = new_track 

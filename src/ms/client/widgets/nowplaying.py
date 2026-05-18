@@ -6,20 +6,10 @@ from ms.database.track import Track
 
 class Controls(Static):
     def __init__(self,*args,**kwargs):
-        """
-            Play: ▶
-            Pause: ⏸ 
-            ⏯ 
-            ⏭ 
-            ⏮ (U+23EE)
-
-            
-            
-            """
         super().__init__(*args,**kwargs)
         self.favorite = Button("",id="now-playing-controls-favorite",action="app.favorite_track(-1)")
         self.previous = Button("⏮ ",id="now-playing-controls-previous",action="app.skip_track(-1)")
-        self.toggle = Button("⏸",id="now-playing-controls-toggle")
+        self.toggle = Button("⏸",id="now-playing-controls-toggle",action="app.pause_track()")
         self.next= Button("⏭",id="now-playing-controls-next",action="app.skip_track(1)")
 
     def set_favorite(self,is_favorite:bool) -> None:
@@ -92,9 +82,7 @@ class NowPlaying(Static):
             yield self.controls
                 
     def set_track(self,track:Track):
-        print(track.get_dict())
         self.track_info.set_info(f"󰈣  {track.title}",f"󰠃  {track.artist}",f"󱍙  {track.album}")
         self.controls.set_favorite(track.favorite)
-    
     def on_mount(self) -> None:
         pass

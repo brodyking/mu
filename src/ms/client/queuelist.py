@@ -30,7 +30,8 @@ class QueueList:
         if not self.queue:
             raise ValueError("The queue is empty.") # Or handle how you prefer
 
-        # Use modulo to cleanly wrap around both positive and negative offsets
-        self.pos = (self.pos + offset) % len(self.queue)
+        # Use modulo to cleanly wrap around both positive and negative offset
+        if self.pos + offset < len(self.queue) and self.pos + offset >= 0:
+            self.pos = (self.pos + offset) % len(self.queue)
         
         return self.tracks[self.queue[self.pos]]
