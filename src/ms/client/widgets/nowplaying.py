@@ -5,12 +5,45 @@ from textual.containers import Horizontal, Vertical
 from ms.database.track import Track
 
 class Controls(Static):
+
+    DEFAULT_CSS = """
+    Controls > Horizontal {
+        height: 3;
+        width: auto;
+        align: right middle;
+    }
+    Controls Button {
+        border: none;
+        height: 3;
+        min-height: 3;
+        max-width: 6; 
+        min-width: 1;
+        padding: 0 0;
+        margin: 0 0 0 1;
+        content-align: center middle;
+        text-align: center;
+    }
+
+    .no-bg {
+        min-width: 5;
+        margin: 0 0 0 4;
+        background: transparent!important;
+        border: none!important;
+    }
+
+    Controls Button > .button--label {
+        height: 3;
+        content-align: center middle;
+        text-align: center;
+    }
+    """
+
     def __init__(self,*args,**kwargs):
         super().__init__(*args,**kwargs)
-        self.favorite = Button("",id="now-playing-controls-favorite",action="app.favorite_track(-1)")
-        self.previous = Button("⏮ ",id="now-playing-controls-previous",action="app.skip_track(-1)")
-        self.toggle = Button("⏸",id="now-playing-controls-toggle",action="app.pause_track()")
-        self.next= Button("⏭",id="now-playing-controls-next",action="app.skip_track(1)")
+        self.favorite = Button("",id="now-playing-controls-favorite",action="app.favorite_track(-1)",flat=True,classes="no-bg")
+        self.previous = Button("⏮ ",id="now-playing-controls-previous",action="app.skip_track(-1)",flat=True)
+        self.toggle = Button("⏸",id="now-playing-controls-toggle",action="app.pause_track()",flat=True,variant="primary")
+        self.next= Button("⏭ ",id="now-playing-controls-next",action="app.skip_track(1)",flat=True)
 
     def set_favorite(self,is_favorite:bool) -> None:
         self.favorite.label = "" if is_favorite else ""
@@ -42,7 +75,7 @@ class NowPlayingTrackInfo(Static):
             yield self.album
 
 class NowPlaying(Static):
-    
+   
     DEFAULT_CSS = """
     NowPlaying > Horizontal {
         width: 100%;
@@ -65,11 +98,9 @@ class NowPlaying(Static):
         width: auto;
     }
 
-    #now-playing-controls Button {
-        min-width: 4;         /* Keeps buttons small and compact */
-        margin-left: 1;       /* Adds a little breathing room between buttons */
-    }
+
     """
+
 
     def __init__(self):
         super().__init__()
