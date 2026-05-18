@@ -42,7 +42,7 @@ class Controls(Static):
         super().__init__(*args,**kwargs)
         self.favorite = Button("",id="now-playing-controls-favorite",action="app.favorite_track(-1)",flat=True,classes="no-bg")
         self.previous = Button("⏮ ",id="now-playing-controls-previous",action="app.skip_track(-1)",flat=True)
-        self.toggle = Button("⏸",id="now-playing-controls-toggle",action="app.pause_track()",flat=True,variant="primary")
+        self.toggle = Button("⏸",id="now-playing-controls-toggle",action="app.pause_track()",flat=True)
         self.next= Button("⏭ ",id="now-playing-controls-next",action="app.skip_track(1)",flat=True)
 
     def set_favorite(self,is_favorite:bool) -> None:
