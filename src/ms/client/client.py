@@ -70,7 +70,7 @@ class Client(App):
                     yield self.queue_data_table
                 with TabPane("󰎇 Tracks (t)",id="tracks-tab"):
                     yield self.tracks_data_table
-            yield Footer()
+            yield Footer(compact=True,show_command_palette=False)
 
     # Switches tab with h or l
     def action_goto_tab(self, tabid: int) -> None:
