@@ -6,7 +6,7 @@ from typing import Callable, Optional
 class Player:
 
     def __init__(self, on_track_change: Optional[Callable] = None, on_track_end: Optional[Callable] = None):
-        self.instance = vlc.Instance("--no-xlib",'--file-logging', '--logfile=vlc_log.txt', '--verbose=2')
+        self.instance = vlc.Instance("--no-xlib")
         self.player = vlc.MediaListPlayer(self.instance)
         self.on_track_end = on_track_end
 
@@ -58,3 +58,8 @@ class Player:
         else:
             print(f"Index {new_index} is out of bounds (Playlist size: {total_tracks}).")
 
+    def get_current_time(self) -> tuple[int,float]:
+        """Returns a tuple of the current ms and the current percent of the track"""
+        current_ms = self.player.get_time() if self.player.is_playing() else 0 #type: ignore
+        current_percent = self.player.get_position() if self.player.is_playing() else 0.0 # type: ignore
+        return (current_ms,current_percent)
