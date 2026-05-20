@@ -21,7 +21,7 @@ class Track:
         self.filename=response[14]
         self.albumart=response[15]
 
-    def get(self) -> dict:
+    def get_dict(self) -> dict:
         return {
             "id": self.id,
             "favorite": self.favorite,
@@ -31,7 +31,7 @@ class Track:
             "plays": self.plays,
             "time": self.time,
             "dateadded": self.dateadded,
-            "tracknumer": self.tracknumber,
+            "tracknumber": self.tracknumber,
             "albumartist": self.albumartist,
             "discnumber": self.discnumber,
             "genre": self.genre,

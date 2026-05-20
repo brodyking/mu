@@ -1,10 +1,9 @@
 import sqlite3
 from pathlib import Path
-from ms.file import File
-from ms.util import Util
-from ms.track import Track
+from ms.database.file import File
+from ms.database.track import Track
+from ms.util import Interface
 import shutil
-import json
 
 class Database:
 
@@ -14,9 +13,9 @@ class Database:
         """
 
         # Sets the file paths for db_path, source_path, and albumart_path
-        self.db_path = Path.home() / "Music" / "ms" / "ms.db" if "db_path" not in kwargs else kwargs.get("db_path") 
-        self.source_path = Path.home() / "Music" / "ms" / "source" if "source_folder_path" not in kwargs else kwargs.get("source_path") 
-        self.albumart_path = Path.home() / "Music" / "ms" / "albumart" if "source_folder_path" not in kwargs else kwargs.get("albumart_path") 
+        self.db_path = Path(Path.home() / "Music" / "ms" / "ms.db") if "db_path" not in kwargs else Path(str(kwargs.get("db_path"))) 
+        self.source_path = Path(Path.home() / "Music" / "ms" / "source") if "source_folder_path" not in kwargs else Path(str(kwargs.get("source_path")))
+        self.albumart_path = Path(Path.home() / "Music" / "ms" / "albumart") if "source_folder_path" not in kwargs else Path(str(kwargs.get("albumart_path")))
 
         # Validates that the locations exist and have the necessary files.
         self.validate_library()
@@ -31,7 +30,7 @@ class Database:
                 Checks if database file exists. If it dosen't, it creates it. 
             """
             # Creates blank table if file dosen't exist
-            connection = sqlite3.connect(self.db_path)
+            connection = sqlite3.connect(str(self.db_path))
             connection.execute('''
             CREATE TABLE IF NOT EXISTS "tracks" (
             	"id"	INTEGER NOT NULL UNIQUE,
@@ -54,7 +53,6 @@ class Database:
             )
             ''')
             connection.commit()
-            connection.close()           
         
         if source_folder:
             self.source_path.mkdir(parents=True,exist_ok=True)
@@ -68,13 +66,12 @@ class Database:
            Deletes all tracks from database. Keeps files.
            skip_confirmation bypasses the prompt before deletion. 
         """
-        if skip_confirmation or Util.promptBool("Are you sure you want to erase the database file? This action cannot be undone."):
-            connection = sqlite3.connect(self.db_path)
+        if skip_confirmation or Interface.promptBool("Are you sure you want to erase the database file? This action cannot be undone."):
+            connection = sqlite3.connect(str(self.db_path))
             connection.execute("DELETE FROM tracks;")
             connection.execute("UPDATE sqlite_sequence SET seq = 0 WHERE name = 'tracks';")
             connection.commit();
-            connection.close();
-            Util.print('Database has been reset. Your files are still in ~/ms/source/. Type "ms scan" to rebuild.')
+            Interface.print('Database has been reset. Your files are still in ~/ms/source/. Type "ms scan" to rebuild.')
 
     def upsert_track(self,connection,metadata:dict) -> None:
         """
@@ -111,25 +108,31 @@ class Database:
                 )
             """, metadata)
 
+        connection.commit()
+
+    def upsert_track_once(self,metadata:dict) -> None:
+        connection = sqlite3.connect(str(self.db_path))
+        self.upsert_track(connection,metadata)
+
     def scan_folder(self,path) -> None:
         """
            Scans the path for music files.
            Each file is stored in the DB and has its album art hashed/saved. 
         """
-        connection = sqlite3.connect(self.db_path)
+        connection = sqlite3.connect(str(self.db_path))
 
         mp3s = list(path.rglob("*.mp3"))
 
         for i, filepath in enumerate(mp3s,1):
             try:
-                metadata = File.read_metadata(filepath)
-                self.upsert_track(connection,metadata)
-                Util.print(f"{filepath.name}",count=[i+1,len(mp3s)])
+                metadata = File.read_metadata(filepath) # Gets dict of files metadata
+                self.upsert_track(connection,metadata) # Updates the track
+                print(metadata)
+                Interface.print(f"{filepath.name}",count=[i+1,len(mp3s)])
             except Exception as e:
-                Util.print(f"{filepath.name}\n{e}",count=[i+1,len(mp3s)],ok=False)
+                Interface.print(f"{filepath.name}\n{e}",count=[i+1,len(mp3s)],ok=False)
 
         connection.commit()
-        connection.close()
 
     def scan_source_folder(self):
         """
@@ -144,7 +147,7 @@ class Database:
         """
         metadata = File.read_metadata(path)
         
-        newpath = Path(Path.home() / self.source_path / metadata["artist"] / metadata["album"] )
+        newpath = Path(Path.home() / str(self.source_path) / metadata["artist"] / metadata["album"] )
         newpath.mkdir(exist_ok=True,parents=True)
         shutil.copy(path,newpath)
 
@@ -163,46 +166,34 @@ class Database:
         else:
             mp3s = [path]
 
-        connection = sqlite3.connect(self.db_path)
+        connection = sqlite3.connect(str(self.db_path))
         for i, filepath in enumerate(mp3s,1):
             try:
                 metadata = self.copy_file(filepath)
                 self.upsert_track(connection,metadata)
-                if console_out: Util.print(f"{filepath.name}",count=[i+1,len(mp3s)])
+                if console_out: Interface.print(f"{filepath.name}",count=[i+1,len(mp3s)])
             except Exception as e:
-                Util.print(f"{filepath.name}\n{e}",count=[i+1,len(mp3s)],ok=False)
+                Interface.print(f"{filepath.name}\n{e}",count=[i+1,len(mp3s)],ok=False)
 
         connection.commit()
-        connection.close()
 
-    def search(self, term: str, export_json=False,export_path=False,console_out:bool=True) -> list | str:
+    def search(self, term: str,console_out:bool=True) -> list:
         """
-            Searches the database for tracks with prefix support.
+            Searches the database for tracks with prefix support. If no prefix is given, it will search by id.
+            Returns a list of tracks.
         """
-    
-        prefixes = {
-            "id:": "id",
-            "favorite:": "favorite",
-            "title:": "title",
-            "artist:": "artist",
-            "album:": "album",
-            "plays:": "plays",
-            "time:": "time",
-            "dateadded:": "dateadded",
-            "tracknumber:": "tracknumber",
-            "albumartist:": "albumartist",
-            "discnumber:": "discnumber",
-            "genre:": "genre",
-            "date:": "date",
-            "filepath:": "filepath",
-            "filename:": "filename",
-            "albumart:": "albumart"
-        }
+
+        # All col's in the database
+        prefixes = [
+            "id", "favorite","title", "artist", "album", "plays", "time", "dateadded", "tracknumber", "albumartist", "discnumber", "genre", "date", "filepath", "filename", "albumart"
+        ]
 
         # Finds the target column if user is using a prefix.
-        target_column = next((col for pref, col in prefixes.items() if term.startswith(pref)), None)
-
-        with sqlite3.connect(self.db_path) as connection:
+        target_column = term.split(":",1)[0] if term.split(":",1)[0] in prefixes else None
+        if target_column is None:
+            Interface.print("The search query is missing a prefix. Please specify how you are searching by typing the prefix followed by a colon. Ex: title:,artist:",ok=False)
+            raise ValueError("The search query is missing a prefix. Please specify how you are searching by typing the prefix followed by a colon. Ex: title:,artist:")
+        with sqlite3.connect(str(self.db_path)) as connection:
             cursor = connection.cursor()
 
             if target_column:
@@ -228,73 +219,65 @@ class Database:
                 """, (fmt, fmt, fmt, fmt))
 
             results = cursor.fetchall()
-
-        if not export_json and not export_path:
             export = []
             for i, result in enumerate(results):
-                if console_out: Util.print("", track=Track(result), count=[i + 1, len(results)])
+                if console_out: Interface.print("", track=Track(result), count=[i + 1, len(results)])
                 export.append(Track(result))
             return export
-        elif export_json:
-            json_export = json.dumps(results)
-            print(json_export)
-            return json_export
-        elif export_path:
-            path_export = []
-            for result in results:
-                track = Track(result)
-                path_export.append(track.filepath)
-                print(track.filepath)
-            return path_export
 
+    def increment_play_count(self, term:str,amount:int=1,console_out:bool=True) -> list:
+        """Increment track(s) play counts by either 1 or a custom amount"""
+        tracks: list[Track] = self.search(f"{term}",console_out=False)
+        connection = sqlite3.connect(self.db_path)
+        cursor = connection.cursor()
+        results = []
+        for track in tracks:
+            cursor.execute("UPDATE tracks SET plays = ? WHERE id = ?",(track.plays + amount,track.id))
+            cursor.execute("SELECT * FROM tracks WHERE id = ?",(track.id,))
+            results.append(cursor.fetchone())
+        connection.commit()
+        if console_out:
+            for result in results:
+                if result is not None: Interface.print("",track=Track(result))
         return results
 
-
-    def list_library(self,export_json: bool=False,only_favorited: bool=False,console_out:bool=True) -> list | str:
+    def list_library(self,only_favorited: bool=False,console_out:bool=True) -> dict:
         """
-            Lists all of the tracks in the database, or just fav ones
+            Returns all tracks in a dict, with the key being the songs ID.
         """
-        connection = sqlite3.connect(self.db_path)
+        connection = sqlite3.connect(str(self.db_path))
         cursor = connection.cursor()
         if only_favorited:
             cursor.execute("SELECT * FROM tracks WHERE favorite = 1 ORDER BY artist")
         else:
             cursor.execute("SELECT * FROM tracks ORDER BY artist")
         results = cursor.fetchall()
-
-        if export_json:
-            json_export = json.dumps(results)
-            print(json_export)
-            return json_export
-        else:
-            track_export = {}
-            for i, result in enumerate(results):
-                track = Track(result)
-                track_export[track.id] = track
-                if console_out: Util.print("",track=track,count=[i+1,len(results)])
-            return track_export
+        track_export = {}
+        for i, result in enumerate(results):
+            track = Track(result)
+            track_export[track.id] = track
+            if console_out: Interface.print("",track=track,count=[i+1,len(results)])
+        return track_export
 
 
-    def favorite_track(self,term: str,console_out:bool=True) -> Track:
+    def favorite(self,term: str,console_out:bool=True) -> list:
         """
           Lets a user favorite a track by title or id if search starts with id:  
         """
 
-        with sqlite3.connect(self.db_path) as connection:
-            cursor = connection.cursor()
+        tracks = self.search(term,console_out=False)
+        
+        connection = sqlite3.connect(self.db_path)
+        cursor = connection.cursor()
+        results = []
+        for track in tracks:
+            cursor.execute("UPDATE tracks SET favorite = 1 - favorite WHERE id = ?", (track.id,))
+            cursor.execute("SELECT * FROM tracks WHERE id = ?", (track.id,))
+            results.append(cursor.fetchone())
 
-            if term.startswith("id:"):
-                target_id = term.split(":")[1]
-                cursor.execute("UPDATE tracks SET favorite = 1 - favorite WHERE id = ?", (target_id,))
-                cursor.execute("SELECT * FROM tracks WHERE id = ?", (target_id,))
-            else:
-                cursor.execute("UPDATE tracks SET favorite = 1 - favorite WHERE title = ?", (term,))
-                cursor.execute("SELECT * FROM tracks WHERE title LIKE ?", (term,))
-            result = cursor.fetchone()
-            if result is not None:
-                track = Track(result)
-                if console_out: Util.print("", track=track)
-                return track
-            return None
+        connection.commit()
+        if console_out:
+            for result in results:
+                if result is not None: Interface.print("", track=Track(result))
+        return results
 
-        connection.close()

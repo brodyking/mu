@@ -1,4 +1,17 @@
 import subprocess
+from ms.database.track import Track
+
+class Mpv:
+	@staticmethod
+	def play(tracks: list) -> None:
+		"""
+		Plays a list of files in mpv
+		"""
+		track_paths = []
+		for track in tracks:
+			track_paths.append(track.filepath)
+		Interface.print(f"Starting mpv playback for {track_paths}")
+		subprocess.run(["mpv"] + track_paths)
 
 class Color:
 	# Standard Colors (Lower Intensity)
@@ -35,14 +48,7 @@ class Color:
 	@staticmethod
 	def white(s): return("\033[97m{}\033[00m".format(s))
 
-class Util:
-
-	@staticmethod
-	def fmt(text, width):
-	    text = str(text or "")
-	    if len(text) > width:
-	        return text[:width-2] + ".."
-	    return text.ljust(width)
+class Interface:
 
 	@staticmethod
 	def print(content: str, **kwargs):
@@ -64,9 +70,9 @@ class Util:
 
 		searchresult = (
 			f"{Color.light_gray('#'+str(track.id).rjust(4, "0"))} "
-		    f"{favorited}{Color.red(Util.fmt(f"{track.title}", 25))} | "
-			f"{Util.fmt(track.artist, 15)} | "
-		    f"{Util.fmt(track.album, 15)} | "
+		    f"{favorited}{Color.red(Interface.fmt(f"{track.title}", 25))} | "
+			f"{Interface.fmt(track.artist, 15)} | "
+		    f"{Interface.fmt(track.album, 15)} | "
 		    f"{Color.blue(track.filepath)}"
 		) if track is not None else ""
 		
@@ -84,13 +90,12 @@ class Util:
 				return True
 			elif response == "n" or response == 0 or response == "no":
 				return False
-
-
 	@staticmethod
-	def mpv(track_paths: list) -> None:
-		"""
-		Plays a list of files in mpv
-		"""
-		Util.print(f"Starting mpv playback for {track_paths}")
-		subprocess.run(["mpv"] + track_paths)
+	def fmt(text, width):
+	    """Add spaces to string or add ... if too large"""
+	    text = str(text or "")
+	    if len(text) > width:
+	        return text[:width-2] + ".."
+	    return text.ljust(width)
+
 
