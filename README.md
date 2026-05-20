@@ -1,25 +1,29 @@
 # ms (based music server)
 
-> [!WARNING]
-> This software is not licensed for reproduction by anyone other than Brody
-> King. No AI models are allowed to train on this codebase.
-
-ms is a macos music library management tool and music player. It can function
-both from the cli and a gui interface. it is designed to be portable (a single
-executable) and backup friendly. All music is stored in a hierarchical format,
-and the internal database is a simple sqlite file.
+ms is a macos and linux music library management tool and music player. It can
+function both from the cli and a gui interface. it is designed to be portable (a
+single executable) and backup friendly. All music is stored in a hierarchical
+format, and the internal database is a simple sqlite file.
 
 <!--toc:start-->
 
 - [ms (based music server)](#ms-based-music-server)
   - [Install](#install)
-    - [Method 1: Install as python package](#method-1-install-as-python-package)
-    - [Method 2: Build](#method-2-build)
+    - [Step 1: Download Python and VLC](#step-1-download-python-and-vlc)
+    - [Step 2: Download the source code](#step-2-download-the-source-code)
+    - [Step 3: Install as python package](#step-3-install-as-python-package)
   - [Usage](#usage)
 
 <!--toc:end-->
 
 ## Install
+
+### Step 1: Download Python and VLC
+
+Please ensure you have python version 3.12.13 or newer downloaded, alongside
+pip. You must also have VLC downloaded for the client to play back music.
+
+### Step 2: Download the source code
 
 First, clone the repo
 
@@ -27,29 +31,12 @@ First, clone the repo
 git clone https://github.com/brodyking/ms.git
 ```
 
-To install ms, there are two different ways.
-
-### Method 1: Install as python package
+### Step 3: Install as python package
 
 Navigate to the repo, then install it as a python package
 
 ```
 pip install .
-```
-
-### Method 2: Build
-
-The most common way to build ms is through the desktop client. To build ms's
-client, navigate to the repo and use pyinstaller:
-
-```
-pyinstaller  --icon="assets/logo1024.icns" --window --name "ms" src/ms/client/client.py
-```
-
-To build the ms cli and client, navigate to the repo, and use pyinstaller:
-
-```
-pyinstaller --console --name "ms" src/ms/main.py
 ```
 
 ## Usage
