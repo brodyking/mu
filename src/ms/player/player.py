@@ -1,12 +1,22 @@
 import vlc
 import pathlib
 import urllib.parse
+from typing import Callable, Optional
 
 class Player:
 
-    def __init__(self):
+    def __init__(self, on_track_change: Optional[Callable] = None, on_track_end: Optional[Callable] = None):
         self.instance = vlc.Instance("--no-xlib",'--file-logging', '--logfile=vlc_log.txt', '--verbose=2')
         self.player = vlc.MediaListPlayer(self.instance)
+        self.on_track_end = on_track_end
+
+        # Attach to the underlying MediaPlayer's event manager
+        em = self.player.get_media_player().event_manager() # type: ignore
+        em.event_attach(vlc.EventType.MediaPlayerEndReached, self._on_track_end) # type: ignore
+
+    def _on_track_end(self, event):
+        if self.on_track_end:
+            self.on_track_end(event)
 
     def set_queue(self,filepaths: list[str]) -> None:
         """Creates the queue from a list of file paths"""

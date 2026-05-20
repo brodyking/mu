@@ -25,7 +25,6 @@ from ms.client.widgets.nowplaying import NowPlaying
 class Client(App):
 
     CSS = """
-
         TracksDataTable {
             height: 1fr;    /* Tells the table to take up the "fractional" remaining space */
         }
@@ -60,7 +59,7 @@ class Client(App):
         self.tabs = TabbedContent(id="tabs")
         self.tabs.can_focus_children = False
 
-        self.player = Player()
+        self.player = Player(on_track_end=lambda event:self.track_finished_playing())
 
     def compose(self) -> ComposeResult:
         with Vertical():
@@ -72,9 +71,8 @@ class Client(App):
                     yield self.tracks_data_table
             yield Footer(compact=True,show_command_palette=False)
 
-    # Switches tab with h or l
     def action_goto_tab(self, tabid: int) -> None:
-        """Switches to a dedicated tab"""
+        """Switches to a dedicated tab with h or l keys."""
         all_tabs = ["queue-tab", "tracks-tab"]
         try:
             self.tabs.active = all_tabs[tabid]
@@ -101,6 +99,7 @@ class Client(App):
         self.player.start_playback()
 
     def action_pause_track(self) -> None:
+        """Pauses the player"""
         self.player.toggle_playback()
 
     def action_skip_track(self,offset:int) -> None:
@@ -109,11 +108,9 @@ class Client(App):
             return
         track = self.queue_list.skip_track(offset)
         if track:
-            self.now_playing.set_track(track)
-            self.queue_data_table.update_queue(self.queue_list.get_queue())
             self.player.skip_by_offset(offset)
+            self.update_now_playing()
 
-    # When a track is clicked
     def on_data_table_row_selected(self, event: DataTable.RowSelected) -> None:
         """Logic when a cell is clicked. Starts now playing and the queue."""
 
@@ -136,20 +133,28 @@ class Client(App):
  
         try:
             id = table.get_cell_at(Coordinate(event.cursor_row,0))
-            self.play_track(
-                self.tracks[id],
-                queue_ids
-            )
+            self.play_track(self.tracks[id], queue_ids)
         except Exception as e:
             self.app.notify(f"Error fetching cell data: {e}", severity="error")
+
+    def track_finished_playing(self) -> None:
+        """This function is called when the track finishes from the player"""
+        self.queue_list.skip_track()
+        self.update_now_playing()
+
+    def update_now_playing(self) -> None:
+        track = self.queue_list.get_current_track()
+        if track:
+            self.now_playing.set_track(track)
+            self.queue_data_table.update_queue(self.queue_list.get_queue())
 
     def update_track_lists(self,tracks:dict) -> None:
         self.tracks = tracks
         self.queue_list.tracks = dict(self.tracks) 
         self.tracks_data_table.tracks = dict(self.tracks)
 
-    # When f is pressed while browsing tracks
     def action_favorite_track(self) -> None:
+        """When f is pressed while browsing tracks"""
         # Check if a table is focused
         track_id = None
         table = None
