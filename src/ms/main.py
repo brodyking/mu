@@ -2,7 +2,7 @@ import argparse
 from ms.util import Interface, Mpv
 from ms.client.client import start_client
 from ms.database.database import Database
-VERSION = "0.0.2"
+VERSION = "0.1.0"
 
 def main():
     db = Database()
