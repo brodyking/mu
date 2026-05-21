@@ -1,5 +1,5 @@
 import subprocess
-from ms.database.track import Track
+from mu.database.track import Track
 
 class Mpv:
 	@staticmethod

@@ -1,8 +1,8 @@
 import sqlite3
 from pathlib import Path
-from ms.database.file import File
-from ms.database.track import Track
-from ms.util import Interface
+from mu.database.file import File
+from mu.database.track import Track
+from mu.util import Interface
 import shutil
 
 class Database:
@@ -13,9 +13,9 @@ class Database:
         """
 
         # Sets the file paths for db_path, source_path, and albumart_path
-        self.db_path = Path(Path.home() / "Music" / "ms" / "ms.db") if "db_path" not in kwargs else Path(str(kwargs.get("db_path"))) 
-        self.source_path = Path(Path.home() / "Music" / "ms" / "source") if "source_folder_path" not in kwargs else Path(str(kwargs.get("source_path")))
-        self.albumart_path = Path(Path.home() / "Music" / "ms" / "albumart") if "source_folder_path" not in kwargs else Path(str(kwargs.get("albumart_path")))
+        self.db_path = Path(Path.home() / "Music" / "mu" / "mu.db") if "db_path" not in kwargs else Path(str(kwargs.get("db_path"))) 
+        self.source_path = Path(Path.home() / "Music" / "mu" / "source") if "source_folder_path" not in kwargs else Path(str(kwargs.get("source_path")))
+        self.albumart_path = Path(Path.home() / "Music" / "mu" / "albumart") if "source_folder_path" not in kwargs else Path(str(kwargs.get("albumart_path")))
 
         # Validates that the locations exist and have the necessary files.
         self.validate_library()
@@ -71,7 +71,7 @@ class Database:
             connection.execute("DELETE FROM tracks;")
             connection.execute("UPDATE sqlite_sequence SET seq = 0 WHERE name = 'tracks';")
             connection.commit();
-            Interface.print('Database has been reset. Your files are still in ~/ms/source/. Type "ms scan" to rebuild.')
+            Interface.print('Database has been reset. Your files are still in ~/mu/source/. Type "mu scan" to rebuild.')
 
     def upsert_track(self,connection,metadata:dict) -> None:
         """
@@ -136,7 +136,7 @@ class Database:
 
     def scan_source_folder(self):
         """
-           Scans the ms/source/ folder for music files.
+           Scans the mu/source/ folder for music files.
            Each file is stored in the DB and has its album art hashed/saved. 
         """
         self.scan_folder(self.source_path)
@@ -157,7 +157,7 @@ class Database:
          
     def import_media(self,path,console_out:bool=True) -> None:
         """
-            Copies the file or files (if dir) to ~/ms/source, upserts metadata to the database.
+            Copies the file or files (if dir) to ~/mu/source, upserts metadata to the database.
         """
         path = Path(path).resolve()
 

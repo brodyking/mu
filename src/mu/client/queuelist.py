@@ -1,4 +1,4 @@
-from ms.database.track import Track
+from mu.database.track import Track
 
 class QueueList:
     def __init__(self,tracks:dict) -> None:
