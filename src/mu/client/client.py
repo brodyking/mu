@@ -1,5 +1,5 @@
 
-# ms client source code
+# mu client source code
 # (c) 2026 all rights reserved
 
 # Textualize
@@ -8,19 +8,19 @@ from textual.widgets import Footer, DataTable, TabbedContent, TabPane
 from textual.containers import Vertical
 from textual.coordinate import Coordinate
 # Database connection
-from ms.client.widgets import queuedatatable
-from ms.database.database import Database
-from ms.database.track import Track
+from mu.client.widgets import queuedatatable
+from mu.database.database import Database
+from mu.database.track import Track
 # Playback
-from ms.player.player import Player
+from mu.player.player import Player
 
 # Logic and Objects
-from ms.client.queuelist import QueueList
+from mu.client.queuelist import QueueList
 
 # Widgets
-from ms.client.widgets.tracksdatatable import TracksDataTable
-from ms.client.widgets.queuedatatable import QueueDataTable
-from ms.client.widgets.nowplaying import NowPlaying
+from mu.client.widgets.tracksdatatable import TracksDataTable
+from mu.client.widgets.queuedatatable import QueueDataTable
+from mu.client.widgets.nowplaying import NowPlaying
 
 class Client(App):
 

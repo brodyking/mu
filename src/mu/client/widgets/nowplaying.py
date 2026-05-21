@@ -2,7 +2,7 @@ from textual.app import ComposeResult
 from textual.widgets import Static, Label, Button
 from textual.containers import Horizontal, Vertical
 
-from ms.database.track import Track
+from mu.database.track import Track
 
 class Controls(Static):
 

@@ -1,5 +1,5 @@
-from ms.client.widgets.tracksdatatable import TracksDataTable
-from ms.util import Interface
+from mu.client.widgets.tracksdatatable import TracksDataTable
+from mu.util import Interface
 
 class QueueDataTable(TracksDataTable):
     def __init__(self,*args,**kwargs):

@@ -1,6 +1,6 @@
 from textual.app import ComposeResult
 from textual.widgets import DataTable, Input, Static
-from ms.util import Interface
+from mu.util import Interface
 
 # A separate class to wrap the table and other widgets (like search)
 class VimDataTable(DataTable):

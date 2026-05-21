@@ -1,13 +1,13 @@
 import argparse
-from ms.util import Interface, Mpv
-from ms.client.client import start_client
-from ms.database.database import Database
+from mu.util import Interface, Mpv
+from mu.client.client import start_client
+from mu.database.database import Database
 VERSION = "0.1.0"
 
 def main():
     db = Database()
 
-    parser = argparse.ArgumentParser(prog="Based Music Server",description="This program manages your library of music",epilog="Created and maintained by Brody King. You can find this project at https://github.com/brodyking/ms")
+    parser = argparse.ArgumentParser(prog="μ",description="your personal music library",epilog="Created and maintained by Brody King. You can find this project at https://github.com/brodyking/mu")
 
     subparsers = parser.add_subparsers(dest="action", help="options for library", required=True)
 
@@ -33,7 +33,7 @@ def main():
     favorite_parser.add_argument("term",help="the name of the track you wish to favorite (use id: to select by id)")
 
     # Importing
-    import_parser = subparsers.add_parser("import", help="import individual files",description="Import file(s) to ms. Directories or individual files can be selected.")
+    import_parser = subparsers.add_parser("import", help="import individual files",description="Import file(s) to Mu. Directories or individual files can be selected.")
     import_parser.add_argument("filepath",help="path to the file being imported")
 
     # Searching

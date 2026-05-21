@@ -3,16 +3,16 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project.scripts]
-ms = "ms.main:main"
+mu = "mu.main:main"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/ms/"]
+packages = ["src/mu/"]
 
 [project]
-name = "ms"
-version = "0.0.3"
+name = "mu"
+version = "0.1.0"
 requires-python = ">=3.12.13"
-description = "Based Music Server"
+description = "your personal music library"
 dependencies = [
     "mutagen",
     "textual",
