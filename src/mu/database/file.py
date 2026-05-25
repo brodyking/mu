@@ -46,14 +46,11 @@ class File:
         }
 
     @staticmethod
-    def extract_album_art(filepath: Path,albumart_path:Path) -> str | None:
+    def extract_album_art(filepath: Path, albumart_path: Path) -> str | None:
         """
-            Extracts album art from a song file, and stores it in ms/albumart/.
-            All images are hashed and stored with the hash as the filename.
-            This prevents duplicates for same album covers.
-
-            It then returns the file path
-        
+        Extracts album art from a song file and saves it to albumart_path.
+        Images are deduplicated by storing them as <sha256hash>.<ext>.
+        Returns the path to the saved image, or None if no art is found.
         """
         try:
             tags = ID3(filepath)
@@ -62,11 +59,13 @@ class File:
 
         for tag in tags.values():
             if isinstance(tag, APIC):
-                art_hash = hashlib.sha256(tag.data).hexdigest()
-                ext = "jpg" if tag.mime == "image/jpeg" else "png"
+                art_hash = hashlib.sha256(tag.data).hexdigest() # type: ignore
+                ext = "jpg" if tag.mime == "image/jpeg" else "png" # type: ignore
+                art_path = albumart_path / f"{art_hash}.{ext}"
 
-                if not albumart_path.exists():
-                    albumart_path.write_bytes(tag.data)
-                return str(albumart_path)
+                if not art_path.exists():
+                    art_path.write_bytes(tag.data) # type: ignore
+
+                return str(art_path)
 
         return None
