@@ -14,8 +14,8 @@ class Database:
 
         # Sets the file paths for db_path, source_path, and albumart_path
         self.db_path = Path(Path.home() / "Music" / "mu" / "mu.db") if "db_path" not in kwargs else Path(str(kwargs.get("db_path"))) 
-        self.source_path = Path(Path.home() / "Music" / "mu" / "source") if "source_folder_path" not in kwargs else Path(str(kwargs.get("source_path")))
-        self.albumart_path = Path(Path.home() / "Music" / "mu" / "albumart") if "source_folder_path" not in kwargs else Path(str(kwargs.get("albumart_path")))
+        self.source_path = Path(Path.home() / "Music" / "mu" / "source") if "source_path" not in kwargs else Path(str(kwargs.get("source_path")))
+        self.albumart_path = Path(Path.home() / "Music" / "mu" / "albumart") if "albumart_path" not in kwargs else Path(str(kwargs.get("albumart_path")))
 
         # Validates that the locations exist and have the necessary files.
         self.validate_library()
