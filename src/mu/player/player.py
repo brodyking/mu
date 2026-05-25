@@ -5,18 +5,24 @@ from typing import Callable, Optional
 
 class Player:
 
-    def __init__(self, on_track_change: Optional[Callable] = None, on_track_end: Optional[Callable] = None):
+    def __init__(self, on_time_changed: Optional[Callable] = None,on_track_end: Optional[Callable] = None):
         self.instance = vlc.Instance("--no-xlib")
         self.player = vlc.MediaListPlayer(self.instance)
         self.on_track_end = on_track_end
+        self.on_time_changed = on_time_changed
 
         # Attach to the underlying MediaPlayer's event manager
         em = self.player.get_media_player().event_manager() # type: ignore
         em.event_attach(vlc.EventType.MediaPlayerEndReached, self._on_track_end) # type: ignore
+        em.event_attach(vlc.EventType.MediaPlayerTimeChanged, self._on_time_changed) # type: ignore
 
     def _on_track_end(self, event):
         if self.on_track_end:
             self.on_track_end(event)
+
+    def _on_time_changed(self, event):
+        if self.on_time_changed:
+            self.on_time_changed(event.u.new_time)
 
     def set_queue(self,filepaths: list[str]) -> None:
         """Creates the queue from a list of file paths"""
