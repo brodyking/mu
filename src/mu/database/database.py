@@ -1,9 +1,10 @@
 import sqlite3
+import shutil
 from pathlib import Path
+
 from mu.database.file import File
 from mu.database.track import Track
 from mu.util import Interface
-import shutil
 
 class Database:
 
