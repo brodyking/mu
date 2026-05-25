@@ -270,7 +270,7 @@ class Database:
                 results.append(cursor.fetchone())
             connection.commit()
         if console_out:
-            for result in results:
-                if result is not None: Interface.print("", track=Track(result))
+            for i, result in enumerate(results):
+                if result is not None: Interface.print("", track=Track(result), count=[i+1,len(results)])
         return results
 
