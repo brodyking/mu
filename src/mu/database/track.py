@@ -3,6 +3,7 @@ class Track:
     def __init__(self,response):
         """
             Creates a track object from SQLite response
+            TODO: Make this not selected from a tuple
         """
         self.id=response[0]
         self.favorite=bool(response[1])
