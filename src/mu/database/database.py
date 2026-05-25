@@ -125,9 +125,9 @@ class Database:
                 try:
                     metadata = File.read_metadata(filepath,self.albumart_path) # Gets dict of files metadata
                     self.upsert_track(connection,metadata) # Updates the track
-                    Interface.print(f"{filepath.name}",count=[i+1,len(mp3s)])
+                    Interface.print(f"{filepath.name}",count=[i,len(mp3s)])
                 except Exception as e:
-                    Interface.print(f"{filepath.name}\n{e}",count=[i+1,len(mp3s)],ok=False)
+                    Interface.print(f"{filepath.name}\n{e}",count=[i,len(mp3s)],ok=False)
 
             connection.commit()
 
@@ -144,18 +144,16 @@ class Database:
         """
         metadata = File.read_metadata(path,self.albumart_path)
 
-        newpath = Path(str(self.source_path) / metadata["artist"] / metadata["album"] )
+        newpath = Path(self.source_path / metadata["artist"] / metadata["album"])
         newpath.mkdir(exist_ok=True,parents=True)
         shutil.copy(path,newpath)
 
-        metadata["filepath"] = str(newpath / metadata["filename"])
+        metadata["filepath"] = str(Path(newpath / metadata["filename"]))
     
         return metadata
          
     def import_media(self,path,console_out:bool=True) -> None:
-        """
-            Copies the file or files (if dir) to ~/mu/source, upserts metadata to the database.
-        """
+        """Copies the file or files (if dir) to ~/mu/source, upserts metadata to the database."""
         path = Path(path).resolve()
 
         if (path.is_dir()):
@@ -168,9 +166,9 @@ class Database:
                 try:
                     metadata = self.copy_file(filepath)
                     self.upsert_track(connection,metadata)
-                    if console_out: Interface.print(f"{filepath.name}",count=[i+1,len(mp3s)])
+                    if console_out: Interface.print(f"{filepath.name}",count=[i,len(mp3s)])
                 except Exception as e:
-                    Interface.print(f"{filepath.name}\n{e}",count=[i+1,len(mp3s)],ok=False)
+                    Interface.print(f"{filepath.name}\n{e}",count=[i,len(mp3s)],ok=False)
 
             connection.commit()
 
