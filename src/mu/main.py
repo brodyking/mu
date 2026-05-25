@@ -1,8 +1,9 @@
 import argparse
+from importlib.metadata import version
 from mu.util import Interface, Mpv
 from mu.client.client import start_client
 from mu.database.database import Database
-VERSION = "0.1.0"
+VERSION = version("mu") 
 
 def main():
     db = Database()
