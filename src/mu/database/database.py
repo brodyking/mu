@@ -90,7 +90,6 @@ class Database:
                     artist      = :artist,
                     album       = :album,
                     time        = :time,
-                    dateadded   = :dateadded,
                     albumartist = :albumartist,
                     tracknumber = :tracknumber,
                     discnumber  = :discnumber,
@@ -102,9 +101,9 @@ class Database:
         else:
             connection.execute("""
                 INSERT INTO tracks (
-                    filepath, filename, title, artist, album, albumartist, tracknumber, discnumber, date, genre, albumart
+                   title, artist, album, time, dateadded, tracknumber, albumartist, discnumber, genre, date, filepath, filename, albumart
                 ) VALUES (
-                    :filepath, :filename, :title, :artist, :album, :albumartist, :tracknumber, :discnumber, :date, :genre, :albumart
+                   :title, :artist, :album, :time, :dateadded, :tracknumber, :albumartist, :discnumber, :genre, :date, :filepath, :filename, :albumart
                 )
             """, metadata)
 
@@ -146,13 +145,13 @@ class Database:
            Copies the file, and returns the new metadata of the file. 
         """
         metadata = File.read_metadata(path,self.albumart_path)
-        
+
         newpath = Path(Path.home() / str(self.source_path) / metadata["artist"] / metadata["album"] )
         newpath.mkdir(exist_ok=True,parents=True)
         shutil.copy(path,newpath)
 
         metadata["filepath"] = str(newpath / metadata["filename"])
-
+    
         return metadata
          
     def import_media(self,path,console_out:bool=True) -> None:
