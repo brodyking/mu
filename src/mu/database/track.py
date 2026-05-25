@@ -21,6 +21,10 @@ class Track:
         self.filename=response[14]
         self.albumart=response[15]
 
+    def get_time_ms(self) -> int:
+        minutes, seconds = map(int, self.time.split(':'))
+        return (minutes * 60 * 1000) + (seconds * 1000)
+
     def get_dict(self) -> dict:
         return {
             "id": self.id,
