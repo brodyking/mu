@@ -126,7 +126,6 @@ class Database:
             try:
                 metadata = File.read_metadata(filepath,self.albumart_path) # Gets dict of files metadata
                 self.upsert_track(connection,metadata) # Updates the track
-                print(metadata)
                 Interface.print(f"{filepath.name}",count=[i+1,len(mp3s)])
             except Exception as e:
                 Interface.print(f"{filepath.name}\n{e}",count=[i+1,len(mp3s)],ok=False)
