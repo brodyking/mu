@@ -144,7 +144,7 @@ class Database:
         """
         metadata = File.read_metadata(path,self.albumart_path)
 
-        newpath = Path(Path.home() / str(self.source_path) / metadata["artist"] / metadata["album"] )
+        newpath = Path(str(self.source_path) / metadata["artist"] / metadata["album"] )
         newpath.mkdir(exist_ok=True,parents=True)
         shutil.copy(path,newpath)
 
