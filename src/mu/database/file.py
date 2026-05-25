@@ -9,7 +9,7 @@ import hashlib
 class File:
     
     @staticmethod
-    def read_metadata(filepath: Path) -> dict:
+    def read_metadata(filepath: Path,albumart_path:Path) -> dict:
         """
             Reads the metadata for the file and returns all the data as a dict.
             Album art is stored from extract_album_art(), and the key is set to the file path.
@@ -42,11 +42,11 @@ class File:
             "discnumber": get(tags, "discnumber"),
             "date": get(tags, "date"),
             "genre": get(tags, "genre"),
-            "albumart": File.extract_album_art(filepath),
+            "albumart": File.extract_album_art(filepath,albumart_path),
         }
 
     @staticmethod
-    def extract_album_art(filepath: Path) -> str | None:
+    def extract_album_art(filepath: Path,albumart_path:Path) -> str | None:
         """
             Extracts album art from a song file, and stores it in ms/albumart/.
             All images are hashed and stored with the hash as the filename.
@@ -64,16 +64,9 @@ class File:
             if isinstance(tag, APIC):
                 art_hash = hashlib.sha256(tag.data).hexdigest()
                 ext = "jpg" if tag.mime == "image/jpeg" else "png"
-                art_path = (
-                    Path.home()
-                    / "Music"
-                    / "ms"
-                    / "albumart"
-                    / f"{art_hash}.{ext}"
-                )
 
-                if not art_path.exists():
-                    art_path.write_bytes(tag.data)
-                return str(art_path)
+                if not albumart_path.exists():
+                    albumart_path.write_bytes(tag.data)
+                return str(albumart_path)
 
         return None

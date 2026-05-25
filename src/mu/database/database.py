@@ -125,7 +125,7 @@ class Database:
 
         for i, filepath in enumerate(mp3s,1):
             try:
-                metadata = File.read_metadata(filepath) # Gets dict of files metadata
+                metadata = File.read_metadata(filepath,self.albumart_path) # Gets dict of files metadata
                 self.upsert_track(connection,metadata) # Updates the track
                 print(metadata)
                 Interface.print(f"{filepath.name}",count=[i+1,len(mp3s)])
@@ -145,7 +145,7 @@ class Database:
         """
            Copies the file, and returns the new metadata of the file. 
         """
-        metadata = File.read_metadata(path)
+        metadata = File.read_metadata(path,self.albumart_path)
         
         newpath = Path(Path.home() / str(self.source_path) / metadata["artist"] / metadata["album"] )
         newpath.mkdir(exist_ok=True,parents=True)
