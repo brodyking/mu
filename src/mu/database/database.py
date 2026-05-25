@@ -30,29 +30,29 @@ class Database:
                 Checks if database file exists. If it dosen't, it creates it. 
             """
             # Creates blank table if file dosen't exist
-            connection = sqlite3.connect(str(self.db_path))
-            connection.execute('''
-            CREATE TABLE IF NOT EXISTS "tracks" (
-            	"id"	INTEGER NOT NULL UNIQUE,
-            	"favorite" INT DEFAULT 0,
-            	"title"	TEXT,
-            	"artist"	TEXT,
-            	"album"	TEXT,
-            	"plays" INT DEFAULT 0,
-            	"time" TEXT,
-            	"dateadded" TEXT,
-            	"tracknumber"	INTEGER,
-            	"albumartist"	TEXT,
-            	"discnumber"	INTEGER,
-            	"genre"	TEXT,
-            	"date"	TEXT,
-            	"filepath" TEXT,
-            	"filename" TEXT,
-            	"albumart" TEXT,
-            	PRIMARY KEY("id" AUTOINCREMENT)
-            )
-            ''')
-            connection.commit()
+            with sqlite3.connect(str(self.db_path)) as connection:
+                connection.execute('''
+                CREATE TABLE IF NOT EXISTS "tracks" (
+                    "id"	INTEGER NOT NULL UNIQUE,
+                    "favorite" INT DEFAULT 0,
+                    "title"	TEXT,
+                    "artist"	TEXT,
+                    "album"	TEXT,
+                    "plays" INT DEFAULT 0,
+                    "time" TEXT,
+                    "dateadded" TEXT,
+                    "tracknumber"	INTEGER,
+                    "albumartist"	TEXT,
+                    "discnumber"	INTEGER,
+                    "genre"	TEXT,
+                    "date"	TEXT,
+                    "filepath" TEXT,
+                    "filename" TEXT,
+                    "albumart" TEXT,
+                    PRIMARY KEY("id" AUTOINCREMENT)
+                )
+                ''')
+                connection.commit()
         
         if source_folder:
             self.source_path.mkdir(parents=True,exist_ok=True)
@@ -67,10 +67,10 @@ class Database:
            skip_confirmation bypasses the prompt before deletion. 
         """
         if skip_confirmation or Interface.promptBool("Are you sure you want to erase the database file? This action cannot be undone."):
-            connection = sqlite3.connect(str(self.db_path))
-            connection.execute("DELETE FROM tracks;")
-            connection.execute("UPDATE sqlite_sequence SET seq = 0 WHERE name = 'tracks';")
-            connection.commit();
+            with sqlite3.connect(str(self.db_path)) as connection:
+                connection.execute("DELETE FROM tracks;")
+                connection.execute("UPDATE sqlite_sequence SET seq = 0 WHERE name = 'tracks';")
+                connection.commit();
             Interface.print('Database has been reset. Your files are still in ~/mu/source/. Type "mu scan" to rebuild.')
 
     def upsert_track(self,connection,metadata:dict) -> None:
@@ -110,27 +110,26 @@ class Database:
         connection.commit()
 
     def upsert_track_once(self,metadata:dict) -> None:
-        connection = sqlite3.connect(str(self.db_path))
-        self.upsert_track(connection,metadata)
+        with sqlite3.connect(str(self.db_path)) as connection:
+            self.upsert_track(connection,metadata)
 
     def scan_folder(self,path) -> None:
         """
            Scans the path for music files.
            Each file is stored in the DB and has its album art hashed/saved. 
         """
-        connection = sqlite3.connect(str(self.db_path))
+        with sqlite3.connect(str(self.db_path)) as connection:
+            mp3s = list(path.rglob("*.mp3"))
 
-        mp3s = list(path.rglob("*.mp3"))
+            for i, filepath in enumerate(mp3s,1):
+                try:
+                    metadata = File.read_metadata(filepath,self.albumart_path) # Gets dict of files metadata
+                    self.upsert_track(connection,metadata) # Updates the track
+                    Interface.print(f"{filepath.name}",count=[i+1,len(mp3s)])
+                except Exception as e:
+                    Interface.print(f"{filepath.name}\n{e}",count=[i+1,len(mp3s)],ok=False)
 
-        for i, filepath in enumerate(mp3s,1):
-            try:
-                metadata = File.read_metadata(filepath,self.albumart_path) # Gets dict of files metadata
-                self.upsert_track(connection,metadata) # Updates the track
-                Interface.print(f"{filepath.name}",count=[i+1,len(mp3s)])
-            except Exception as e:
-                Interface.print(f"{filepath.name}\n{e}",count=[i+1,len(mp3s)],ok=False)
-
-        connection.commit()
+            connection.commit()
 
     def scan_source_folder(self):
         """
@@ -164,16 +163,16 @@ class Database:
         else:
             mp3s = [path]
 
-        connection = sqlite3.connect(str(self.db_path))
-        for i, filepath in enumerate(mp3s,1):
-            try:
-                metadata = self.copy_file(filepath)
-                self.upsert_track(connection,metadata)
-                if console_out: Interface.print(f"{filepath.name}",count=[i+1,len(mp3s)])
-            except Exception as e:
-                Interface.print(f"{filepath.name}\n{e}",count=[i+1,len(mp3s)],ok=False)
+        with sqlite3.connect(str(self.db_path)) as connection:
+            for i, filepath in enumerate(mp3s,1):
+                try:
+                    metadata = self.copy_file(filepath)
+                    self.upsert_track(connection,metadata)
+                    if console_out: Interface.print(f"{filepath.name}",count=[i+1,len(mp3s)])
+                except Exception as e:
+                    Interface.print(f"{filepath.name}\n{e}",count=[i+1,len(mp3s)],ok=False)
 
-        connection.commit()
+            connection.commit()
 
     def search(self, term: str,console_out:bool=True) -> list:
         """
@@ -226,14 +225,14 @@ class Database:
     def increment_play_count(self, term:str,amount:int=1,console_out:bool=True) -> list:
         """Increment track(s) play counts by either 1 or a custom amount"""
         tracks: list[Track] = self.search(f"{term}",console_out=False)
-        connection = sqlite3.connect(self.db_path)
-        cursor = connection.cursor()
         results = []
-        for track in tracks:
-            cursor.execute("UPDATE tracks SET plays = ? WHERE id = ?",(track.plays + amount,track.id))
-            cursor.execute("SELECT * FROM tracks WHERE id = ?",(track.id,))
-            results.append(cursor.fetchone())
-        connection.commit()
+        with sqlite3.connect(self.db_path) as connection:
+            cursor = connection.cursor()
+            for track in tracks:
+                cursor.execute("UPDATE tracks SET plays = ? WHERE id = ?",(track.plays + amount,track.id))
+                cursor.execute("SELECT * FROM tracks WHERE id = ?",(track.id,))
+                results.append(cursor.fetchone())
+            connection.commit()
         if console_out:
             for result in results:
                 if result is not None: Interface.print("",track=Track(result))
@@ -243,13 +242,13 @@ class Database:
         """
             Returns all tracks in a dict, with the key being the songs ID.
         """
-        connection = sqlite3.connect(str(self.db_path))
-        cursor = connection.cursor()
-        if only_favorited:
-            cursor.execute("SELECT * FROM tracks WHERE favorite = 1 ORDER BY artist")
-        else:
-            cursor.execute("SELECT * FROM tracks ORDER BY artist")
-        results = cursor.fetchall()
+        with sqlite3.connect(str(self.db_path)) as connection:
+            cursor = connection.cursor()
+            if only_favorited:
+                cursor.execute("SELECT * FROM tracks WHERE favorite = 1 ORDER BY artist")
+            else:
+                cursor.execute("SELECT * FROM tracks ORDER BY artist")
+            results = cursor.fetchall()
         track_export = {}
         for i, result in enumerate(results):
             track = Track(result)
@@ -264,16 +263,14 @@ class Database:
         """
 
         tracks = self.search(term,console_out=False)
-        
-        connection = sqlite3.connect(self.db_path)
-        cursor = connection.cursor()
         results = []
-        for track in tracks:
-            cursor.execute("UPDATE tracks SET favorite = 1 - favorite WHERE id = ?", (track.id,))
-            cursor.execute("SELECT * FROM tracks WHERE id = ?", (track.id,))
-            results.append(cursor.fetchone())
-
-        connection.commit()
+        with sqlite3.connect(self.db_path) as connection:
+            cursor = connection.cursor()
+            for track in tracks:
+                cursor.execute("UPDATE tracks SET favorite = 1 - favorite WHERE id = ?", (track.id,))
+                cursor.execute("SELECT * FROM tracks WHERE id = ?", (track.id,))
+                results.append(cursor.fetchone())
+            connection.commit()
         if console_out:
             for result in results:
                 if result is not None: Interface.print("", track=Track(result))
