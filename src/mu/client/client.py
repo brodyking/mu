@@ -59,7 +59,10 @@ class Client(App):
         self.tabs = TabbedContent(id="tabs")
         self.tabs.can_focus_children = False
 
-        self.player = Player(on_track_end=lambda event:self.track_finished_playing())
+        self.player = Player(
+            on_track_end=lambda event:self.track_finished_playing(),
+            on_time_changed=lambda elapsed_ms:self.track_time_changed(elapsed_ms)
+        )
 
     def compose(self) -> ComposeResult:
         with Vertical():
@@ -141,6 +144,10 @@ class Client(App):
         """This function is called when the track finishes from the player"""
         self.queue_list.skip_track()
         self.update_now_playing()
+
+    def track_time_changed(self,current_ms: int) -> None:
+        """Updates the current position of now playing"""
+        self.now_playing.progress_bar.update_elapsed(current_ms)
 
     def update_now_playing(self) -> None:
         track = self.queue_list.get_current_track()
