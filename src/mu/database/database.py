@@ -61,7 +61,7 @@ class Database:
         if database_folder:
             check_db()
 
-    def reset_db(self, skip_confirmation=False):
+    def reset_db(self, skip_confirmation=False) -> None:
         """
            Deletes all tracks from database. Keeps files.
            skip_confirmation bypasses the prompt before deletion. 
@@ -253,7 +253,6 @@ class Database:
             track_export[track.id] = track
             if console_out: Interface.print("",track=track,count=[i+1,len(results)])
         return track_export
-
 
     def favorite(self,term: str,console_out:bool=True) -> list:
         """
