@@ -1,6 +1,8 @@
 from textual.app import ComposeResult
-from textual.widgets import DataTable, Input, Static
+from textual.widgets import Input, Static
+
 from mu.client.widgets.vimdatatable import VimDataTable
+
 
 class AlbumsDataTable(Static):
     BINDINGS = [("/", "focus_search", "Search")]
@@ -85,11 +87,7 @@ class AlbumsDataTable(Static):
 
         self.full_rows = []
         for i, album in enumerate(self.albums):
-
-            row_tuple = (
-                album.title,
-                album.albumartist
-            )
+            row_tuple = (album.title, album.albumartist)
             self.full_rows.append(row_tuple)
             table.add_row(*row_tuple, key=str(i))
 

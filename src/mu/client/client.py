@@ -8,10 +8,10 @@ from textual.coordinate import Coordinate
 from textual.widgets import DataTable, Footer, TabbedContent, TabPane
 
 from mu.client.queuelist import QueueList
+from mu.client.widgets.albumsdatatable import AlbumsDataTable
 from mu.client.widgets.nowplaying import NowPlaying
 from mu.client.widgets.queuedatatable import QueueDataTable
 from mu.client.widgets.tracksdatatable import TracksDataTable
-from mu.client.widgets.albumsdatatable import AlbumsDataTable 
 from mu.database.database import Database
 from mu.database.track import Track
 from mu.player.player import Player
@@ -58,7 +58,7 @@ class Client(App):
         )
 
         self.albums_data_table = AlbumsDataTable(
-            self.albums,"album-data-table-search", "album-data-table-main-table"
+            self.albums, "album-data-table-search", "album-data-table-main-table"
         )
 
         self.tabs = TabbedContent(id="tabs")
@@ -135,12 +135,11 @@ class Client(App):
             table = self.albums_data_table.main_table
         else:
             return
-        
 
         start_index = event.cursor_row  # Get the starting row index from the event
 
         if self.tabs.active == "queue-tab" or self.tabs.active == "tracks-tab":
-            row_count = (table.row_count)
+            row_count = table.row_count
             # Loop through the integer indices from the start to the end
             queue_ids = []
             for row_id in range(start_index, row_count):
@@ -156,7 +155,7 @@ class Client(App):
                 self.app.notify(f"Error fetching cell data: {e}", severity="error")
 
         elif self.tabs.active == "albums-tab":
-            album_title = table.get_cell_at(Coordinate(event.cursor_row,0))
+            album_title = table.get_cell_at(Coordinate(event.cursor_row, 0))
             self.tracks_data_table.search.value = f"album:{album_title}"
             self.tracks_data_table.main_table.focus()
 
@@ -209,7 +208,7 @@ class Client(App):
         result = self.db.favorite(f"id:{track_id}")[0] if track_id else None
 
         if result:
-            self.tracks[track_id] = result 
+            self.tracks[track_id] = result
             self.queue_list.tracks[track_id] = result
 
             if not table:

@@ -1,4 +1,4 @@
-from textual.widgets import DataTable, Input, Static
+from textual.widgets import DataTable
 
 
 # A separate class to wrap the table and other widgets (like search)

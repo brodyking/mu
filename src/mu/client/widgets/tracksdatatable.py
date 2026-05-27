@@ -1,6 +1,8 @@
 from textual.app import ComposeResult
-from textual.widgets import DataTable, Input, Static
+from textual.widgets import Input, Static
+
 from mu.client.widgets.vimdatatable import VimDataTable
+
 
 class TracksDataTable(Static):
     BINDINGS = [("/", "focus_search", "Search")]

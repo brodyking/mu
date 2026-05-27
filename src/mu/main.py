@@ -61,7 +61,7 @@ def main():
         description="""
         List all your tracks, just your favorite tracks,
         or albums in your library.
-        """
+        """,
     )
     tracks_parser.add_argument(
         "-f", "--favorited", action="store_true", help="list only your favorite tracks"
@@ -71,9 +71,8 @@ def main():
     subparsers.add_parser(
         "albums",
         help="list all albums in the library",
-        description="List all albums in the library"
+        description="List all albums in the library",
     )
-
 
     # Favorite
     favorite_parser = subparsers.add_parser(
@@ -104,7 +103,7 @@ def main():
             You can search with prefixes aswell.
             By typing id:, album:, title:, artist:, or albumartist: in front,
             you can narrow your search.
-        """
+        """,
     )
     search_parser.add_argument(
         "term",
@@ -133,7 +132,7 @@ def main():
     actions = {
         "scan": lambda: db.scan_source_folder(),
         "client": lambda: start_client(),
-        "version": lambda: Interface.print_version(VERSION,db.DATABASE_VERSION),
+        "version": lambda: Interface.print_version(VERSION, db.DATABASE_VERSION),
         "reset": lambda: db.reset_db(skip_confirmation=args.skipconfirmation),
         "favorite": lambda: db.favorite(
             str(args.term),

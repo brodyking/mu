@@ -92,7 +92,7 @@ class Interface:
         count = kwargs.get(
             "count", []
         )  # Used to display progress in anticipation of another print.
-        track = kwargs.get("track", None) 
+        track = kwargs.get("track", None)
         album = kwargs.get("album", None)
 
         prefix = Color.green("[✓] ") if ok else Color.red("[✘] ")
@@ -106,23 +106,22 @@ class Interface:
             if track is not None and track.favorite
             else Color.light_gray("♥ ")
         )
-    
+
         if track is not None:
-            searchresult = ((
+            searchresult = (
                 f"{Color.light_gray('#' + str(track.id).rjust(4, '0'))} "
                 f"{favorited}{Color.red(Interface.fmt(f'{track.title}', 25))} | "
                 f"{Interface.fmt(track.artist, 15)} | "
                 f"{Interface.fmt(track.album, 15)} | "
                 f"{Color.blue(track.filepath)}"
-            ))
+            )
         elif album is not None:
-            searchresult = ((
-                f"{Interface.fmt(Color.red(album.title),25)} | "
-                f"{Interface.fmt(album.albumartist,15)}"
-            ))
+            searchresult = (
+                f"{Interface.fmt(Color.red(album.title), 25)} | "
+                f"{Interface.fmt(album.albumartist, 15)}"
+            )
         else:
             searchresult = ""
-
 
         print(f"{prefix}{counter}{searchresult}{content}")
 
@@ -146,8 +145,7 @@ class Interface:
         return text.ljust(width)
 
     @staticmethod
-    def print_version(
-        client_version: str, database_version: int) -> None:
+    def print_version(client_version: str, database_version: int) -> None:
         logo = """
  _   _             _ __ ___  _   _ 
 | | | |   _____   | '_ ` _ \\| | | |
@@ -159,19 +157,15 @@ class Interface:
         lines = logo.split("\n")
         for line in lines:
             print(
-                Color.red(line[0:8]) +
-                Color.green(line[9:16]) +
-                Color.yellow(line[17:])
+                Color.red(line[0:8]) + Color.green(line[9:16]) + Color.yellow(line[17:])
             )
         print(Color.blue("   your personal music library\n"))
 
         Interface.print(f"Client Version: {client_version}")
         Interface.print(f"Database Version: {database_version}\n")
 
-    
     @staticmethod
-    def print_outdated_version(database_version:int,library_version:int) -> None:
-        Interface.print("Library version is outdated or invalid.",ok=False)
+    def print_outdated_version(database_version: int, library_version: int) -> None:
+        Interface.print("Library version is outdated or invalid.", ok=False)
         print(f"Database version:\t{database_version}")
         print(f"Library version:\t{library_version}")
-
