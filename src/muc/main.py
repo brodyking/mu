@@ -1,6 +1,9 @@
 import argparse
-from muc.client.client import Client
+
 from textual_serve.server import Server
+
+from muc.client.client import Client
+
 
 def start_client_tui():
     client = Client()
