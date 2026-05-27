@@ -14,7 +14,10 @@ def main():
     parser = argparse.ArgumentParser(
         prog="μ",
         description="your personal music library",
-        epilog="Created and maintained by Brody King. You can find this project at https://github.com/brodyking/mu",
+        epilog="""
+            Created and maintained by Brody King.
+            You can find this project at https://github.com/brodyking/mu
+        """,
     )
 
     subparsers = parser.add_subparsers(
@@ -76,7 +79,9 @@ def main():
     import_parser = subparsers.add_parser(
         "import",
         help="import individual files",
-        description="Import file(s) to Mu. Directories or individual files can be selected.",
+        description="""
+            Import file(s) to Mu. Directories or individual files can be selected.
+        """,
     )
     import_parser.add_argument("filepath", help="path to the file being imported")
 
@@ -84,11 +89,18 @@ def main():
     search_parser = subparsers.add_parser(
         "search",
         help="search the library",
-        description="Search your library. You can search with prefixes aswell. By typing id:, album:, title:, artist:, or albumartist: in front, you can narrow your search.",
+        description="""Search your library.
+            You can search with prefixes aswell.
+            By typing id:, album:, title:, artist:, or albumartist: in front,
+            you can narrow your search.
+        """
     )
     search_parser.add_argument(
         "term",
-        help="the name of the item(s) you are searching for. supports prefixes (id:,album:,etc.)",
+        help="""
+            the name of the item(s) you are searching for.
+            supports prefixes (id:,album:,etc)
+        """,
     )
 
     # Playing
@@ -99,7 +111,10 @@ def main():
     )
     play_parser.add_argument(
         "term",
-        help="the name of the item(s) you are searching for. supports prefixes (id:,album:,etc.)",
+        help="""
+            the name of the item(s) you are searching for.
+            supports prefixes (id:,album:,etc.)
+        """,
     )
 
     args = parser.parse_args()
