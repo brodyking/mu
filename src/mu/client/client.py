@@ -42,7 +42,7 @@ class Client(App):
     def __init__(self):
         super().__init__()
         self.db: Database = Database()
-        self.tracks: dict = self.db.list_library(console_out=False)
+        self.tracks: dict = self.db.list_library_tracks(console_out=False)
         self.theme = "catppuccin-mocha"
 
         self.now_playing = NowPlaying()

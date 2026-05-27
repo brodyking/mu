@@ -333,7 +333,7 @@ class Database:
                     Interface.print("", track=Track(result))
         return results
 
-    def list_library(
+    def list_library_tracks(
         self, only_favorited: bool = False, console_out: bool = True
     ) -> dict:
         """

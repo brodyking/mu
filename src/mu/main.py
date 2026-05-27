@@ -127,7 +127,7 @@ def main():
         "favorite": lambda: db.favorite(
             str(args.term),
         ),
-        "list": lambda: db.list_library(
+        "list": lambda: db.list_library_tracks(
             only_favorited=args.favorited,
         ),
         "import": lambda: db.import_media(
