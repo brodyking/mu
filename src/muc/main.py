@@ -2,7 +2,7 @@ import argparse
 from muc.client.client import Client
 from textual_serve.server import Server
 
-def start_client():
+def start_client_tui():
     client = Client()
     client.run()
 
@@ -21,18 +21,16 @@ def main():
         """,
     )
 
-    parser.add_argument("action", nargs="?", choices=["web"], default=None)
+    parser.add_argument("action", nargs="?", choices=["web","tui"], default="tui")
 
     args = parser.parse_args()
 
     actions = {
-        "web": start_client_web 
+        "web": start_client_web,
+        "tui": start_client_tui
     }
 
 
-    if args.action is None:
-        client = Client()
-        client.run()
 
     if args.action in actions:
         actions[args.action]()
