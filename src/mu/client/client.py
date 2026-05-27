@@ -11,6 +11,7 @@ from mu.client.queuelist import QueueList
 from mu.client.widgets.nowplaying import NowPlaying
 from mu.client.widgets.queuedatatable import QueueDataTable
 from mu.client.widgets.tracksdatatable import TracksDataTable
+from mu.client.widgets.albumsdatatable import AlbumsDataTable 
 from mu.database.database import Database
 from mu.database.track import Track
 from mu.player.player import Player
@@ -18,7 +19,7 @@ from mu.player.player import Player
 
 class Client(App):
     CSS = """
-        TracksDataTable {
+        TracksDataTable,QueueDataTable,AlbumsDataTable {
             height: 1fr; 
         }
 
@@ -32,6 +33,7 @@ class Client(App):
     BINDINGS = [
         ("q", "goto_tab(0)", "Queue"),
         ("t", "goto_tab(1)", "Tracks"),
+        ("a", "goto_tab(2)", "Albums"),
         ("Q", "quit", "Quit"),
         ("f", "favorite_track", "Favorite"),
         ("l", "skip_track(1)", "Next"),
@@ -43,16 +45,22 @@ class Client(App):
         super().__init__()
         self.db: Database = Database()
         self.tracks: dict = self.db.list_library_tracks(console_out=False)
+        self.albums: list = self.db.list_library_albums(console_out=False)
+        self.queue_list = QueueList(self.tracks)
         self.theme = "catppuccin-mocha"
 
         self.now_playing = NowPlaying()
-        self.tracks_data_table = TracksDataTable(
-            self.tracks, "tracks-data-table-search", "tracks-data-table-main-table"
-        )
-        self.queue_list = QueueList(self.tracks)
         self.queue_data_table = QueueDataTable(
             "queue-data-table-search", "queue-data-table-main-table"
         )
+        self.tracks_data_table = TracksDataTable(
+            self.tracks, "tracks-data-table-search", "tracks-data-table-main-table"
+        )
+
+        self.albums_data_table = AlbumsDataTable(
+            self.albums,"album-data-table-search", "album-data-table-main-table"
+        )
+
         self.tabs = TabbedContent(id="tabs")
         self.tabs.can_focus_children = False
 
@@ -69,11 +77,13 @@ class Client(App):
                     yield self.queue_data_table
                 with TabPane("󰎇 Tracks (t)", id="tracks-tab"):
                     yield self.tracks_data_table
+                with TabPane("󱍙 Albums (a)", id="albums-tab"):
+                    yield self.albums_data_table
             yield Footer(compact=True, show_command_palette=False)
 
     def action_goto_tab(self, tabid: int) -> None:
         """Switches to a dedicated tab with h or l keys."""
-        all_tabs = ["queue-tab", "tracks-tab"]
+        all_tabs = ["queue-tab", "tracks-tab", "albums-tab"]
         try:
             self.tabs.active = all_tabs[tabid]
 
@@ -81,6 +91,8 @@ class Client(App):
                 self.tracks_data_table.main_table.focus()
             elif self.tabs.active == "queue-tab":
                 self.queue_data_table.main_table.focus()
+            elif self.tabs.active == "albums-tab":
+                self.albums_data_table.main_table.focus()
         except ValueError:
             pass
 
@@ -117,27 +129,36 @@ class Client(App):
         # Select tab based on what is active
         if self.tabs.active == "tracks-tab":
             table = self.tracks_data_table.main_table
-        else:
+        elif self.tabs.active == "queue-tab":
             table = self.queue_data_table.main_table
-        row_count = (
-            table.row_count
-        )  # Get the total number of rows currently in the table
+        elif self.tabs.active == "albums-tab":
+            table = self.albums_data_table.main_table
+        else:
+            return
+        
+
         start_index = event.cursor_row  # Get the starting row index from the event
 
-        # Loop through the integer indices from the start to the end
-        queue_ids = []
-        for row_id in range(start_index, row_count):
+        if self.tabs.active == "queue-tab" or self.tabs.active == "tracks-tab":
+            row_count = (table.row_count)
+            # Loop through the integer indices from the start to the end
+            queue_ids = []
+            for row_id in range(start_index, row_count):
+                try:
+                    cell_value = table.get_cell_at(Coordinate(row_id, 0))
+                    queue_ids.append(str(cell_value))
+                except Exception:
+                    continue
             try:
-                cell_value = table.get_cell_at(Coordinate(row_id, 0))
-                queue_ids.append(str(cell_value))
-            except Exception:
-                continue
+                id = table.get_cell_at(Coordinate(event.cursor_row, 0))
+                self.play_track(self.tracks[id], queue_ids)
+            except Exception as e:
+                self.app.notify(f"Error fetching cell data: {e}", severity="error")
 
-        try:
-            id = table.get_cell_at(Coordinate(event.cursor_row, 0))
-            self.play_track(self.tracks[id], queue_ids)
-        except Exception as e:
-            self.app.notify(f"Error fetching cell data: {e}", severity="error")
+        elif self.tabs.active == "albums-tab":
+            album_title = table.get_cell_at(Coordinate(event.cursor_row,0))
+            self.tracks_data_table.search.value = f"album:{album_title}"
+            self.tracks_data_table.main_table.focus()
 
     def track_finished_playing(self) -> None:
         """This function is called when the track finishes from the player"""
