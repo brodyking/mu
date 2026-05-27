@@ -188,15 +188,14 @@ class Client(App):
         result = self.db.favorite(f"id:{track_id}")[0] if track_id else None
 
         if result:
-            new_track = Track(result)
-            self.tracks[track_id] = new_track
-            self.queue_list.tracks[track_id] = new_track
+            self.tracks[track_id] = result 
+            self.queue_list.tracks[track_id] = result
 
             if not table:
-                self.now_playing.controls.set_favorite(new_track.favorite)
+                self.now_playing.controls.set_favorite(result.favorite)
 
-            self.tracks_data_table.set_track_favorite(track_id, new_track.favorite)
-            self.queue_data_table.set_track_favorite(track_id, new_track.favorite)
+            self.tracks_data_table.set_track_favorite(track_id, result.favorite)
+            self.queue_data_table.set_track_favorite(track_id, result.favorite)
 
 
 def start_client():
