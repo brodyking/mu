@@ -1,6 +1,6 @@
 from textual.app import ComposeResult
-from textual.widgets import ProgressBar, Static, Label, Button
 from textual.containers import Horizontal, Vertical
+from textual.widgets import Button, Label, ProgressBar, Static
 
 from mu.database.track import Track
 

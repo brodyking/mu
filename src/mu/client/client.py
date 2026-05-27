@@ -3,25 +3,17 @@
 
 # Textualize
 from textual.app import App, ComposeResult
-from textual.widgets import Footer, DataTable, TabbedContent, TabPane
 from textual.containers import Vertical
 from textual.coordinate import Coordinate
+from textual.widgets import DataTable, Footer, TabbedContent, TabPane
 
-# Database connection
-from mu.client.widgets import queuedatatable
+from mu.client.queuelist import QueueList
+from mu.client.widgets.nowplaying import NowPlaying
+from mu.client.widgets.queuedatatable import QueueDataTable
+from mu.client.widgets.tracksdatatable import TracksDataTable
 from mu.database.database import Database
 from mu.database.track import Track
-
-# Playback
 from mu.player.player import Player
-
-# Logic and Objects
-from mu.client.queuelist import QueueList
-
-# Widgets
-from mu.client.widgets.tracksdatatable import TracksDataTable
-from mu.client.widgets.queuedatatable import QueueDataTable
-from mu.client.widgets.nowplaying import NowPlaying
 
 
 class Client(App):

@@ -1,10 +1,11 @@
-from datetime import date
-from mutagen.easyid3 import EasyID3
-from mutagen.mp3 import MP3
-from mutagen.id3 import ID3, APIC
-from mutagen import MutagenError
-from pathlib import Path
 import hashlib
+from datetime import date
+from pathlib import Path
+
+from mutagen import MutagenError
+from mutagen.easyid3 import EasyID3
+from mutagen.id3 import APIC, ID3
+from mutagen.mp3 import MP3
 
 
 class File:
