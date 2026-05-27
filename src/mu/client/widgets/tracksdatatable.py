@@ -57,7 +57,7 @@ class TracksDataTable(Static):
             self.main_table.update_cell(
                 str(track_id), "favorite", "❤" if is_favorite else " "
             )
-        except:
+        except Exception:
             return
 
     def filter_table(self, search_term: str) -> None:
