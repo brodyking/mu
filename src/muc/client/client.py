@@ -235,11 +235,3 @@ class Client(App):
             self.tracks_data_table.set_track_favorite(track_id, result.favorite)
             self.queue_data_table.set_track_favorite(track_id, result.favorite)
 
-
-def start_client():
-    app = Client()
-    app.run()
-
-
-if __name__ == "__main__":
-    start_client()
