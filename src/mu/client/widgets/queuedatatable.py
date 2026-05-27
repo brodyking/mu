@@ -1,9 +1,9 @@
 from mu.client.widgets.tracksdatatable import TracksDataTable
-from mu.util import Interface
+
 
 class QueueDataTable(TracksDataTable):
-    def __init__(self,*args,**kwargs):
-        super().__init__(dict(),*args,**kwargs)
+    def __init__(self, *args, **kwargs):
+        super().__init__(dict(), *args, **kwargs)
 
     def update_queue(self, tracks):
         self.tracks = tracks
@@ -11,7 +11,7 @@ class QueueDataTable(TracksDataTable):
         self.main_table.clear()
         for track in self.tracks:
             favorite = "❤" if track.favorite else " "
-            
+
             row_tuple = (
                 track.id,
                 favorite,
@@ -32,4 +32,3 @@ class QueueDataTable(TracksDataTable):
             )
             self.full_rows.append(row_tuple)
             self.main_table.add_row(*row_tuple, key=str(track.id))
-

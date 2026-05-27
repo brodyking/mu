@@ -1,32 +1,25 @@
-
 # mu client source code
 # (c) 2026 all rights reserved
 
 # Textualize
 from textual.app import App, ComposeResult
-from textual.widgets import Footer, DataTable, TabbedContent, TabPane 
 from textual.containers import Vertical
 from textual.coordinate import Coordinate
-# Database connection
-from mu.client.widgets import queuedatatable
+from textual.widgets import DataTable, Footer, TabbedContent, TabPane
+
+from mu.client.queuelist import QueueList
+from mu.client.widgets.nowplaying import NowPlaying
+from mu.client.widgets.queuedatatable import QueueDataTable
+from mu.client.widgets.tracksdatatable import TracksDataTable
 from mu.database.database import Database
 from mu.database.track import Track
-# Playback
 from mu.player.player import Player
 
-# Logic and Objects
-from mu.client.queuelist import QueueList
-
-# Widgets
-from mu.client.widgets.tracksdatatable import TracksDataTable
-from mu.client.widgets.queuedatatable import QueueDataTable
-from mu.client.widgets.nowplaying import NowPlaying
 
 class Client(App):
-
     CSS = """
         TracksDataTable {
-            height: 1fr;    /* Tells the table to take up the "fractional" remaining space */
+            height: 1fr; 
         }
 
         Input {
@@ -40,39 +33,43 @@ class Client(App):
         ("q", "goto_tab(0)", "Queue"),
         ("t", "goto_tab(1)", "Tracks"),
         ("Q", "quit", "Quit"),
-        ("f", "favorite_track" , "Favorite"),
+        ("f", "favorite_track", "Favorite"),
         ("l", "skip_track(1)", "Next"),
         ("h", "skip_track(-1)", "Previous"),
-        ("space", "pause_track", "Pause/Play")
+        ("space", "pause_track", "Pause/Play"),
     ]
 
     def __init__(self):
         super().__init__()
-        self.db:Database = Database()
-        self.tracks:dict = self.db.list_library(console_out=False)
+        self.db: Database = Database()
+        self.tracks: dict = self.db.list_library(console_out=False)
         self.theme = "catppuccin-mocha"
 
         self.now_playing = NowPlaying()
-        self.tracks_data_table = TracksDataTable(self.tracks,"tracks-data-table-search","tracks-data-table-main-table")
+        self.tracks_data_table = TracksDataTable(
+            self.tracks, "tracks-data-table-search", "tracks-data-table-main-table"
+        )
         self.queue_list = QueueList(self.tracks)
-        self.queue_data_table = QueueDataTable("queue-data-table-search","queue-data-table-main-table")
+        self.queue_data_table = QueueDataTable(
+            "queue-data-table-search", "queue-data-table-main-table"
+        )
         self.tabs = TabbedContent(id="tabs")
         self.tabs.can_focus_children = False
 
         self.player = Player(
-            on_track_end=lambda event:self.track_finished_playing(),
-            on_time_changed=lambda elapsed_ms:self.track_time_changed(elapsed_ms)
+            on_track_end=lambda event: self.track_finished_playing(),
+            on_time_changed=lambda elapsed_ms: self.track_time_changed(elapsed_ms),
         )
 
     def compose(self) -> ComposeResult:
         with Vertical():
             yield self.now_playing
             with self.tabs:
-                with TabPane("󰲸 Queue (q)",id="queue-tab"):
+                with TabPane("󰲸 Queue (q)", id="queue-tab"):
                     yield self.queue_data_table
-                with TabPane("󰎇 Tracks (t)",id="tracks-tab"):
+                with TabPane("󰎇 Tracks (t)", id="tracks-tab"):
                     yield self.tracks_data_table
-            yield Footer(compact=True,show_command_palette=False)
+            yield Footer(compact=True, show_command_palette=False)
 
     def action_goto_tab(self, tabid: int) -> None:
         """Switches to a dedicated tab with h or l keys."""
@@ -87,17 +84,17 @@ class Client(App):
         except ValueError:
             pass
 
-    def play_track(self,track: Track,queue_ids: list) -> None:
+    def play_track(self, track: Track, queue_ids: list) -> None:
         """Plays a given track."""
         self.now_playing.set_track(track)
         self.queue_list.start_queue(queue_ids)
         self.queue_data_table.update_queue(self.queue_list.get_queue())
-        
+
         filepaths = []
         queue = self.queue_list.get_queue(offset=0)
         for track in queue:
             filepaths.append(track.filepath)
-        
+
         self.player.set_queue(filepaths)
         self.player.start_playback()
 
@@ -105,7 +102,7 @@ class Client(App):
         """Pauses the player"""
         self.player.toggle_playback()
 
-    def action_skip_track(self,offset:int) -> None:
+    def action_skip_track(self, offset: int) -> None:
         """Skips to a song in the queue by an offest if the song exists"""
         if len(self.queue_list.queue) <= 0:
             return
@@ -121,10 +118,12 @@ class Client(App):
         if self.tabs.active == "tracks-tab":
             table = self.tracks_data_table.main_table
         else:
-            table = self.queue_data_table.main_table    
-        row_count = table.row_count # Get the total number of rows currently in the table
-        start_index = event.cursor_row # Get the starting row index from the event
-    
+            table = self.queue_data_table.main_table
+        row_count = (
+            table.row_count
+        )  # Get the total number of rows currently in the table
+        start_index = event.cursor_row  # Get the starting row index from the event
+
         # Loop through the integer indices from the start to the end
         queue_ids = []
         for row_id in range(start_index, row_count):
@@ -133,9 +132,9 @@ class Client(App):
                 queue_ids.append(str(cell_value))
             except Exception:
                 continue
- 
+
         try:
-            id = table.get_cell_at(Coordinate(event.cursor_row,0))
+            id = table.get_cell_at(Coordinate(event.cursor_row, 0))
             self.play_track(self.tracks[id], queue_ids)
         except Exception as e:
             self.app.notify(f"Error fetching cell data: {e}", severity="error")
@@ -145,7 +144,7 @@ class Client(App):
         self.queue_list.skip_track()
         self.update_now_playing()
 
-    def track_time_changed(self,current_ms: int) -> None:
+    def track_time_changed(self, current_ms: int) -> None:
         """Updates the current position of now playing"""
         self.now_playing.progress_bar.update_elapsed(current_ms)
 
@@ -155,9 +154,9 @@ class Client(App):
             self.now_playing.set_track(track)
             self.queue_data_table.update_queue(self.queue_list.get_queue())
 
-    def update_track_lists(self,tracks:dict) -> None:
+    def update_track_lists(self, tracks: dict) -> None:
         self.tracks = tracks
-        self.queue_list.tracks = dict(self.tracks) 
+        self.queue_list.tracks = dict(self.tracks)
         self.tracks_data_table.tracks = dict(self.tracks)
 
     def action_favorite_track(self) -> None:
@@ -177,25 +176,27 @@ class Client(App):
         if table:
             # If track favorited with f key while browsing
             if table.main_table.cursor_row is not None:
-                track_id = table.main_table.get_cell_at(Coordinate(table.main_table.cursor_row,0))
+                track_id = table.main_table.get_cell_at(
+                    Coordinate(table.main_table.cursor_row, 0)
+                )
 
         else:
             # If track is favorited using the buttons on controls while playing
             if len(self.queue_list.queue) > 0:
                 track_id = self.queue_list.get_current_track().id
-        
+
         result = self.db.favorite(f"id:{track_id}")[0] if track_id else None
-        
+
         if result:
             new_track = Track(result)
-            self.tracks[track_id] = new_track 
-            self.queue_list.tracks[track_id] = new_track 
+            self.tracks[track_id] = new_track
+            self.queue_list.tracks[track_id] = new_track
 
-            if not table: self.now_playing.controls.set_favorite(new_track.favorite)
+            if not table:
+                self.now_playing.controls.set_favorite(new_track.favorite)
 
-            self.tracks_data_table.set_track_favorite(track_id,new_track.favorite)
-            self.queue_data_table.set_track_favorite(track_id,new_track.favorite)
-
+            self.tracks_data_table.set_track_favorite(track_id, new_track.favorite)
+            self.queue_data_table.set_track_favorite(track_id, new_track.favorite)
 
 
 def start_client():
