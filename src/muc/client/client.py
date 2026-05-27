@@ -15,6 +15,7 @@ from muc.client.widgets.artistsdatatable import ArtistsDataTable
 from muc.client.widgets.nowplaying import NowPlaying
 from muc.client.widgets.queuedatatable import QueueDataTable
 from muc.client.widgets.tracksdatatable import TracksDataTable
+from muc.client.widgets.favoritesdatatable import FavoritesDataTable
 from muc.player.player import Player
 
 
@@ -33,9 +34,10 @@ class Client(App):
 
     BINDINGS = [
         ("q", "goto_tab(0)", "Queue"),
-        ("t", "goto_tab(1)", "Tracks"),
-        ("a", "goto_tab(2)", "Albums"),
-        ("A", "goto_tab(3)", "Artists"),
+        ("F", "goto_tab(1)", "Favorites"),
+        ("t", "goto_tab(2)", "Tracks"),
+        ("a", "goto_tab(3)", "Albums"),
+        ("A", "goto_tab(4)", "Artists"),
         ("Q", "quit", "Quit"),
         ("f", "favorite_track", "Favorite"),
         ("l", "skip_track(1)", "Next"),
@@ -56,6 +58,11 @@ class Client(App):
         self.queue_data_table = QueueDataTable(
             "queue-data-table-search", "queue-data-table-main-table"
         )
+
+        self.favorites_data_table = FavoritesDataTable(
+            self.tracks, "favorites-data-table-search", "favorites-data-table-main-table" 
+        )
+
         self.tracks_data_table = TracksDataTable(
             self.tracks, "tracks-data-table-search", "tracks-data-table-main-table"
         )
@@ -82,6 +89,8 @@ class Client(App):
             with self.tabs:
                 with TabPane("󰲸 Queue (q)", id="queue-tab"):
                     yield self.queue_data_table
+                with TabPane("❤ Favorites (F)", id="favorites-tab"):
+                    yield self.favorites_data_table
                 with TabPane("󰎇 Tracks (t)", id="tracks-tab"):
                     yield self.tracks_data_table
                 with TabPane("󱍙 Albums (a)", id="albums-tab"):
@@ -92,7 +101,7 @@ class Client(App):
 
     def action_goto_tab(self, tabid: int) -> None:
         """Switches to a dedicated tab with h or l keys."""
-        all_tabs = ["queue-tab", "tracks-tab", "albums-tab", "artists-tab"]
+        all_tabs = ["queue-tab", "favorites-tab", "tracks-tab", "albums-tab", "artists-tab"]
         try:
             self.tabs.active = all_tabs[tabid]
 
@@ -104,6 +113,8 @@ class Client(App):
                 self.albums_data_table.main_table.focus()
             elif self.tabs.active == "artists-tab":
                 self.artists_data_table.main_table.focus()
+            elif self.tabs.active == "favorites-tab":
+                self.favorites_data_table.main_table.focus()
         except ValueError:
             pass
 
@@ -137,21 +148,27 @@ class Client(App):
     def on_data_table_row_selected(self, event: DataTable.RowSelected) -> None:
         """Logic when a cell is clicked. Starts now playing and the queue."""
 
+        active_tab = self.tabs.active
+        tabs_with_tracks = ["tracks-tab","favorites-tab","queue-tab"]
+
         # Select tab based on what is active
-        if self.tabs.active == "tracks-tab":
+        if active_tab == "tracks-tab":
             table = self.tracks_data_table.main_table
-        elif self.tabs.active == "queue-tab":
+        elif active_tab == "favorites-tab":
+            table = self.favorites_data_table.main_table
+        elif active_tab == "queue-tab":
             table = self.queue_data_table.main_table
-        elif self.tabs.active == "albums-tab":
+        elif active_tab == "albums-tab":
             table = self.albums_data_table.main_table
-        elif self.tabs.active == "artists-tab":
+        elif active_tab == "artists-tab":
             table = self.artists_data_table.main_table
         else:
             return
 
         start_index = event.cursor_row  # Get the starting row index from the event
 
-        if self.tabs.active == "queue-tab" or self.tabs.active == "tracks-tab":
+        if active_tab in tabs_with_tracks:
+            """If a track is selected"""
             row_count = table.row_count
             # Loop through the integer indices from the start to the end
             queue_ids = []
@@ -166,13 +183,14 @@ class Client(App):
                 self.play_track(self.tracks[id], queue_ids)
             except Exception as e:
                 self.app.notify(f"Error fetching cell data: {e}", severity="error")
-
         elif self.tabs.active == "albums-tab":
+            """If a album is selected"""
             album_title = table.get_cell_at(Coordinate(event.cursor_row, 0))
             self.tracks_data_table.search.value = f"album:{album_title}"
             self.tracks_data_table.main_table.focus()
 
         elif self.tabs.active == "artists-tab":
+            """If a artist is selected"""
             artist = table.get_cell_at(Coordinate(event.cursor_row, 0))
             self.tracks_data_table.search.value = f"artist:{artist}"
             self.tracks_data_table.main_table.focus()
@@ -207,8 +225,12 @@ class Client(App):
             table = self.tracks_data_table
         elif self.focused == self.queue_data_table.main_table:
             table = self.queue_data_table
+        elif self.focused == self.favorites_data_table.main_table:
+            table = self.favorites_data_table
         elif len(self.queue_list.queue) > 0:
-            track_id = self.queue_list.get_current_track().id
+            track = self.queue_list.get_current_track()
+            if track:
+                track_id = track.id
 
         # Favorite track
         if table:
@@ -217,7 +239,6 @@ class Client(App):
                 track_id = table.main_table.get_cell_at(
                     Coordinate(table.main_table.cursor_row, 0)
                 )
-
         else:
             # If track is favorited using the buttons on controls while playing
             if len(self.queue_list.queue) > 0:
@@ -234,4 +255,5 @@ class Client(App):
 
             self.tracks_data_table.set_track_favorite(track_id, result.favorite)
             self.queue_data_table.set_track_favorite(track_id, result.favorite)
+            self.favorites_data_table.set_track_favorite(track_id, result.favorite)
 
