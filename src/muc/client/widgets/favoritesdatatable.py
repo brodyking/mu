@@ -2,7 +2,6 @@ from muc.client.widgets.tracksdatatable import TracksDataTable
 
 
 class FavoritesDataTable(TracksDataTable):
-
     def on_show(self) -> None:
         self.call_after_refresh(self._filter_to_favorites)
 

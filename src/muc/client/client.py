@@ -12,10 +12,10 @@ from mu.database.track import Track
 from muc.client.queuelist import QueueList
 from muc.client.widgets.albumsdatatable import AlbumsDataTable
 from muc.client.widgets.artistsdatatable import ArtistsDataTable
+from muc.client.widgets.favoritesdatatable import FavoritesDataTable
 from muc.client.widgets.nowplaying import NowPlaying
 from muc.client.widgets.queuedatatable import QueueDataTable
 from muc.client.widgets.tracksdatatable import TracksDataTable
-from muc.client.widgets.favoritesdatatable import FavoritesDataTable
 from muc.player.player import Player
 
 
@@ -60,7 +60,9 @@ class Client(App):
         )
 
         self.favorites_data_table = FavoritesDataTable(
-            self.tracks, "favorites-data-table-search", "favorites-data-table-main-table" 
+            self.tracks,
+            "favorites-data-table-search",
+            "favorites-data-table-main-table",
         )
 
         self.tracks_data_table = TracksDataTable(
@@ -101,7 +103,13 @@ class Client(App):
 
     def action_goto_tab(self, tabid: int) -> None:
         """Switches to a dedicated tab with h or l keys."""
-        all_tabs = ["queue-tab", "favorites-tab", "tracks-tab", "albums-tab", "artists-tab"]
+        all_tabs = [
+            "queue-tab",
+            "favorites-tab",
+            "tracks-tab",
+            "albums-tab",
+            "artists-tab",
+        ]
         try:
             self.tabs.active = all_tabs[tabid]
 
@@ -149,7 +157,7 @@ class Client(App):
         """Logic when a cell is clicked. Starts now playing and the queue."""
 
         active_tab = self.tabs.active
-        tabs_with_tracks = ["tracks-tab","favorites-tab","queue-tab"]
+        tabs_with_tracks = ["tracks-tab", "favorites-tab", "queue-tab"]
 
         # Select tab based on what is active
         if active_tab == "tracks-tab":
@@ -235,7 +243,10 @@ class Client(App):
         # Favorite track
         if table:
             # If track favorited with f key while browsing
-            if table.main_table.cursor_row is not None and table.main_table.row_count > 0:
+            if (
+                table.main_table.cursor_row is not None
+                and table.main_table.row_count > 0
+            ):
                 track_id = table.main_table.get_cell_at(
                     Coordinate(table.main_table.cursor_row, 0)
                 )
@@ -256,4 +267,3 @@ class Client(App):
             self.tracks_data_table.set_track_favorite(track_id, result.favorite)
             self.queue_data_table.set_track_favorite(track_id, result.favorite)
             self.favorites_data_table.set_track_favorite(track_id, result.favorite)
-
