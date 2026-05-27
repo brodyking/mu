@@ -379,7 +379,7 @@ class Database:
         
         return albums
 
-    def favorite(self, term: str, console_out: bool = True) -> list:
+    def favorite(self, term: str, console_out: bool = True) -> list[Track]:
         """
         Lets a user favorite a track by title or id if search starts with id:
         """
@@ -394,12 +394,12 @@ class Database:
                     (track.id,),
                 )
                 cursor.execute("SELECT * FROM tracks WHERE id = ?", (track.id,))
-                results.append(cursor.fetchone())
+                results.append(Track(cursor.fetchone()))
             connection.commit()
         if console_out:
             for i, result in enumerate(results):
                 if result is not None:
                     Interface.print(
-                        "", track=Track(result), count=[i + 1, len(results)]
+                        "", track=result, count=[i + 1, len(results)]
                     )
         return results
