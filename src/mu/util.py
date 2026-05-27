@@ -1,5 +1,4 @@
 import subprocess
-from mu.database.track import Track
 
 
 class Mpv:
@@ -19,64 +18,64 @@ class Color:
     # Standard Colors (Lower Intensity)
     @staticmethod
     def red(s):
-        return "\033[31m{}\033[00m".format(s)
+        return f"\033[31m{s}\033[00m"
 
     @staticmethod
     def green(s):
-        return "\033[32m{}\033[00m".format(s)
+        return f"\033[32m{s}\033[00m"
 
     @staticmethod
     def yellow(s):
-        return "\033[33m{}\033[00m".format(s)
+        return f"\033[33m{s}\033[00m"
 
     @staticmethod
     def blue(s):
-        return "\033[34m{}\033[00m".format(s)
+        return f"\033[34m{s}\033[00m"
 
     @staticmethod
     def purple(s):
-        return "\033[35m{}\033[00m".format(s)
+        return f"\033[35m{s}\033[00m"
 
     @staticmethod
     def cyan(s):
-        return "\033[36m{}\033[00m".format(s)
+        return f"\033[36m{s}\033[00m"
 
     # Bright/Light Colors (90-97 range)
     @staticmethod
     def light_gray(s):
-        return "\033[37m{}\033[00m".format(s)
+        return f"\033[37m{s}\033[00m"
 
     @staticmethod
     def black(s):
-        return "\033[90m{}\033[00m".format(s)  # Bright Black / Dark Gray
+        return f"\033[90m{s}\033[00m"  # Bright Black / Dark Gray
 
     @staticmethod
     def light_red(s):
-        return "\033[91m{}\033[00m".format(s)
+        return f"\033[91m{s}\033[00m"
 
     @staticmethod
     def light_green(s):
-        return "\033[92m{}\033[00m".format(s)
+        return f"\033[92m{s}\033[00m"
 
     @staticmethod
     def light_yellow(s):
-        return "\033[93m{}\033[00m".format(s)
+        return f"\033[93m{s}\033[00m"
 
     @staticmethod
     def light_blue(s):
-        return "\033[94m{}\033[00m".format(s)
+        return f"\033[94m{s}\033[00m"
 
     @staticmethod
     def pink(s):
-        return "\033[95m{}\033[00m".format(s)
+        return f"\033[95m{s}\033[00m"
 
     @staticmethod
     def light_cyan(s):
-        return "\033[96m{}\033[00m".format(s)
+        return f"\033[96m{s}\033[00m"
 
     @staticmethod
     def white(s):
-        return "\033[97m{}\033[00m".format(s)
+        return f"\033[97m{s}\033[00m"
 
 
 class Interface:
@@ -122,7 +121,7 @@ class Interface:
         print(f"{prefix}{counter}{searchresult}{content}")
 
     @staticmethod
-    def promptBool(content: str) -> bool:
+    def prompt_bool(content: str) -> bool:
         """Asks the user a question, returns the users chioce."""
         print(Color.yellow("[]"), end="")
         while True:

@@ -1,5 +1,5 @@
-import sqlite3
 import shutil
+import sqlite3
 from pathlib import Path
 
 from mu.database.file import File
@@ -97,7 +97,7 @@ class Database:
         Deletes all tracks from database. Keeps files.
         skip_confirmation bypasses the prompt before deletion.
         """
-        if skip_confirmation or Interface.promptBool(
+        if skip_confirmation or Interface.prompt_bool(
             "Are you sure you want to erase the database file? This action cannot be undone."
         ):
             with sqlite3.connect(str(self.db_path)) as connection:
