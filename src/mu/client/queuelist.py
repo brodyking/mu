@@ -34,7 +34,10 @@ class QueueList:
         return output
 
     def skip_track(self, offset: int = 1) -> Track:
-        """Returns the next track and shifts the queue, or returns current track if none next."""
+        """
+        Returns the next track and shifts the queue,
+        or returns current track if none next.
+        """
 
         if not self.queue:
             raise ValueError("The queue is empty.")  # Or handle how you prefer

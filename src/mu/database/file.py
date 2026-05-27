@@ -13,7 +13,8 @@ class File:
     def read_metadata(filepath: Path, albumart_path: Path) -> dict:
         """
         Reads the metadata for the file and returns all the data as a dict.
-        Album art is stored from extract_album_art(), and the key is set to the file path.
+        Album art is stored from extract_album_art(),
+        and the key is set to the file path.
         """
 
         def get(tags, key):

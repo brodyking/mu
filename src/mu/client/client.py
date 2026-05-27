@@ -19,7 +19,7 @@ from mu.player.player import Player
 class Client(App):
     CSS = """
         TracksDataTable {
-            height: 1fr;    /* Tells the table to take up the "fractional" remaining space */
+            height: 1fr; 
         }
 
         Input {
