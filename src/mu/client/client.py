@@ -214,7 +214,7 @@ class Client(App):
         # Favorite track
         if table:
             # If track favorited with f key while browsing
-            if table.main_table.cursor_row is not None:
+            if table.main_table.cursor_row is not None and table.main_table.row_count > 0:
                 track_id = table.main_table.get_cell_at(
                     Coordinate(table.main_table.cursor_row, 0)
                 )
