@@ -1,14 +1,14 @@
-import vlc
 import pathlib
-import urllib.parse
-from typing import Callable, Optional
+from collections.abc import Callable
+
+import vlc
 
 
 class Player:
     def __init__(
         self,
-        on_time_changed: Optional[Callable] = None,
-        on_track_end: Optional[Callable] = None,
+        on_time_changed: Callable | None = None,
+        on_track_end: Callable | None = None,
     ):
         self.instance = vlc.Instance("--no-xlib")
         self.player = vlc.MediaListPlayer(self.instance)
