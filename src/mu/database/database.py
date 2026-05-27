@@ -357,19 +357,25 @@ class Database:
                 Interface.print("", track=track, count=[i + 1, len(results)])
         return track_export
 
-    def list_library_albums(self, console_out:bool = True) -> list:
-
+    def list_library_albums(self, console_out:bool = True) -> list[Album]:
+        """
+            Returns a list of albums
+        """
         with sqlite3.connect(str(self.db_path)) as connection:
-            albums = connection.execute("""
+            response = connection.execute("""
             SELECT album, albumartist
             FROM tracks
             GROUP BY album, albumartist
             ORDER BY albumartist COLLATE NOCASE ASC, album COLLATE NOCASE ASC
             """).fetchall()
         
+        albums = []
+        for album in response:
+            albums.append(Album(album))
+
         if console_out:
             for i, album in enumerate(albums):
-                Interface.print("",album=Album(album),count=[i+1,len(albums)])
+                Interface.print("",album=album,count=[i+1,len(albums)])
         
         return albums
 
