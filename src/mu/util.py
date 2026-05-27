@@ -152,7 +152,11 @@ class Interface:
 
         lines = logo.split("\n")
         for line in lines:
-            print(Color.red(line[0:8]) + Color.green(line[9:16]) + Color.yellow(line[17:]))
+            print(
+                Color.red(line[0:8]) +
+                Color.green(line[9:16]) +
+                Color.yellow(line[17:])
+            )
         print(Color.blue("   your personal music library\n"))
 
         Interface.print(f"Client Version: {client_version}")
