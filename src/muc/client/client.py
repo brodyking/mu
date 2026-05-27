@@ -7,15 +7,15 @@ from textual.containers import Vertical
 from textual.coordinate import Coordinate
 from textual.widgets import DataTable, Footer, TabbedContent, TabPane
 
-from mu.client.queuelist import QueueList
-from mu.client.widgets.albumsdatatable import AlbumsDataTable
-from mu.client.widgets.artistsdatatable import ArtistsDataTable
-from mu.client.widgets.nowplaying import NowPlaying
-from mu.client.widgets.queuedatatable import QueueDataTable
-from mu.client.widgets.tracksdatatable import TracksDataTable
+from muc.client.queuelist import QueueList
+from muc.client.widgets.albumsdatatable import AlbumsDataTable
+from muc.client.widgets.artistsdatatable import ArtistsDataTable
+from muc.client.widgets.nowplaying import NowPlaying
+from muc.client.widgets.queuedatatable import QueueDataTable
+from muc.client.widgets.tracksdatatable import TracksDataTable
+from muc.player.player import Player
 from mu.database.database import Database
 from mu.database.track import Track
-from mu.player.player import Player
 
 
 class Client(App):

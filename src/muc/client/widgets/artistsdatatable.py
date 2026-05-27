@@ -1,25 +1,25 @@
 from textual.app import ComposeResult
 from textual.widgets import Input, Static
 
-from mu.client.widgets.vimdatatable import VimDataTable
+from muc.client.widgets.vimdatatable import VimDataTable
 
 
-class AlbumsDataTable(Static):
+class ArtistsDataTable(Static):
     BINDINGS = [("/", "focus_search", "Search")]
 
     CSS = """
-    AlbumsDataTable {
+    ArtistsDataTable {
         width: auto;
         height: auto;
     }
     """
 
-    def __init__(self, albums: list, search_id: str, main_table_id: str):
+    def __init__(self, artists: list[str], search_id: str, main_table_id: str):
         super().__init__()
-        self.albums = albums
+        self.artists = artists 
         self.full_rows: list = []
 
-        self.search = Input(placeholder="Filter albums (/)", id=search_id)
+        self.search = Input(placeholder="Filter artists (/)", id=search_id)
         self.main_table = VimDataTable(cursor_type="row", id=main_table_id)
 
     def compose(self) -> ComposeResult:
@@ -45,27 +45,11 @@ class AlbumsDataTable(Static):
         if not search_term:
             filtered_rows = self.full_rows
         else:
-            prefixes = {
-                "title": 0,
-                "albumartist": 1,
-            }
-
-            if ":" in search_term and search_term.split(":", 1)[0] in prefixes.keys():
-                # Filter rows based on prefix provided
-                filtered_rows = [
-                    row
-                    for row in self.full_rows
-                    if search_term.split(":", 1)[1]
-                    in str(row[prefixes.get(search_term.split(":", 1)[0])]).lower()
-                ]
-            else:
-                # Filter rows based on Title (index 2) or Artist (index 3)
-                filtered_rows = [
-                    row
-                    for row in self.full_rows
-                    if search_term in str(row[0]).lower()
-                    or search_term in str(row[1]).lower()
-                ]
+            filtered_rows = [
+                row
+                for row in self.full_rows
+                if search_term in str(row[0]).lower()
+            ]
 
         table.clear()
 
@@ -77,8 +61,7 @@ class AlbumsDataTable(Static):
 
         # Add the maximum width to your column metadata definition
         columns = [
-            ("Title", "title", 25),
-            ("Album Artist", "albumartist", 15),
+            ("Artist", "artist", 25),
         ]
 
         # Use the max_width argument in add_column
@@ -86,9 +69,8 @@ class AlbumsDataTable(Static):
             table.add_column(label, key=key, width=max_w)
 
         self.full_rows = []
-        for i, album in enumerate(self.albums):
-            row_tuple = (album.title, album.albumartist)
-            self.full_rows.append(row_tuple)
-            table.add_row(*row_tuple, key=str(i))
+        for i, artist in enumerate(self.artists):
+            self.full_rows.append(artist)
+            table.add_row(*artist, key=str(i))
 
         table.focus()

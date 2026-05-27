@@ -4,6 +4,7 @@ build-backend = "hatchling.build"
 
 [project.scripts]
 mu = "mu.main:main"
+muc = "muc.client.client:start_client"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/mu/"]

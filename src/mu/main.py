@@ -1,7 +1,6 @@
 import argparse
 from importlib.metadata import version
 
-from mu.client.client import start_client
 from mu.database.database import Database
 from mu.util import Interface, Mpv
 
@@ -29,11 +28,6 @@ def main():
         "scan",
         help="imports all files in Source folder",
         description="Imports all the files in the Source folder.",
-    )
-
-    # Client
-    subparsers.add_parser(
-        "client", help="start the tui client", description="Start the TUI client."
     )
 
     # Version
@@ -138,7 +132,6 @@ def main():
 
     actions = {
         "scan": lambda: db.scan_source_folder(),
-        "client": lambda: start_client(),
         "version": lambda: Interface.print_version(VERSION, db.DATABASE_VERSION),
         "reset": lambda: db.reset_db(skip_confirmation=args.skipconfirmation),
         "favorite": lambda: db.favorite(
