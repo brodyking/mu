@@ -2,6 +2,7 @@ import shutil
 import sqlite3
 from pathlib import Path
 
+from mu.database.album import Album
 from mu.database.file import File
 from mu.database.track import Track
 from mu.util import Interface
@@ -56,7 +57,9 @@ class Database:
                 ]
 
                 if current_version != self.DATABASE_VERSION and current_version != 0:
-                    Interface.print_outdated_version(self.DATABASE_VERSION,current_version)
+                    Interface.print_outdated_version(
+                        self.DATABASE_VERSION, current_version
+                    )
                     exit()
 
                 connection.execute("""
@@ -268,7 +271,7 @@ class Database:
                 Please specify how you are searching by typing
                 the prefix followed by a colon. Ex: title:,artist:"
             """
-            Interface.print(missing_prefix_error,ok=False)
+            Interface.print(missing_prefix_error, ok=False)
             raise ValueError(missing_prefix_error)
         with sqlite3.connect(str(self.db_path)) as connection:
             cursor = connection.cursor()
@@ -333,7 +336,7 @@ class Database:
                     Interface.print("", track=Track(result))
         return results
 
-    def list_library(
+    def list_library_tracks(
         self, only_favorited: bool = False, console_out: bool = True
     ) -> dict:
         """
@@ -356,7 +359,29 @@ class Database:
                 Interface.print("", track=track, count=[i + 1, len(results)])
         return track_export
 
-    def favorite(self, term: str, console_out: bool = True) -> list:
+    def list_library_albums(self, console_out: bool = True) -> list[Album]:
+        """
+        Returns a list of albums
+        """
+        with sqlite3.connect(str(self.db_path)) as connection:
+            response = connection.execute("""
+            SELECT album, albumartist
+            FROM tracks
+            GROUP BY album, albumartist
+            ORDER BY albumartist COLLATE NOCASE ASC, album COLLATE NOCASE ASC
+            """).fetchall()
+
+        albums = []
+        for album in response:
+            albums.append(Album(album))
+
+        if console_out:
+            for i, album in enumerate(albums):
+                Interface.print("", album=album, count=[i + 1, len(albums)])
+
+        return albums
+
+    def favorite(self, term: str, console_out: bool = True) -> list[Track]:
         """
         Lets a user favorite a track by title or id if search starts with id:
         """
@@ -371,12 +396,10 @@ class Database:
                     (track.id,),
                 )
                 cursor.execute("SELECT * FROM tracks WHERE id = ?", (track.id,))
-                results.append(cursor.fetchone())
+                results.append(Track(cursor.fetchone()))
             connection.commit()
         if console_out:
             for i, result in enumerate(results):
                 if result is not None:
-                    Interface.print(
-                        "", track=Track(result), count=[i + 1, len(results)]
-                    )
+                    Interface.print("", track=result, count=[i + 1, len(results)])
         return results

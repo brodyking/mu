@@ -54,14 +54,24 @@ def main():
         action="store_true",
     )
 
-    # List
-    list_parser = subparsers.add_parser(
-        "list",
-        help="list all files in the library",
-        description="List all your files, or just your favorites in your library.",
+    # Tracks
+    tracks_parser = subparsers.add_parser(
+        "tracks",
+        help="list all tracks in the library",
+        description="""
+        List all your tracks, just your favorite tracks,
+        or albums in your library.
+        """,
     )
-    list_parser.add_argument(
-        "-f", "--favorited", action="store_true", help="list only your favorites"
+    tracks_parser.add_argument(
+        "-f", "--favorited", action="store_true", help="list only your favorite tracks"
+    )
+
+    # Albums
+    subparsers.add_parser(
+        "albums",
+        help="list all albums in the library",
+        description="List all albums in the library",
     )
 
     # Favorite
@@ -93,7 +103,7 @@ def main():
             You can search with prefixes aswell.
             By typing id:, album:, title:, artist:, or albumartist: in front,
             you can narrow your search.
-        """
+        """,
     )
     search_parser.add_argument(
         "term",
@@ -122,14 +132,15 @@ def main():
     actions = {
         "scan": lambda: db.scan_source_folder(),
         "client": lambda: start_client(),
-        "version": lambda: Interface.print_version(VERSION,db.DATABASE_VERSION),
+        "version": lambda: Interface.print_version(VERSION, db.DATABASE_VERSION),
         "reset": lambda: db.reset_db(skip_confirmation=args.skipconfirmation),
         "favorite": lambda: db.favorite(
             str(args.term),
         ),
-        "list": lambda: db.list_library(
+        "tracks": lambda: db.list_library_tracks(
             only_favorited=args.favorited,
         ),
+        "albums": lambda: db.list_library_albums(),
         "import": lambda: db.import_media(
             str(args.filepath),
         ),
