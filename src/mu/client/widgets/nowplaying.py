@@ -4,8 +4,8 @@ from textual.containers import Horizontal, Vertical
 
 from mu.database.track import Track
 
-class NowPlayingControls(Static):
 
+class NowPlayingControls(Static):
     DEFAULT_CSS = """
         NowPlayingControls > Horizontal {
             height: 3;
@@ -38,16 +38,31 @@ class NowPlayingControls(Static):
         }
     """
 
-    def __init__(self,*args,**kwargs):
-        super().__init__(*args,**kwargs)
-        self.favorite = Button("",id="now-playing-controls-favorite",action="app.favorite_track(-1)",flat=True,classes="no-bg")
-        self.previous = Button("⏮ ",id="now-playing-controls-previous",action="app.skip_track(-1)",flat=True)
-        self.toggle = Button("⏸",id="now-playing-controls-toggle",action="app.pause_track()",flat=True)
-        self.next= Button("⏭ ",id="now-playing-controls-next",action="app.skip_track(1)",flat=True)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.favorite = Button(
+            "",
+            id="now-playing-controls-favorite",
+            action="app.favorite_track(-1)",
+            flat=True,
+            classes="no-bg",
+        )
+        self.previous = Button(
+            "⏮ ",
+            id="now-playing-controls-previous",
+            action="app.skip_track(-1)",
+            flat=True,
+        )
+        self.toggle = Button(
+            "⏸", id="now-playing-controls-toggle", action="app.pause_track()", flat=True
+        )
+        self.next = Button(
+            "⏭ ", id="now-playing-controls-next", action="app.skip_track(1)", flat=True
+        )
 
-    def set_favorite(self,is_favorite:bool) -> None:
+    def set_favorite(self, is_favorite: bool) -> None:
         self.favorite.label = "" if is_favorite else ""
-    
+
     def compose(self) -> ComposeResult:
         with Horizontal():
             yield self.favorite
@@ -55,8 +70,8 @@ class NowPlayingControls(Static):
             yield self.toggle
             yield self.next
 
-class NowPlayingProgressBar(ProgressBar):
 
+class NowPlayingProgressBar(ProgressBar):
     DEFAULT_CSS = """
         NowPlayingProgressBar Bar {
             width: 1fr;
@@ -70,36 +85,38 @@ class NowPlayingProgressBar(ProgressBar):
         }
     """
 
-    def __init__(self,*args,**kwargs):
-        super().__init__(total=0,show_percentage=False,show_eta=False,*args,**kwargs)
+    def __init__(self, *args, **kwargs):
+        super().__init__(
+            total=0, show_percentage=False, show_eta=False, *args, **kwargs
+        )
 
-    def set_track(self,track:Track):
-        self.update(total=track.get_time_ms(),progress=0)
+    def set_track(self, track: Track):
+        self.update(total=track.get_time_ms(), progress=0)
 
-    def update_elapsed(self,elapsed_ms:int) -> None:
+    def update_elapsed(self, elapsed_ms: int) -> None:
         self.update(progress=elapsed_ms)
 
 
 class NowPlayingTrackInfo(Static):
-    def __init__(self,*args,**kwargs):
-        super().__init__(*args,**kwargs)
-        self.title = Label("󰈣",id="now-playing-track-info-title")
-        self.artist = Label("󰠃",id="now-playing-track-info-artist")
-        self.album = Label("󱍙",id="now-playing-track-info-album")
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.title = Label("󰈣", id="now-playing-track-info-title")
+        self.artist = Label("󰠃", id="now-playing-track-info-artist")
+        self.album = Label("󱍙", id="now-playing-track-info-album")
 
-    def set_info(self,title,artist,album):
+    def set_info(self, title, artist, album):
         self.title.update(title)
         self.artist.update(artist)
         self.album.update(album)
-        
+
     def compose(self):
         with Vertical():
             yield self.title
             yield self.artist
             yield self.album
 
+
 class NowPlaying(Static):
-   
     DEFAULT_CSS = """
         NowPlaying > Vertical {
             width: 100%;
@@ -133,12 +150,14 @@ class NowPlaying(Static):
             with Horizontal():
                 yield self.track_info
                 yield self.controls
-        yield self.progress_bar 
+        yield self.progress_bar
 
-    def set_track(self,track:Track):
-        self.track_info.set_info(f"󰈣  {track.title}",f"󰠃  {track.artist}",f"󱍙  {track.album}")
-        self.controls.set_favorite(track.favorite) 
+    def set_track(self, track: Track):
+        self.track_info.set_info(
+            f"󰈣  {track.title}", f"󰠃  {track.artist}", f"󱍙  {track.album}"
+        )
+        self.controls.set_favorite(track.favorite)
         self.progress_bar.set_track(track)
-    
+
     def on_mount(self) -> None:
         pass

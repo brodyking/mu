@@ -6,14 +6,15 @@ from mutagen import MutagenError
 from pathlib import Path
 import hashlib
 
+
 class File:
-    
     @staticmethod
-    def read_metadata(filepath: Path,albumart_path:Path) -> dict:
+    def read_metadata(filepath: Path, albumart_path: Path) -> dict:
         """
-            Reads the metadata for the file and returns all the data as a dict.
-            Album art is stored from extract_album_art(), and the key is set to the file path.
+        Reads the metadata for the file and returns all the data as a dict.
+        Album art is stored from extract_album_art(), and the key is set to the file path.
         """
+
         def get(tags, key):
             try:
                 return tags[key][0]
@@ -42,7 +43,7 @@ class File:
             "discnumber": get(tags, "discnumber"),
             "date": get(tags, "date"),
             "genre": get(tags, "genre"),
-            "albumart": File.extract_album_art(filepath,albumart_path),
+            "albumart": File.extract_album_art(filepath, albumart_path),
         }
 
     @staticmethod
@@ -59,12 +60,12 @@ class File:
 
         for tag in tags.values():
             if isinstance(tag, APIC):
-                art_hash = hashlib.sha256(tag.data).hexdigest() # type: ignore
-                ext = "jpg" if tag.mime == "image/jpeg" else "png" # type: ignore
+                art_hash = hashlib.sha256(tag.data).hexdigest()  # type: ignore
+                ext = "jpg" if tag.mime == "image/jpeg" else "png"  # type: ignore
                 art_path = albumart_path / f"{art_hash}.{ext}"
 
                 if not art_path.exists():
-                    art_path.write_bytes(tag.data) # type: ignore
+                    art_path.write_bytes(tag.data)  # type: ignore
 
                 return str(art_path)
 
