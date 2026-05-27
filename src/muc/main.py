@@ -9,9 +9,11 @@ def start_client_tui():
     client = Client()
     client.run()
 
+
 def start_client_web():
-    server = Server("muc",title="muc")
+    server = Server("muc", title="muc")
     server.serve()
+
 
 def main():
 
@@ -24,16 +26,11 @@ def main():
         """,
     )
 
-    parser.add_argument("action", nargs="?", choices=["web","tui"], default="tui")
+    parser.add_argument("action", nargs="?", choices=["web", "tui"], default="tui")
 
     args = parser.parse_args()
 
-    actions = {
-        "web": start_client_web,
-        "tui": start_client_tui
-    }
-
-
+    actions = {"web": start_client_web, "tui": start_client_tui}
 
     if args.action in actions:
         actions[args.action]()
