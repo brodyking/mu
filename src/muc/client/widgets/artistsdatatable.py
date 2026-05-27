@@ -1,7 +1,7 @@
 from textual.app import ComposeResult
 from textual.widgets import Input, Static
 
-from mu.client.widgets.vimdatatable import VimDataTable
+from muc.client.widgets.vimdatatable import VimDataTable
 
 
 class ArtistsDataTable(Static):
@@ -16,7 +16,7 @@ class ArtistsDataTable(Static):
 
     def __init__(self, artists: list[str], search_id: str, main_table_id: str):
         super().__init__()
-        self.artists = artists 
+        self.artists = artists
         self.full_rows: list = []
 
         self.search = Input(placeholder="Filter artists (/)", id=search_id)
@@ -46,9 +46,7 @@ class ArtistsDataTable(Static):
             filtered_rows = self.full_rows
         else:
             filtered_rows = [
-                row
-                for row in self.full_rows
-                if search_term in str(row[0]).lower()
+                row for row in self.full_rows if search_term in str(row[0]).lower()
             ]
 
         table.clear()

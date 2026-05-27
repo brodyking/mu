@@ -1,4 +1,4 @@
-from mu.client.widgets.tracksdatatable import TracksDataTable
+from muc.client.widgets.tracksdatatable import TracksDataTable
 
 
 class QueueDataTable(TracksDataTable):

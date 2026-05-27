@@ -50,3 +50,5 @@ directory (`~/Music/mu/`).
 
 The standard way to operate ms is through the terminal. To learn more about the
 commands and use of each command, run `-h` after each command.
+
+To use the player, run `muc`.

@@ -1,7 +1,7 @@
 from textual.app import ComposeResult
 from textual.widgets import Input, Static
 
-from mu.client.widgets.vimdatatable import VimDataTable
+from muc.client.widgets.vimdatatable import VimDataTable
 
 
 class AlbumsDataTable(Static):

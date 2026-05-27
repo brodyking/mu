@@ -396,10 +396,9 @@ class Database:
 
         if console_out:
             for i, artist in enumerate(artists):
-                Interface.print(artist,count=[i+1,len(response)])
+                Interface.print(artist, count=[i + 1, len(response)])
 
         return response
-        
 
     def favorite(self, term: str, console_out: bool = True) -> list[Track]:
         """

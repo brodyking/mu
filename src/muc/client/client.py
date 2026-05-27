@@ -7,15 +7,15 @@ from textual.containers import Vertical
 from textual.coordinate import Coordinate
 from textual.widgets import DataTable, Footer, TabbedContent, TabPane
 
-from mu.client.queuelist import QueueList
-from mu.client.widgets.albumsdatatable import AlbumsDataTable
-from mu.client.widgets.artistsdatatable import ArtistsDataTable
-from mu.client.widgets.nowplaying import NowPlaying
-from mu.client.widgets.queuedatatable import QueueDataTable
-from mu.client.widgets.tracksdatatable import TracksDataTable
 from mu.database.database import Database
 from mu.database.track import Track
-from mu.player.player import Player
+from muc.client.queuelist import QueueList
+from muc.client.widgets.albumsdatatable import AlbumsDataTable
+from muc.client.widgets.artistsdatatable import ArtistsDataTable
+from muc.client.widgets.nowplaying import NowPlaying
+from muc.client.widgets.queuedatatable import QueueDataTable
+from muc.client.widgets.tracksdatatable import TracksDataTable
+from muc.player.player import Player
 
 
 class Client(App):
@@ -89,7 +89,6 @@ class Client(App):
                 with TabPane("󰠃 Artists (A)", id="artists-tab"):
                     yield self.artists_data_table
             yield Footer(compact=True, show_command_palette=False)
-
 
     def action_goto_tab(self, tabid: int) -> None:
         """Switches to a dedicated tab with h or l keys."""
@@ -236,11 +235,3 @@ class Client(App):
             self.tracks_data_table.set_track_favorite(track_id, result.favorite)
             self.queue_data_table.set_track_favorite(track_id, result.favorite)
 
-
-def start_client():
-    app = Client()
-    app.run()
-
-
-if __name__ == "__main__":
-    start_client()
