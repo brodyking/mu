@@ -381,6 +381,26 @@ class Database:
 
         return albums
 
+    def list_library_artists(self, console_out: bool = True) -> list[str]:
+        with sqlite3.connect(str(self.db_path)) as connection:
+            response = connection.execute("""
+            SELECT artist 
+            FROM tracks
+            GROUP BY artist
+            ORDER BY artist COLLATE NOCASE ASC
+            """).fetchall()
+
+        artists = []
+        for artist in response:
+            artists.append(artist[0])
+
+        if console_out:
+            for i, artist in enumerate(artists):
+                Interface.print(artist,count=[i+1,len(response)])
+
+        return response
+        
+
     def favorite(self, term: str, console_out: bool = True) -> list[Track]:
         """
         Lets a user favorite a track by title or id if search starts with id:

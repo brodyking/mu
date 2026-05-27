@@ -9,6 +9,7 @@ from textual.widgets import DataTable, Footer, TabbedContent, TabPane
 
 from mu.client.queuelist import QueueList
 from mu.client.widgets.albumsdatatable import AlbumsDataTable
+from mu.client.widgets.artistsdatatable import ArtistsDataTable
 from mu.client.widgets.nowplaying import NowPlaying
 from mu.client.widgets.queuedatatable import QueueDataTable
 from mu.client.widgets.tracksdatatable import TracksDataTable
@@ -19,7 +20,7 @@ from mu.player.player import Player
 
 class Client(App):
     CSS = """
-        TracksDataTable,QueueDataTable,AlbumsDataTable {
+        TracksDataTable,QueueDataTable,AlbumsDataTable,ArtistsDataTable {
             height: 1fr; 
         }
 
@@ -34,6 +35,7 @@ class Client(App):
         ("q", "goto_tab(0)", "Queue"),
         ("t", "goto_tab(1)", "Tracks"),
         ("a", "goto_tab(2)", "Albums"),
+        ("A", "goto_tab(3)", "Artists"),
         ("Q", "quit", "Quit"),
         ("f", "favorite_track", "Favorite"),
         ("l", "skip_track(1)", "Next"),
@@ -46,6 +48,7 @@ class Client(App):
         self.db: Database = Database()
         self.tracks: dict = self.db.list_library_tracks(console_out=False)
         self.albums: list = self.db.list_library_albums(console_out=False)
+        self.artists: list = self.db.list_library_artists(console_out=False)
         self.queue_list = QueueList(self.tracks)
         self.theme = "catppuccin-mocha"
 
@@ -59,6 +62,10 @@ class Client(App):
 
         self.albums_data_table = AlbumsDataTable(
             self.albums, "album-data-table-search", "album-data-table-main-table"
+        )
+
+        self.artists_data_table = ArtistsDataTable(
+            self.artists, "artist-data-table-search", "artist-data-table-main-table"
         )
 
         self.tabs = TabbedContent(id="tabs")
@@ -79,11 +86,14 @@ class Client(App):
                     yield self.tracks_data_table
                 with TabPane("󱍙 Albums (a)", id="albums-tab"):
                     yield self.albums_data_table
+                with TabPane("󰠃 Artists (A)", id="artists-tab"):
+                    yield self.artists_data_table
             yield Footer(compact=True, show_command_palette=False)
+
 
     def action_goto_tab(self, tabid: int) -> None:
         """Switches to a dedicated tab with h or l keys."""
-        all_tabs = ["queue-tab", "tracks-tab", "albums-tab"]
+        all_tabs = ["queue-tab", "tracks-tab", "albums-tab", "artists-tab"]
         try:
             self.tabs.active = all_tabs[tabid]
 
@@ -93,6 +103,8 @@ class Client(App):
                 self.queue_data_table.main_table.focus()
             elif self.tabs.active == "albums-tab":
                 self.albums_data_table.main_table.focus()
+            elif self.tabs.active == "artists-tab":
+                self.artists_data_table.main_table.focus()
         except ValueError:
             pass
 
@@ -133,6 +145,8 @@ class Client(App):
             table = self.queue_data_table.main_table
         elif self.tabs.active == "albums-tab":
             table = self.albums_data_table.main_table
+        elif self.tabs.active == "artists-tab":
+            table = self.artists_data_table.main_table
         else:
             return
 
@@ -157,6 +171,11 @@ class Client(App):
         elif self.tabs.active == "albums-tab":
             album_title = table.get_cell_at(Coordinate(event.cursor_row, 0))
             self.tracks_data_table.search.value = f"album:{album_title}"
+            self.tracks_data_table.main_table.focus()
+
+        elif self.tabs.active == "artists-tab":
+            artist = table.get_cell_at(Coordinate(event.cursor_row, 0))
+            self.tracks_data_table.search.value = f"artist:{artist}"
             self.tracks_data_table.main_table.focus()
 
     def track_finished_playing(self) -> None:

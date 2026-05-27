@@ -74,6 +74,13 @@ def main():
         description="List all albums in the library",
     )
 
+    # Artists 
+    subparsers.add_parser(
+        "artists",
+        help="list all artists in the library",
+        description="List all artists in the library",
+    )
+
     # Favorite
     favorite_parser = subparsers.add_parser(
         "favorite",
@@ -141,6 +148,7 @@ def main():
             only_favorited=args.favorited,
         ),
         "albums": lambda: db.list_library_albums(),
+        "artists": lambda: db.list_library_artists(),
         "import": lambda: db.import_media(
             str(args.filepath),
         ),
