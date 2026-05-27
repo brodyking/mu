@@ -54,15 +54,26 @@ def main():
         action="store_true",
     )
 
-    # List
-    list_parser = subparsers.add_parser(
-        "list",
-        help="list all files in the library",
-        description="List all your files, or just your favorites in your library.",
+    # Tracks
+    tracks_parser = subparsers.add_parser(
+        "tracks",
+        help="list all tracks in the library",
+        description="""
+        List all your tracks, just your favorite tracks,
+        or albums in your library.
+        """
     )
-    list_parser.add_argument(
-        "-f", "--favorited", action="store_true", help="list only your favorites"
+    tracks_parser.add_argument(
+        "-f", "--favorited", action="store_true", help="list only your favorite tracks"
     )
+
+    # Albums
+    subparsers.add_parser(
+        "albums",
+        help="list all albums in the library",
+        description="List all albums in the library"
+    )
+
 
     # Favorite
     favorite_parser = subparsers.add_parser(
@@ -127,9 +138,10 @@ def main():
         "favorite": lambda: db.favorite(
             str(args.term),
         ),
-        "list": lambda: db.list_library_tracks(
+        "tracks": lambda: db.list_library_tracks(
             only_favorited=args.favorited,
         ),
+        "albums": lambda: db.list_library_albums(),
         "import": lambda: db.import_media(
             str(args.filepath),
         ),

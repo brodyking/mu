@@ -92,7 +92,8 @@ class Interface:
         count = kwargs.get(
             "count", []
         )  # Used to display progress in anticipation of another print.
-        track = kwargs.get("track", None)  #
+        track = kwargs.get("track", None) 
+        album = kwargs.get("album", None)
 
         prefix = Color.green("[✓] ") if ok else Color.red("[✘] ")
         counter = (
@@ -105,18 +106,23 @@ class Interface:
             if track is not None and track.favorite
             else Color.light_gray("♥ ")
         )
-
-        searchresult = (
-            (
+    
+        if track is not None:
+            searchresult = ((
                 f"{Color.light_gray('#' + str(track.id).rjust(4, '0'))} "
                 f"{favorited}{Color.red(Interface.fmt(f'{track.title}', 25))} | "
                 f"{Interface.fmt(track.artist, 15)} | "
                 f"{Interface.fmt(track.album, 15)} | "
                 f"{Color.blue(track.filepath)}"
-            )
-            if track is not None
-            else ""
-        )
+            ))
+        elif album is not None:
+            searchresult = ((
+                f"{Interface.fmt(Color.red(album.title),25)} | "
+                f"{Interface.fmt(album.albumartist,15)}"
+            ))
+        else:
+            searchresult = ""
+
 
         print(f"{prefix}{counter}{searchresult}{content}")
 
