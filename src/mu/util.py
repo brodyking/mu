@@ -141,7 +141,7 @@ class Interface:
 
     @staticmethod
     def print_version(
-        client_version: str, database_version: int):
+        client_version: str, database_version: int) -> None:
         logo = """
  _   _             _ __ ___  _   _ 
 | | | |   _____   | '_ ` _ \\| | | |
@@ -161,3 +161,11 @@ class Interface:
 
         Interface.print(f"Client Version: {client_version}")
         Interface.print(f"Database Version: {database_version}\n")
+
+    
+    @staticmethod
+    def print_outdated_version(database_version:int,library_version:int) -> None:
+        Interface.print("Library version is outdated or invalid.",ok=False)
+        print(f"Database version:\t{database_version}")
+        print(f"Library version:\t{library_version}")
+

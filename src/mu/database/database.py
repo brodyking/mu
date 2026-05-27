@@ -39,7 +39,8 @@ class Database:
         self, database_folder=True, source_folder=True, albumart_folder=True
     ):
         """
-        By default, checks to ensure the database, source_folder, and albumart_folder exist.
+        By default, checks to ensure the database, source_folder,
+        and albumart_folder exist.
         If they do not, they are created.
         """
 
@@ -55,10 +56,7 @@ class Database:
                 ]
 
                 if current_version != self.DATABASE_VERSION and current_version != 0:
-                    Interface.print(
-                        f"Database version is outdated or invalid.\nDatabase file version:\t{current_version}\nClient version:\t\t{self.DATABASE_VERSION}\nTo fix this, downgrade to a previous version of mu or migrate manually.",
-                        ok=False,
-                    )
+                    Interface.print_outdated_version(self.DATABASE_VERSION,current_version)
                     exit()
 
                 connection.execute("""
@@ -97,23 +95,27 @@ class Database:
         Deletes all tracks from database. Keeps files.
         skip_confirmation bypasses the prompt before deletion.
         """
-        if skip_confirmation or Interface.prompt_bool(
-            "Are you sure you want to erase the database file? This action cannot be undone."
-        ):
+        if skip_confirmation or Interface.prompt_bool("""
+            Are you sure you want to erase the database file?
+            This action cannot be undone."
+        """):
             with sqlite3.connect(str(self.db_path)) as connection:
                 connection.execute("DELETE FROM tracks;")
                 connection.execute(
                     "UPDATE sqlite_sequence SET seq = 0 WHERE name = 'tracks';"
                 )
                 connection.commit()
-            Interface.print(
-                'Database has been reset. Your files are still in ~/mu/source/. Type "mu scan" to rebuild.'
-            )
+            Interface.print("""
+            Database has been reset.
+            Your files are still in ~/mu/source/. Type "mu scan" to rebuild.
+            """)
 
     def upsert_track(self, connection, metadata: dict) -> None:
         """
-        Puts all song metadata along with album art and file location into the database.
-        If the filepath already exists, then it just updates the metadata instead of reinserting.
+        Puts all song metadata along with album art and file location
+        into the database.
+        If the filepath already exists, then it just updates
+        the metadata instead of reinserting.
         """
         existing = connection.execute(
             "SELECT id FROM tracks WHERE filepath = ?", (metadata["filepath"],)
@@ -142,9 +144,13 @@ class Database:
             connection.execute(
                 """
                 INSERT INTO tracks (
-                   title, artist, album, time, dateadded, tracknumber, albumartist, discnumber, genre, date, filepath, filename, albumart
+                   title, artist, album, time, dateadded,
+                   tracknumber, albumartist, discnumber, genre,
+                   date, filepath, filename, albumart
                 ) VALUES (
-                   :title, :artist, :album, :time, :dateadded, :tracknumber, :albumartist, :discnumber, :genre, :date, :filepath, :filename, :albumart
+                   :title, :artist, :album, :time, :dateadded,
+                   :tracknumber, :albumartist, :discnumber, :genre,
+                   :date, :filepath, :filename, :albumart
                 )
             """,
                 metadata,
@@ -200,7 +206,10 @@ class Database:
         return metadata
 
     def import_media(self, path, console_out: bool = True) -> None:
-        """Copies the file or files (if dir) to ~/mu/source, upserts metadata to the database."""
+        """
+        Copies the file or files (if dir) to ~/mu/source,
+        upserts metadata to the database.
+        """
         path = Path(path).resolve()
 
         if path.is_dir():
@@ -224,7 +233,8 @@ class Database:
 
     def search(self, term: str, console_out: bool = True) -> list:
         """
-        Searches the database for tracks with prefix support. If no prefix is given, it will search by id.
+        Searches the database for tracks with prefix support.
+        If no prefix is given, it will search by id.
         Returns a list of tracks.
         """
 
@@ -253,13 +263,13 @@ class Database:
             term.split(":", 1)[0] if term.split(":", 1)[0] in prefixes else None
         )
         if target_column is None:
-            Interface.print(
-                "The search query is missing a prefix. Please specify how you are searching by typing the prefix followed by a colon. Ex: title:,artist:",
-                ok=False,
-            )
-            raise ValueError(
-                "The search query is missing a prefix. Please specify how you are searching by typing the prefix followed by a colon. Ex: title:,artist:"
-            )
+            missing_prefix_error = """
+                The search query is missing a prefix.
+                Please specify how you are searching by typing
+                the prefix followed by a colon. Ex: title:,artist:"
+            """
+            Interface.print(missing_prefix_error,ok=False)
+            raise ValueError(missing_prefix_error)
         with sqlite3.connect(str(self.db_path)) as connection:
             cursor = connection.cursor()
 
@@ -283,7 +293,10 @@ class Database:
                 cursor.execute(
                     """
                     SELECT * FROM tracks 
-                    WHERE title LIKE ? OR artist LIKE ? OR albumartist LIKE ? OR album LIKE ?
+                    WHERE title LIKE ? 
+                    OR artist LIKE ? 
+                    OR albumartist LIKE ?
+                    OR album LIKE ?
                 """,
                     (fmt, fmt, fmt, fmt),
                 )
