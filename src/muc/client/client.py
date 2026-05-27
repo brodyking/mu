@@ -7,6 +7,8 @@ from textual.containers import Vertical
 from textual.coordinate import Coordinate
 from textual.widgets import DataTable, Footer, TabbedContent, TabPane
 
+from mu.database.database import Database
+from mu.database.track import Track
 from muc.client.queuelist import QueueList
 from muc.client.widgets.albumsdatatable import AlbumsDataTable
 from muc.client.widgets.artistsdatatable import ArtistsDataTable
@@ -14,8 +16,6 @@ from muc.client.widgets.nowplaying import NowPlaying
 from muc.client.widgets.queuedatatable import QueueDataTable
 from muc.client.widgets.tracksdatatable import TracksDataTable
 from muc.player.player import Player
-from mu.database.database import Database
-from mu.database.track import Track
 
 
 class Client(App):
@@ -89,7 +89,6 @@ class Client(App):
                 with TabPane("󰠃 Artists (A)", id="artists-tab"):
                     yield self.artists_data_table
             yield Footer(compact=True, show_command_palette=False)
-
 
     def action_goto_tab(self, tabid: int) -> None:
         """Switches to a dedicated tab with h or l keys."""

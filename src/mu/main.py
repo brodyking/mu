@@ -68,7 +68,7 @@ def main():
         description="List all albums in the library",
     )
 
-    # Artists 
+    # Artists
     subparsers.add_parser(
         "artists",
         help="list all artists in the library",
