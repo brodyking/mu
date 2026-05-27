@@ -8,6 +8,8 @@ from mu.util import Interface
 
 class Database:
 
+    DATABASE_VERSION = 1
+
     def __init__(self,**kwargs):
         """
            Creates a new Database object.  
@@ -30,8 +32,16 @@ class Database:
             """
                 Checks if database file exists. If it dosen't, it creates it. 
             """
+
             # Creates blank table if file dosen't exist
             with sqlite3.connect(str(self.db_path)) as connection:
+
+                current_version = connection.execute("PRAGMA user_version").fetchone()[0]
+                
+                if current_version != self.DATABASE_VERSION and current_version != 0:
+                    Interface.print(f"Database version is outdated or invalid.\nDatabase file version:\t{current_version}\nClient version:\t\t{self.DATABASE_VERSION}\nTo fix this, downgrade to a previous version of mu or migrate manually.",ok=False)
+                    exit()
+
                 connection.execute('''
                 CREATE TABLE IF NOT EXISTS "tracks" (
                     "id"	INTEGER NOT NULL UNIQUE,
@@ -53,6 +63,7 @@ class Database:
                     PRIMARY KEY("id" AUTOINCREMENT)
                 )
                 ''')
+                connection.execute(f"PRAGMA user_version = {self.DATABASE_VERSION}")
                 connection.commit()
         
         if source_folder:
