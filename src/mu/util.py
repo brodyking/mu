@@ -117,7 +117,7 @@ class Interface:
             )
         elif album is not None:
             searchresult = (
-                f"{Interface.fmt(Color.red(album.title), 25)} | "
+                f"{Color.red(Interface.fmt(album.title, 25))} | "
                 f"{Interface.fmt(album.albumartist, 15)}"
             )
         else:
