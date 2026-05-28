@@ -40,27 +40,25 @@ class TracksDataTable(Static):
 
     def set_track_favorite(self, track_id, is_favorite) -> None:
         """
-            Toggles a tracks favorite icon
-            TODO: Make it not refresh all rows when updating
+        Toggles a tracks favorite icon
+        TODO: Make it not refresh all rows when updating
         """
         try:
             self.main_table.update_cell(
                 str(track_id), "favorite", "❤" if is_favorite else " "
             )
-            self.tracks[track_id].favorite = is_favorite 
+            self.tracks[track_id].favorite = is_favorite
             self.generate_full_rows()
         except Exception:
             return
 
-    def set_track_plays(self, track_id:int, amount:int) -> None:
+    def set_track_plays(self, track_id: int, amount: int) -> None:
         """
-            Sets a tracks play count
-            TODO: Make it not refresh all rows when updating
+        Sets a tracks play count
+        TODO: Make it not refresh all rows when updating
         """
         try:
-            self.main_table.update_cell(
-                str(track_id), "plays", str(amount)
-            )
+            self.main_table.update_cell(str(track_id), "plays", str(amount))
             self.tracks[track_id].plays = amount
             self.generate_full_rows()
         except Exception:

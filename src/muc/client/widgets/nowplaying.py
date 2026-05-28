@@ -1,8 +1,8 @@
 from textual.app import ComposeResult
 from textual.containers import Horizontal, Vertical
-from textual.widgets import Button, Label, ProgressBar, Static
+from textual.events import Click
 from textual.message import Message
-from textual.events import Click 
+from textual.widgets import Button, Label, ProgressBar, Static
 
 from mu.database.track import Track
 
@@ -93,9 +93,10 @@ class NowPlayingProgressBar(ProgressBar):
         )
 
     class Clicked(Message):
-        def __init__(self,percentage:float,*args,**kwargs):
-            super().__init__(*args,**kwargs)
+        def __init__(self, percentage: float, *args, **kwargs):
+            super().__init__(*args, **kwargs)
             self.percentage = percentage
+
         pass
 
     def on_click(self, event: Click) -> None:
