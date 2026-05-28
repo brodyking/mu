@@ -5,7 +5,8 @@
 from textual.app import App, ComposeResult
 from textual.containers import Vertical
 from textual.coordinate import Coordinate
-from textual.widgets import DataTable, Footer, TabbedContent, TabPane
+from textual.events import MouseEvent
+from textual.widgets import DataTable, Footer, ProgressBar, TabbedContent, TabPane
 
 from mu.database.database import Database
 from mu.database.track import Track
@@ -13,7 +14,7 @@ from muc.client.queuelist import QueueList
 from muc.client.widgets.albumsdatatable import AlbumsDataTable
 from muc.client.widgets.artistsdatatable import ArtistsDataTable
 from muc.client.widgets.favoritesdatatable import FavoritesDataTable
-from muc.client.widgets.nowplaying import NowPlaying
+from muc.client.widgets.nowplaying import NowPlaying, NowPlayingProgressBar
 from muc.client.widgets.queuedatatable import QueueDataTable
 from muc.client.widgets.tracksdatatable import TracksDataTable
 from muc.player.player import Player
@@ -202,6 +203,9 @@ class Client(App):
             artist = table.get_cell_at(Coordinate(event.cursor_row, 0))
             self.albums_data_table.search.value = f"albumartist:{artist}"
             self.albums_data_table.main_table.focus()
+
+    def on_now_playing_progress_bar_clicked(self, event: NowPlayingProgressBar.Clicked) -> None:
+        self.player.move_playhead_to_percentage(event.percentage)
 
     def track_finished_playing(self) -> None:
         """This function is called when the track finishes from the player"""
