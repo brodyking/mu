@@ -345,11 +345,16 @@ class Database:
         with sqlite3.connect(str(self.db_path)) as connection:
             cursor = connection.cursor()
             if only_favorited:
-                cursor.execute(
-                    "SELECT * FROM tracks WHERE favorite = 1 ORDER BY artist"
-                )
+                cursor.execute("""
+                    SELECT * FROM tracks
+                    WHERE favorite = 1
+                    ORDER BY artist, album, CAST(discnumber AS INTEGER), CAST(tracknumber AS INTEGER)
+                """)
             else:
-                cursor.execute("SELECT * FROM tracks ORDER BY artist")
+                cursor.execute("""
+                    SELECT * FROM tracks
+                    ORDER BY artist, album, CAST(discnumber AS INTEGER), CAST(tracknumber AS INTEGER)
+                """)
             results = cursor.fetchall()
         track_export = {}
         for i, result in enumerate(results):
@@ -381,13 +386,15 @@ class Database:
 
         return albums
 
-    def list_library_artists(self, console_out: bool = True) -> list[str]:
+    def list_library_artists(self, album_artist = False, console_out: bool = True) -> list[str]:
+        """Returns a list of artists. Album artist supported with the arg above."""
         with sqlite3.connect(str(self.db_path)) as connection:
-            response = connection.execute("""
-            SELECT artist 
+            col = "albumartist" if album_artist else "artist"
+            response = connection.execute(f"""
+            SELECT {col} 
             FROM tracks
-            GROUP BY artist
-            ORDER BY artist COLLATE NOCASE ASC
+            GROUP BY {col} 
+            ORDER BY {col} COLLATE NOCASE ASC
             """).fetchall()
 
         artists = []

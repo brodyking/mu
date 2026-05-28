@@ -50,7 +50,7 @@ class Client(App):
         self.db: Database = Database()
         self.tracks: dict = self.db.list_library_tracks(console_out=False)
         self.albums: list = self.db.list_library_albums(console_out=False)
-        self.artists: list = self.db.list_library_artists(console_out=False)
+        self.artists: list = self.db.list_library_artists(album_artist=True,console_out=False)
         self.queue_list = QueueList(self.tracks)
         self.theme = "catppuccin-mocha"
 
@@ -200,8 +200,8 @@ class Client(App):
         elif self.tabs.active == "artists-tab":
             """If a artist is selected"""
             artist = table.get_cell_at(Coordinate(event.cursor_row, 0))
-            self.tracks_data_table.search.value = f"artist:{artist}"
-            self.tracks_data_table.main_table.focus()
+            self.albums_data_table.search.value = f"albumartist:{artist}"
+            self.albums_data_table.main_table.focus()
 
     def track_finished_playing(self) -> None:
         """This function is called when the track finishes from the player"""
