@@ -43,6 +43,8 @@ class TracksDataTable(Static):
             self.main_table.update_cell(
                 str(track_id), "favorite", "❤" if is_favorite else " "
             )
+            self.tracks[track_id].favorite = is_favorite 
+            self.generate_full_rows()
         except Exception:
             return
 
