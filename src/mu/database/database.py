@@ -98,20 +98,20 @@ class Database:
         Deletes all tracks from database. Keeps files.
         skip_confirmation bypasses the prompt before deletion.
         """
-        if skip_confirmation or Interface.prompt_bool("""
-            Are you sure you want to erase the database file?
-            This action cannot be undone."
-        """):
+        if skip_confirmation or Interface.prompt_bool(
+            "Are you sure you want to erase the database file? "
+            "This action cannot be undone."
+        ):
             with sqlite3.connect(str(self.db_path)) as connection:
                 connection.execute("DELETE FROM tracks;")
                 connection.execute(
                     "UPDATE sqlite_sequence SET seq = 0 WHERE name = 'tracks';"
                 )
                 connection.commit()
-            Interface.print("""
-            Database has been reset.
-            Your files are still in ~/mu/source/. Type "mu scan" to rebuild.
-            """)
+            Interface.print(
+                "Database has been reset. "
+                "Your files are still in ~/mu/source/. Type \"mu scan\" to rebuild."
+            )
 
     def upsert_track(self, connection, metadata: dict) -> None:
         """
