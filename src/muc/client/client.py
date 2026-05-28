@@ -230,7 +230,7 @@ class Client(App):
 
     def track_time_changed(self, current_ms: int) -> None:
         """Updates the current position of now playing"""
-        self.now_playing.progress_bar.update_elapsed(current_ms)
+        self.now_playing.progress.update_elapsed(current_ms)
 
     def update_now_playing(self) -> None:
         track = self.queue_list.get_current_track()
