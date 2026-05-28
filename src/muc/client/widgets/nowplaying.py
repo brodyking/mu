@@ -1,5 +1,7 @@
 from textual.app import ComposeResult
 from textual.containers import Horizontal, Vertical
+from textual.events import Click
+from textual.message import Message
 from textual.widgets import Button, Label, ProgressBar, Static
 
 from mu.database.track import Track
@@ -89,6 +91,17 @@ class NowPlayingProgressBar(ProgressBar):
         super().__init__(
             total=0, show_percentage=False, show_eta=False, *args, **kwargs
         )
+
+    class Clicked(Message):
+        def __init__(self, percentage: float, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            self.percentage = percentage
+
+        pass
+
+    def on_click(self, event: Click) -> None:
+        percentage = event.x / self.size.width
+        self.post_message(self.Clicked(percentage))
 
     def set_track(self, track: Track):
         self.update(total=track.get_time_ms(), progress=0)

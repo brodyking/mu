@@ -13,7 +13,7 @@ from muc.client.queuelist import QueueList
 from muc.client.widgets.albumsdatatable import AlbumsDataTable
 from muc.client.widgets.artistsdatatable import ArtistsDataTable
 from muc.client.widgets.favoritesdatatable import FavoritesDataTable
-from muc.client.widgets.nowplaying import NowPlaying
+from muc.client.widgets.nowplaying import NowPlaying, NowPlayingProgressBar
 from muc.client.widgets.queuedatatable import QueueDataTable
 from muc.client.widgets.tracksdatatable import TracksDataTable
 from muc.player.player import Player
@@ -50,7 +50,9 @@ class Client(App):
         self.db: Database = Database()
         self.tracks: dict = self.db.list_library_tracks(console_out=False)
         self.albums: list = self.db.list_library_albums(console_out=False)
-        self.artists: list = self.db.list_library_artists(album_artist=True,console_out=False)
+        self.artists: list = self.db.list_library_artists(
+            album_artist=True, console_out=False
+        )
         self.queue_list = QueueList(self.tracks)
         self.theme = "catppuccin-mocha"
 
@@ -203,14 +205,25 @@ class Client(App):
             self.albums_data_table.search.value = f"albumartist:{artist}"
             self.albums_data_table.main_table.focus()
 
+    def on_now_playing_progress_bar_clicked(
+        self, event: NowPlayingProgressBar.Clicked
+    ) -> None:
+        self.player.move_playhead_to_percentage(event.percentage)
+
     def track_finished_playing(self) -> None:
         """This function is called when the track finishes from the player"""
         current_track = self.queue_list.get_current_track()
         if current_track:
-            current_track = self.db.increment_play_count(f"id:{current_track.id}",console_out=False)[0]
-            self.tracks_data_table.set_track_plays(current_track.id,current_track.plays)
-            self.queue_data_table.set_track_plays(current_track.id,current_track.plays)
-            self.favorites_data_table.set_track_plays(current_track.id,current_track.plays)
+            current_track = self.db.increment_play_count(
+                f"id:{current_track.id}", console_out=False
+            )[0]
+            self.tracks_data_table.set_track_plays(
+                current_track.id, current_track.plays
+            )
+            self.queue_data_table.set_track_plays(current_track.id, current_track.plays)
+            self.favorites_data_table.set_track_plays(
+                current_track.id, current_track.plays
+            )
 
         self.queue_list.skip_track()
         self.update_now_playing()

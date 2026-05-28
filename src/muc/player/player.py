@@ -74,6 +74,9 @@ class Player:
         """Returns a tuple of the current ms and the current percent of the track"""
         current_ms = self.player.get_time() if self.player.is_playing() else 0  # type: ignore
         current_percent = (
-            self.player.get_position() if self.player.is_playing() else 0.0
+            self.player.get_position() if self.player.is_playing() else 0.0  # type:ignore
         )  # type: ignore
         return (current_ms, current_percent)
+
+    def move_playhead_to_percentage(self, percentage: float):
+        self.player.get_media_player().set_position(percentage)  # type:ignore
