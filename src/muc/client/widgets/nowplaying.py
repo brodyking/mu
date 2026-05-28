@@ -4,7 +4,6 @@ from textual.events import Click
 from textual.message import Message
 from textual.widgets import Button, Label, ProgressBar, Static
 
-from mu.database import track
 from mu.database.track import Track
 
 
@@ -75,7 +74,6 @@ class NowPlayingControls(Static):
 
 
 class NowPlayingProgressBar(ProgressBar):
-
     def __init__(self, *args, **kwargs):
         super().__init__(
             total=0, show_percentage=False, show_eta=False, *args, **kwargs
@@ -95,8 +93,8 @@ class NowPlayingProgressBar(ProgressBar):
     def update_elapsed(self, elapsed_ms: int) -> None:
         self.update(progress=elapsed_ms)
 
-class NowPlayingProgress(Static):
 
+class NowPlayingProgress(Static):
     DEFAULT_CSS = """
         NowPlayingProgress {
             height: 2;
@@ -124,14 +122,14 @@ class NowPlayingProgress(Static):
         }
     """
 
-    def __init__(self,*args,**kwargs):
-        super().__init__(*args,**kwargs)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.bar = NowPlayingProgressBar(id="now-playing-progress-bar")
         self.time_elapsed_ms = 0
         self.time_elapased_ms_label = Label("00:00")
         self.total_time_ms = 0
         self.total_time_ms_label = Label("00:00")
-    
+
     @staticmethod
     def ms_to_min_sec(time_ms: int) -> str:
         seconds = time_ms // 1000
@@ -140,8 +138,8 @@ class NowPlayingProgress(Static):
         return f"{minutes:02d}:{seconds:02d}"
 
     def set_track(self, track: Track):
-        self.total_time_ms = track.get_time_ms() 
-        self.total_time_ms_label.update(self.ms_to_min_sec(track.get_time_ms()))    
+        self.total_time_ms = track.get_time_ms()
+        self.total_time_ms_label.update(self.ms_to_min_sec(track.get_time_ms()))
         self.bar.update(total=self.total_time_ms, progress=0)
 
     def update_elapsed(self, elapsed_ms: int) -> None:
@@ -154,6 +152,7 @@ class NowPlayingProgress(Static):
             yield self.time_elapased_ms_label
             yield self.bar
             yield self.total_time_ms_label
+
 
 class NowPlayingTrackInfo(Static):
     def __init__(self, *args, **kwargs):
