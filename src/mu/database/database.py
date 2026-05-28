@@ -345,11 +345,16 @@ class Database:
         with sqlite3.connect(str(self.db_path)) as connection:
             cursor = connection.cursor()
             if only_favorited:
-                cursor.execute(
-                    "SELECT * FROM tracks WHERE favorite = 1 ORDER BY artist"
-                )
+                cursor.execute("""
+                    SELECT * FROM tracks
+                    WHERE favorite = 1
+                    ORDER BY artist, album, CAST(discnumber AS INTEGER), CAST(tracknumber AS INTEGER)
+                """)
             else:
-                cursor.execute("SELECT * FROM tracks ORDER BY artist")
+                cursor.execute("""
+                    SELECT * FROM tracks
+                    ORDER BY artist, album, CAST(discnumber AS INTEGER), CAST(tracknumber AS INTEGER)
+                """)
             results = cursor.fetchall()
         track_export = {}
         for i, result in enumerate(results):
