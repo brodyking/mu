@@ -381,13 +381,15 @@ class Database:
 
         return albums
 
-    def list_library_artists(self, console_out: bool = True) -> list[str]:
+    def list_library_artists(self, album_artist = False, console_out: bool = True) -> list[str]:
+        """Returns a list of artists. Album artist supported with the arg above."""
         with sqlite3.connect(str(self.db_path)) as connection:
-            response = connection.execute("""
-            SELECT artist 
+            col = "albumartist" if album_artist else "artist"
+            response = connection.execute(f"""
+            SELECT {col} 
             FROM tracks
-            GROUP BY artist
-            ORDER BY artist COLLATE NOCASE ASC
+            GROUP BY {col} 
+            ORDER BY {col} COLLATE NOCASE ASC
             """).fetchall()
 
         artists = []
