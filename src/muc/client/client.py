@@ -205,6 +205,13 @@ class Client(App):
 
     def track_finished_playing(self) -> None:
         """This function is called when the track finishes from the player"""
+        current_track = self.queue_list.get_current_track()
+        if current_track:
+            current_track = self.db.increment_play_count(f"id:{current_track.id}",console_out=False)[0]
+            self.tracks_data_table.set_track_plays(current_track.id,current_track.plays)
+            self.queue_data_table.set_track_plays(current_track.id,current_track.plays)
+            self.favorites_data_table.set_track_plays(current_track.id,current_track.plays)
+
         self.queue_list.skip_track()
         self.update_now_playing()
 

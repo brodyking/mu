@@ -316,7 +316,7 @@ class Database:
 
     def increment_play_count(
         self, term: str, amount: int = 1, console_out: bool = True
-    ) -> list:
+    ) -> list[Track]:
         """Increment track(s) play counts by either 1 or a custom amount"""
         tracks: list[Track] = self.search(f"{term}", console_out=False)
         results = []
@@ -328,7 +328,7 @@ class Database:
                     (track.plays + amount, track.id),
                 )
                 cursor.execute("SELECT * FROM tracks WHERE id = ?", (track.id,))
-                results.append(cursor.fetchone())
+                results.append(Track(cursor.fetchone()))
             connection.commit()
         if console_out:
             for result in results:

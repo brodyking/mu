@@ -39,10 +39,30 @@ class TracksDataTable(Static):
         self.main_table.focus()
 
     def set_track_favorite(self, track_id, is_favorite) -> None:
+        """
+            Toggles a tracks favorite icon
+            TODO: Make it not refresh all rows when updating
+        """
         try:
             self.main_table.update_cell(
                 str(track_id), "favorite", "❤" if is_favorite else " "
             )
+            self.tracks[track_id].favorite = is_favorite 
+            self.generate_full_rows()
+        except Exception:
+            return
+
+    def set_track_plays(self, track_id:int, amount:int) -> None:
+        """
+            Sets a tracks play count
+            TODO: Make it not refresh all rows when updating
+        """
+        try:
+            self.main_table.update_cell(
+                str(track_id), "plays", str(amount)
+            )
+            self.tracks[track_id].plays = amount
+            self.generate_full_rows()
         except Exception:
             return
 
@@ -94,6 +114,32 @@ class TracksDataTable(Static):
         for row in filtered_rows:
             table.add_row(*row, key=str(row[0]))
 
+    def generate_full_rows(self):
+        self.full_rows = []
+        for trackid in self.tracks:
+            track = self.tracks[trackid]
+            favorite = "❤" if track.favorite else " "
+
+            row_tuple = (
+                track.id,
+                favorite,
+                track.title,
+                track.artist,
+                track.album,
+                track.plays,
+                track.time,
+                track.dateadded,
+                track.tracknumber,
+                track.albumartist,
+                track.discnumber,
+                track.genre,
+                track.date,
+                track.filepath,
+                track.filename,
+                track.albumart,
+            )
+            self.full_rows.append(row_tuple)
+
     def on_mount(self) -> None:
         table = self.main_table
 
@@ -121,30 +167,9 @@ class TracksDataTable(Static):
         for label, key, max_w in columns:
             table.add_column(label, key=key, width=max_w)
 
-        self.full_rows = []
-        for trackid in self.tracks:
-            track = self.tracks[trackid]
-            favorite = "❤" if track.favorite else " "
+        self.generate_full_rows()
 
-            row_tuple = (
-                track.id,
-                favorite,
-                track.title,
-                track.artist,
-                track.album,
-                track.plays,
-                track.time,
-                track.dateadded,
-                track.tracknumber,
-                track.albumartist,
-                track.discnumber,
-                track.genre,
-                track.date,
-                track.filepath,
-                track.filename,
-                track.albumart,
-            )
-            self.full_rows.append(row_tuple)
-            table.add_row(*row_tuple, key=str(track.id))
+        for row_tuple in self.full_rows:
+            table.add_row(*row_tuple, key=str(row_tuple[0]))
 
         table.focus()
