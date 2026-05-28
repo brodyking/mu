@@ -79,4 +79,5 @@ class Player:
         return (current_ms, current_percent)
 
     def move_playhead_to_percentage(self, percentage: float):
-        self.player.get_media_player().set_position(percentage)  # type:ignore
+        if self.player.get_media_player().is_playing():  # type: ignore
+            self.player.get_media_player().set_position(percentage)  # type:ignore
