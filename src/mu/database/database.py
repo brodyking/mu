@@ -1,6 +1,7 @@
 import shutil
 import sqlite3
 from pathlib import Path
+from typing import Tuple, Iterator
 
 from mu.database.album import Album
 from mu.database.file import File
@@ -208,10 +209,11 @@ class Database:
 
         return metadata
 
-    def import_media(self, path, console_out: bool = True) -> None:
+    def import_media(self, path, console_out: bool = True) -> Iterator[dict]:
         """
         Copies the file or files (if dir) to ~/mu/source,
         upserts metadata to the database.
+        Yields a dict with the current post, total, and track filename 
         """
         path = Path(path).resolve()
 
@@ -220,19 +222,32 @@ class Database:
         else:
             mp3s = [path]
 
+        if not mp3s:
+            return
+
         with sqlite3.connect(str(self.db_path)) as connection:
+            total = len(mp3s)
             for i, filepath in enumerate(mp3s, 1):
+                out = {
+                        "ok": True,
+                        "count": i,
+                        "total": total,
+                        "filename": filepath.name
+                }
                 try:
                     metadata = self.copy_file(filepath)
                     self.upsert_track(connection, metadata)
                     if console_out:
                         Interface.print(f"{filepath.name}", count=[i, len(mp3s)])
+                    yield out 
                 except Exception as e:
-                    Interface.print(
-                        f"{filepath.name}\n{e}", count=[i, len(mp3s)], ok=False
-                    )
+                    if console_out:
+                        Interface.print(
+                            f"{filepath.name}\n{e}", count=[i, len(mp3s)], ok=False
+                        )
+                    out["ok"] = False
+                    yield out
 
-            connection.commit()
 
     def search(self, term: str, console_out: bool = True) -> list:
         """

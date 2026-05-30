@@ -1,5 +1,6 @@
 import argparse
 from importlib.metadata import version
+import collections
 
 from mu.database.database import Database
 from mu.util import Interface, Mpv
@@ -142,9 +143,9 @@ def main():
         ),
         "albums": lambda: db.list_library_albums(),
         "artists": lambda: db.list_library_artists(),
-        "import": lambda: db.import_media(
+        "import": lambda: collections.deque(db.import_media(
             str(args.filepath),
-        ),
+        ),maxlen=0),
         "search": lambda: db.search(
             str(args.term),
         ),
