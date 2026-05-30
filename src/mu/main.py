@@ -7,6 +7,13 @@ from mu.util import Interface, Mpv
 
 VERSION = version("mu")
 
+def cmd_scan(db):
+    for response in db.scan_source_folder():
+        Interface.print(
+            response["filename"],
+            count=[response["count"],response["total"]],
+            ok=response["ok"]
+        )
 
 def main():
     db = Database()
@@ -132,7 +139,7 @@ def main():
     args = parser.parse_args()
 
     actions = {
-        "scan": lambda: db.scan_source_folder(),
+        "scan": lambda: cmd_scan(db),
         "version": lambda: Interface.print_version(VERSION, db.DATABASE_VERSION),
         "reset": lambda: db.reset_db(skip_confirmation=args.skipconfirmation),
         "favorite": lambda: db.favorite(

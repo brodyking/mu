@@ -166,34 +166,34 @@ class Database:
         with sqlite3.connect(str(self.db_path)) as connection:
             self.upsert_track(connection, metadata)
 
-    def scan_folder(self, path) -> None:
+    def scan_source_folder(self) -> Iterator[dict]:
         """
         Scans the path for music files.
         Each file is stored in the DB and has its album art hashed/saved.
+        Yields a dict with current pos, total, and track filename
         """
+        path = self.source_path
         with sqlite3.connect(str(self.db_path)) as connection:
             mp3s = list(path.rglob("*.mp3"))
-
+            total = len(mp3s)
             for i, filepath in enumerate(mp3s, 1):
+                out = {
+                        "ok": True,
+                        "count": i,
+                        "total": total,
+                        "filename": filepath.name
+                }
                 try:
                     metadata = File.read_metadata(
                         filepath, self.albumart_path
                     )  # Gets dict of files metadata
                     self.upsert_track(connection, metadata)  # Updates the track
-                    Interface.print(f"{filepath.name}", count=[i, len(mp3s)])
+                    yield out
                 except Exception as e:
-                    Interface.print(
-                        f"{filepath.name}\n{e}", count=[i, len(mp3s)], ok=False
-                    )
+                    out["ok"] = False
+                    yield out
 
             connection.commit()
-
-    def scan_source_folder(self):
-        """
-        Scans the mu/source/ folder for music files.
-        Each file is stored in the DB and has its album art hashed/saved.
-        """
-        self.scan_folder(self.source_path)
 
     def copy_file(self, path: Path) -> dict:
         """
@@ -213,7 +213,7 @@ class Database:
         """
         Copies the file or files (if dir) to ~/mu/source,
         upserts metadata to the database.
-        Yields a dict with the current post, total, and track filename 
+        Yields a dict with the current pos, total, and track filename 
         """
         path = Path(path).resolve()
 
