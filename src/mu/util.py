@@ -146,23 +146,27 @@ class Interface:
 
     @staticmethod
     def print_version(client_version: str, database_version: int) -> None:
-        logo = """
- _   _             _ __ ___  _   _ 
-| | | |   _____   | '_ ` _ \\| | | |
-| |_| |  |_____|  | | | | | | |_| |
-| ._,_|           |_| |_| |_|\\__,_|
-|_|                                
-            """
+       
+        link_text = Color.blue("https://github.com/brodyking/mu")
+
+        client_version_text = (
+            Color.yellow("mu + muc: ") + Color.green(f"v{client_version}")
+        )
+        database_version_text = (
+            Color.yellow("db schema: ") + Color.green(f"v{database_version}")
+        )
+
+        logo = (
+            f" _   _ \n"
+            f"| | | |\t{link_text}\n"
+            f"| |_| |\t{client_version_text}\n"
+            f"| ._,_|\t{database_version_text}\n"
+            f"|_|\n"
+            )
 
         lines = logo.split("\n")
         for line in lines:
-            print(
-                Color.red(line[0:8]) + Color.green(line[9:16]) + Color.yellow(line[17:])
-            )
-        print(Color.blue("   your personal music library\n"))
-
-        Interface.print(f"Client Version: {client_version}")
-        Interface.print(f"Database Version: {database_version}\n")
+            print(Color.red(line))
 
     @staticmethod
     def print_outdated_version(database_version: int, library_version: int) -> None:
