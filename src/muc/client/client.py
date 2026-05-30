@@ -101,7 +101,6 @@ class Client(App):
                     yield self.albums_data_table
                 with TabPane("󰠃 Artists (A)", id="artists-tab"):
                     yield self.artists_data_table
-            yield Footer(compact=True, show_command_palette=False)
 
     def action_goto_tab(self, tabid: int) -> None:
         """Switches to a dedicated tab with h or l keys."""
