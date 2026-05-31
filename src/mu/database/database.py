@@ -266,40 +266,25 @@ class Database:
         )
         if target_column is None:
             raise ValueError(
-                "The search query is missing a prefix."
-                "Please specify how you are searching by typing"
-                "the prefix followed by a colon. Ex: title:,artist:"
+                "The search query is missing a prefix. "
+                "Please specify how you are searching by typing "
+                    "the prefix followed by a colon. Ex: \"artist:aphex twin\""
             )
         with sqlite3.connect(str(self.db_path)) as connection:
             cursor = connection.cursor()
 
-            if target_column:
-                # Specific Search
-                value = term.split(":", 1)[1]
+            # Specific Search
+            value = term.split(":", 1)[1]
 
-                if target_column == "id":
-                    # IDs usually need to be exact
-                    query = "SELECT * FROM tracks WHERE id = ?"
-                    cursor.execute(query, (value,))
-                else:
-                    # Text searches use LIKE and wildcards
-                    # We wrap the value in % so it finds partial matches
-                    query = f"SELECT * FROM tracks WHERE {target_column} LIKE ?"
-                    cursor.execute(query, (f"%{value}%",))
-
+            if target_column == "id":
+                # IDs usually need to be exact
+                query = "SELECT * FROM tracks WHERE id = ?"
+                cursor.execute(query, (value,))
             else:
-                # Global search
-                fmt = f"%{term}%"
-                cursor.execute(
-                    """
-                    SELECT * FROM tracks 
-                    WHERE title LIKE ? 
-                    OR artist LIKE ? 
-                    OR albumartist LIKE ?
-                    OR album LIKE ?
-                """,
-                    (fmt, fmt, fmt, fmt),
-                )
+                # Text searches use LIKE and wildcards
+                # We wrap the value in % so it finds partial matches
+                query = f"SELECT * FROM tracks WHERE {target_column} LIKE ?"
+                cursor.execute(query, (f"%{value}%",))
 
             results = cursor.fetchall()
             export = []
