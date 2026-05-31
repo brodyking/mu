@@ -6,8 +6,6 @@ from typing import Tuple, Iterator
 from mu.database.album import Album
 from mu.database.file import File
 from mu.database.track import Track
-from mu.util import Interface
-
 
 class Database:
     DATABASE_VERSION = 1
@@ -94,25 +92,16 @@ class Database:
         if database_folder:
             check_db()
 
-    def reset_db(self, skip_confirmation=False) -> None:
+    def reset_db(self) -> None:
         """
         Deletes all tracks from database. Keeps files.
-        skip_confirmation bypasses the prompt before deletion.
         """
-        if skip_confirmation or Interface.prompt_bool(
-            "Are you sure you want to erase the database file? "
-            "This action cannot be undone."
-        ):
-            with sqlite3.connect(str(self.db_path)) as connection:
-                connection.execute("DELETE FROM tracks;")
-                connection.execute(
-                    "UPDATE sqlite_sequence SET seq = 0 WHERE name = 'tracks';"
-                )
-                connection.commit()
-            Interface.print(
-                "Database has been reset. "
-                "Your files are still in ~/mu/source/. Type \"mu scan\" to rebuild."
+        with sqlite3.connect(str(self.db_path)) as connection:
+            connection.execute("DELETE FROM tracks;")
+            connection.execute(
+                "UPDATE sqlite_sequence SET seq = 0 WHERE name = 'tracks';"
             )
+            connection.commit()
 
     def upsert_track(self, connection, metadata: dict) -> None:
         """
@@ -209,7 +198,7 @@ class Database:
 
         return metadata
 
-    def import_media(self, path, console_out: bool = True) -> Iterator[dict]:
+    def import_media(self, path) -> Iterator[dict]:
         """
         Copies the file or files (if dir) to ~/mu/source,
         upserts metadata to the database.
@@ -237,19 +226,14 @@ class Database:
                 try:
                     metadata = self.copy_file(filepath)
                     self.upsert_track(connection, metadata)
-                    if console_out:
-                        Interface.print(f"{filepath.name}", count=[i, len(mp3s)])
                     yield out 
                 except Exception as e:
-                    if console_out:
-                        Interface.print(
-                            f"{filepath.name}\n{e}", count=[i, len(mp3s)], ok=False
-                        )
+                    print(e)
                     out["ok"] = False
                     yield out
 
 
-    def search(self, term: str, console_out: bool = True) -> list:
+    def search(self, term: str) -> list:
         """
         Searches the database for tracks with prefix support.
         If no prefix is given, it will search by id.
@@ -281,13 +265,11 @@ class Database:
             term.split(":", 1)[0] if term.split(":", 1)[0] in prefixes else None
         )
         if target_column is None:
-            missing_prefix_error = """
-                The search query is missing a prefix.
-                Please specify how you are searching by typing
-                the prefix followed by a colon. Ex: title:,artist:"
-            """
-            Interface.print(missing_prefix_error, ok=False)
-            raise ValueError(missing_prefix_error)
+            raise ValueError(
+                "The search query is missing a prefix."
+                "Please specify how you are searching by typing"
+                "the prefix followed by a colon. Ex: title:,artist:"
+            )
         with sqlite3.connect(str(self.db_path)) as connection:
             cursor = connection.cursor()
 
@@ -322,10 +304,6 @@ class Database:
             results = cursor.fetchall()
             export = []
             for i, result in enumerate(results):
-                if console_out:
-                    Interface.print(
-                        "", track=Track(result), count=[i + 1, len(results)]
-                    )
                 export.append(Track(result))
             return export
 
@@ -352,8 +330,7 @@ class Database:
         return results
 
     def list_library_tracks(
-        self, only_favorited: bool = False, console_out: bool = True
-    ) -> dict:
+        self, only_favorited: bool = False) -> dict:
         """
         Returns all tracks in a dict, with the key being the songs ID.
         """
@@ -381,11 +358,9 @@ class Database:
         for i, result in enumerate(results):
             track = Track(result)
             track_export[track.id] = track
-            if console_out:
-                Interface.print("", track=track, count=[i + 1, len(results)])
         return track_export
 
-    def list_library_albums(self, console_out: bool = True) -> list[Album]:
+    def list_library_albums(self) -> list[Album]:
         """
         Returns a list of albums
         """
@@ -401,15 +376,10 @@ class Database:
         for album in response:
             albums.append(Album(album))
 
-        if console_out:
-            for i, album in enumerate(albums):
-                Interface.print("", album=album, count=[i + 1, len(albums)])
-
         return albums
 
     def list_library_artists(
-        self, album_artist=False, console_out: bool = True
-    ) -> list[str]:
+        self, album_artist=False) -> list[str]:
         """Returns a list of artists. Album artist supported with the arg above."""
         with sqlite3.connect(str(self.db_path)) as connection:
             col = "albumartist" if album_artist else "artist"
@@ -424,13 +394,9 @@ class Database:
         for artist in response:
             artists.append(artist[0])
 
-        if console_out:
-            for i, artist in enumerate(artists):
-                Interface.print(artist, count=[i + 1, len(response)])
-
         return response
 
-    def favorite(self, term: str, console_out: bool = True) -> list[Track]:
+    def favorite(self, term: str) -> list[Track]:
         """
         Lets a user favorite a track by title or id if search starts with id:
         """
@@ -447,8 +413,4 @@ class Database:
                 cursor.execute("SELECT * FROM tracks WHERE id = ?", (track.id,))
                 results.append(Track(cursor.fetchone()))
             connection.commit()
-        if console_out:
-            for i, result in enumerate(results):
-                if result is not None:
-                    Interface.print("", track=result, count=[i + 1, len(results)])
         return results
