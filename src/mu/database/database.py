@@ -308,10 +308,9 @@ class Database:
             return export
 
     def increment_play_count(
-        self, term: str, amount: int = 1, console_out: bool = True
-    ) -> list[Track]:
+        self, term: str, amount: int = 1) -> list[Track]:
         """Increment track(s) play counts by either 1 or a custom amount"""
-        tracks: list[Track] = self.search(f"{term}", console_out=False)
+        tracks: list[Track] = self.search(f"{term}")
         results = []
         with sqlite3.connect(self.db_path) as connection:
             cursor = connection.cursor()
@@ -323,10 +322,6 @@ class Database:
                 cursor.execute("SELECT * FROM tracks WHERE id = ?", (track.id,))
                 results.append(Track(cursor.fetchone()))
             connection.commit()
-        if console_out:
-            for result in results:
-                if result is not None:
-                    Interface.print("", track=Track(result))
         return results
 
     def list_library_tracks(
@@ -401,7 +396,7 @@ class Database:
         Lets a user favorite a track by title or id if search starts with id:
         """
 
-        tracks = self.search(term, console_out=False)
+        tracks = self.search(term)
         results = []
         with sqlite3.connect(self.db_path) as connection:
             cursor = connection.cursor()

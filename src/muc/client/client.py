@@ -48,11 +48,9 @@ class Client(App):
     def __init__(self):
         super().__init__()
         self.db: Database = Database()
-        self.tracks: dict = self.db.list_library_tracks(console_out=False)
-        self.albums: list = self.db.list_library_albums(console_out=False)
-        self.artists: list = self.db.list_library_artists(
-            album_artist=True, console_out=False
-        )
+        self.tracks: dict = self.db.list_library_tracks()
+        self.albums: list = self.db.list_library_albums()
+        self.artists: list = self.db.list_library_artists(album_artist=True)
         self.queue_list = QueueList(self.tracks)
         self.theme = "catppuccin-mocha"
 
