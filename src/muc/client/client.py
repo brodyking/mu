@@ -48,11 +48,9 @@ class Client(App):
     def __init__(self):
         super().__init__()
         self.db: Database = Database()
-        self.tracks: dict = self.db.list_library_tracks(console_out=False)
-        self.albums: list = self.db.list_library_albums(console_out=False)
-        self.artists: list = self.db.list_library_artists(
-            album_artist=True, console_out=False
-        )
+        self.tracks: dict = self.db.list_library_tracks()
+        self.albums: list = self.db.list_library_albums()
+        self.artists: list = self.db.list_library_artists(album_artist=True)
         self.queue_list = QueueList(self.tracks)
         self.theme = "catppuccin-mocha"
 
@@ -101,7 +99,6 @@ class Client(App):
                     yield self.albums_data_table
                 with TabPane("󰠃 Artists (A)", id="artists-tab"):
                     yield self.artists_data_table
-            yield Footer(compact=True, show_command_palette=False)
 
     def action_goto_tab(self, tabid: int) -> None:
         """Switches to a dedicated tab with h or l keys."""
@@ -214,9 +211,7 @@ class Client(App):
         """This function is called when the track finishes from the player"""
         current_track = self.queue_list.get_current_track()
         if current_track:
-            current_track = self.db.increment_play_count(
-                f"id:{current_track.id}", console_out=False
-            )[0]
+            current_track = self.db.increment_play_count(f"id:{current_track.id}" )[0]
             self.tracks_data_table.set_track_plays(
                 current_track.id, current_track.plays
             )
@@ -224,7 +219,7 @@ class Client(App):
             self.favorites_data_table.set_track_plays(
                 current_track.id, current_track.plays
             )
-
+        
         self.queue_list.skip_track()
         self.update_now_playing()
 

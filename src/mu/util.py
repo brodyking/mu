@@ -85,8 +85,9 @@ class Interface:
         Prints to the terminal
         - ok (bool): Shows checkmark or X. Defaults to True.
         - count (list): [current, total]. Defaults to empty.
-        - track (list): The data pulled from the SQLite DB. Defaults to empty.
-        """
+        - track (Track): Prints track metadata
+        - album (Album): Prints album metadata
+        - artist (str): Prints the artist names"""
 
         ok = kwargs.get("ok", True)  # Status. Shows check or x.
         count = kwargs.get(
@@ -94,6 +95,7 @@ class Interface:
         )  # Used to display progress in anticipation of another print.
         track = kwargs.get("track", None)
         album = kwargs.get("album", None)
+        artist = kwargs.get("artist", None)
 
         prefix = Color.green("[✓] ") if ok else Color.red("[✘] ")
         counter = (
@@ -119,6 +121,10 @@ class Interface:
             searchresult = (
                 f"{Color.red(Interface.fmt(album.title, 25))} | "
                 f"{Interface.fmt(album.albumartist, 15)}"
+            )
+        elif artist is not None:
+            searchresult = (
+                f"{Color.red(artist)}"
             )
         else:
             searchresult = ""
