@@ -82,7 +82,7 @@ class Client(App):
         self.tabs.can_focus_children = False
 
         self.player = Player(
-            on_track_end=lambda event: self.track_finished_playing(),
+            on_track_end=lambda _: self.track_finished_playing(),
             on_time_changed=lambda elapsed_ms: self.track_time_changed(elapsed_ms),
         )
 

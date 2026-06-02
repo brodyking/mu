@@ -37,7 +37,7 @@ class AlbumsDataTable(Static):
         self.filter_table(event.value)
 
     # When the input is submitted, focus the main table of tracks
-    def on_input_submitted(self, event: Input.Submitted) -> None:
+    def on_input_submitted(self) -> None:
         self.main_table.focus()
 
     def filter_table(self, search_term: str) -> None:
