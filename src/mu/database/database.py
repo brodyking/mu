@@ -6,6 +6,7 @@ from typing import Tuple, Iterator
 from mu.database.album import Album
 from mu.database.file import File
 from mu.database.track import Track
+from mu.database.schemaerror import SchemaError
 
 class Database:
     DATABASE_VERSION = 1
@@ -35,9 +36,7 @@ class Database:
         # Validates that the locations exist and have the necessary files.
         self.validate_library()
 
-    def validate_library(
-        self, database_folder=True, source_folder=True, albumart_folder=True
-    ):
+    def validate_library(self, database_folder=True, source_folder=True, albumart_folder=True):
         """
         By default, checks to ensure the database, source_folder,
         and albumart_folder exist.
@@ -56,10 +55,7 @@ class Database:
                 ]
 
                 if current_version != self.DATABASE_VERSION and current_version != 0:
-                    Interface.print_outdated_version(
-                        self.DATABASE_VERSION, current_version
-                    )
-                    exit()
+                    raise SchemaError(self.DATABASE_VERSION,current_version) 
 
                 connection.execute("""
                 CREATE TABLE IF NOT EXISTS "tracks" (
@@ -153,6 +149,7 @@ class Database:
 
     def upsert_track_once(self, metadata: dict) -> None:
         with sqlite3.connect(str(self.db_path)) as connection:
+            connection.row_factory = sqlite3.Row
             self.upsert_track(connection, metadata)
 
     def scan_source_folder(self) -> Iterator[dict]:
@@ -163,6 +160,7 @@ class Database:
         """
         path = self.source_path
         with sqlite3.connect(str(self.db_path)) as connection:
+            connection.row_factory = sqlite3.Row
             mp3s = list(path.rglob("*.mp3"))
             total = len(mp3s)
             for i, filepath in enumerate(mp3s, 1):
@@ -215,6 +213,7 @@ class Database:
             return
 
         with sqlite3.connect(str(self.db_path)) as connection:
+            connection.row_factory = sqlite3.Row
             total = len(mp3s)
             for i, filepath in enumerate(mp3s, 1):
                 out = {
@@ -271,6 +270,7 @@ class Database:
                     "the prefix followed by a colon. Ex: \"artist:aphex twin\""
             )
         with sqlite3.connect(str(self.db_path)) as connection:
+            connection.row_factory = sqlite3.Row
             cursor = connection.cursor()
 
             # Specific Search
@@ -298,6 +298,7 @@ class Database:
         tracks: list[Track] = self.search(f"{term}")
         results = []
         with sqlite3.connect(self.db_path) as connection:
+            connection.row_factory = sqlite3.Row
             cursor = connection.cursor()
             for track in tracks:
                 cursor.execute(
@@ -315,6 +316,7 @@ class Database:
         Returns all tracks in a dict, with the key being the songs ID.
         """
         with sqlite3.connect(str(self.db_path)) as connection:
+            connection.row_factory = sqlite3.Row
             cursor = connection.cursor()
             if only_favorited:
                 cursor.execute("""
@@ -345,6 +347,7 @@ class Database:
         Returns a list of albums
         """
         with sqlite3.connect(str(self.db_path)) as connection:
+            connection.row_factory = sqlite3.Row
             response = connection.execute("""
             SELECT album, albumartist
             FROM tracks
@@ -384,6 +387,7 @@ class Database:
         tracks = self.search(term)
         results = []
         with sqlite3.connect(self.db_path) as connection:
+            connection.row_factory = sqlite3.Row
             cursor = connection.cursor()
             for track in tracks:
                 cursor.execute(

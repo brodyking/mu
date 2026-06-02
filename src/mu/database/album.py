@@ -1,11 +1,10 @@
 class Album:
-    def __init__(self, response):
+    def __init__(self, response:dict):
         """
         Creates a album object from SQLite response
-        TODO: Make this not selected from a tuple
         """
-        self.title = response[0]
-        self.albumartist = response[1]
+        self.title = response["album"]
+        self.albumartist = response["albumartist"]
 
     def get_dict(self) -> dict:
         return {

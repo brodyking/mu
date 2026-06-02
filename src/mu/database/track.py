@@ -1,25 +1,24 @@
 class Track:
-    def __init__(self, response):
+    def __init__(self, response:dict):
         """
         Creates a track object from SQLite response
-        TODO: Make this not selected from a tuple
         """
-        self.id = response[0]
-        self.favorite = bool(response[1])
-        self.title = response[2]
-        self.artist = response[3]
-        self.album = response[4]
-        self.plays = response[5]
-        self.time = response[6]
-        self.dateadded = response[7]
-        self.tracknumber = response[8]
-        self.albumartist = response[9]
-        self.discnumber = response[10]
-        self.genre = response[11]
-        self.date = response[12]
-        self.filepath = response[13]
-        self.filename = response[14]
-        self.albumart = response[15]
+        self.id = response["id"]
+        self.favorite = bool(response["favorite"])
+        self.title = response["title"]
+        self.artist = response["artist"]
+        self.album = response["album"]
+        self.plays = response["plays"]
+        self.time = response["time"]
+        self.dateadded = response["dateadded"]
+        self.tracknumber = response["tracknumber"]
+        self.albumartist = response["albumartist"]
+        self.discnumber = response["discnumber"]
+        self.genre = response["genre"]
+        self.date = response["date"]
+        self.filepath = response["filepath"]
+        self.filename = response["filename"]
+        self.albumart = response["albumart"]
 
     def get_time_ms(self) -> int:
         minutes, seconds = map(int, self.time.split(":"))
