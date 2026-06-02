@@ -15,12 +15,13 @@ class QueueList:
             else None
         )
 
-    def start_queue(self, track_ids) -> Track:
+    def start_queue(self, track_ids) -> Track | None:
         """Initializes the list of tracks, and returns the first one"""
         self.queue = [int(id) for id in track_ids]
         self.pos = 0
 
-        return self.get_current_track()
+        current_track = self.get_current_track()
+        return current_track if current_track is Track else None
 
     def get_queue(self, offset=1) -> list:
         """
