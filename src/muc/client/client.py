@@ -5,7 +5,7 @@
 from textual.app import App, ComposeResult
 from textual.containers import Vertical
 from textual.coordinate import Coordinate
-from textual.widgets import DataTable, Footer, TabbedContent, TabPane
+from textual.widgets import DataTable, TabbedContent, TabPane
 from textual import on
 
 from mu.database.database import Database
