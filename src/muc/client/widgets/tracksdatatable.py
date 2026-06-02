@@ -1,5 +1,6 @@
 from textual.app import ComposeResult
 from textual.widgets import Input, Static
+from textual import on
 
 from muc.client.widgets.vimdatatable import VimDataTable
 
@@ -30,12 +31,13 @@ class TracksDataTable(Static):
     def action_focus_search(self) -> None:
         self.search.focus()
 
-    # When search bar's input is changed
-    def on_input_changed(self, event: Input.Changed) -> None:
+    @on(Input.Changed)
+    def input_changed(self, event: Input.Changed) -> None:
         self.filter_table(event.value)
 
     # When the input is submitted, focus the main table of tracks
-    def on_input_submitted(self, event: Input.Submitted) -> None:
+    @on(Input.Submitted)
+    def input_submitted(self, event: Input.Submitted) -> None:
         self.main_table.focus()
 
     def set_track_favorite(self, track_id, is_favorite) -> None:
