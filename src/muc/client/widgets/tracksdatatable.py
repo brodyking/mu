@@ -37,7 +37,7 @@ class TracksDataTable(Static):
 
     # When the input is submitted, focus the main table of tracks
     @on(Input.Submitted)
-    def input_submitted(self, event: Input.Submitted) -> None:
+    def input_submitted(self) -> None:
         self.main_table.focus()
 
     def set_track_favorite(self, track_id, is_favorite) -> None:
