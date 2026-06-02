@@ -5,7 +5,8 @@
 from textual.app import App, ComposeResult
 from textual.containers import Vertical
 from textual.coordinate import Coordinate
-from textual.widgets import DataTable, Footer, TabbedContent, TabPane
+from textual.widgets import DataTable, TabbedContent, TabPane
+from textual import on
 
 from mu.database.database import Database
 from mu.database.track import Track
@@ -152,7 +153,8 @@ class Client(App):
             self.player.skip_by_offset(offset)
             self.update_now_playing()
 
-    def on_data_table_row_selected(self, event: DataTable.RowSelected) -> None:
+    @on(DataTable.RowSelected)
+    def row_selected(self, event: DataTable.RowSelected) -> None:
         """Logic when a cell is clicked. Starts now playing and the queue."""
 
         active_tab = self.tabs.active
@@ -202,7 +204,8 @@ class Client(App):
             self.albums_data_table.search.value = f"albumartist:{artist}"
             self.albums_data_table.main_table.focus()
 
-    def on_now_playing_progress_bar_clicked(
+    @on(NowPlayingProgressBar.Clicked)
+    def now_playing_progress_bar_clicked(
         self, event: NowPlayingProgressBar.Clicked
     ) -> None:
         self.player.move_playhead_to_percentage(event.percentage)
@@ -267,8 +270,9 @@ class Client(App):
                 )
         else:
             # If track is favorited using the buttons on controls while playing
-            if len(self.queue_list.queue) > 0:
-                track_id = self.queue_list.get_current_track().id
+            current_track = self.queue_list.get_current_track()
+            if current_track is Track:
+                track_id = current_track.id
 
         result = self.db.favorite(f"id:{track_id}")[0] if track_id else None
 
