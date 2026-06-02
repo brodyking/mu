@@ -1,3 +1,12 @@
+"""
+ _   _
+| | | | muc client
+| |_| | (c) 2026 all rights reserved
+| ._,_| https://github.com/brodyking/mu
+|_|
+
+"""
+
 import pathlib
 from collections.abc import Callable
 

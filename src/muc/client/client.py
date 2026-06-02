@@ -1,7 +1,12 @@
-# mu client source code
-# (c) 2026 all rights reserved
+"""
+ _   _
+| | | | muc client
+| |_| | (c) 2026 all rights reserved
+| ._,_| https://github.com/brodyking/mu
+|_|
 
-# Textualize
+"""
+
 from textual import on
 from textual.app import App, ComposeResult
 from textual.containers import Vertical

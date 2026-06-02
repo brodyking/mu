@@ -1,3 +1,12 @@
+"""
+ _   _
+| | | | muc client
+| |_| | (c) 2026 all rights reserved
+| ._,_| https://github.com/brodyking/mu
+|_|
+
+"""
+
 from textual import on
 from textual.app import ComposeResult
 from textual.widgets import Input, Static
