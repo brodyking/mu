@@ -1,6 +1,6 @@
+from textual import on
 from textual.app import ComposeResult
 from textual.widgets import Input, Static
-from textual import on
 
 from muc.client.widgets.vimdatatable import VimDataTable
 
