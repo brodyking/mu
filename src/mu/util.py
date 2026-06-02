@@ -1,3 +1,12 @@
+"""
+ _   _
+| | | | mu
+| |_| | (c) 2026 all rights reserved
+| ._,_| https://github.com/brodyking/mu
+|_|
+
+"""
+
 import subprocess
 
 
