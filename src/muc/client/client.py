@@ -5,7 +5,7 @@
 from textual.app import App, ComposeResult
 from textual.containers import Vertical
 from textual.coordinate import Coordinate
-from textual.widgets import DataTable, Footer, TabbedContent, TabPane
+from textual.widgets import DataTable, TabbedContent, TabPane
 
 from mu.database.database import Database
 from mu.database.track import Track
@@ -211,7 +211,7 @@ class Client(App):
         """This function is called when the track finishes from the player"""
         current_track = self.queue_list.get_current_track()
         if current_track:
-            current_track = self.db.increment_play_count(f"id:{current_track.id}" )[0]
+            current_track = self.db.increment_play_count(f"id:{current_track.id}")[0]
             self.tracks_data_table.set_track_plays(
                 current_track.id, current_track.plays
             )
@@ -219,7 +219,7 @@ class Client(App):
             self.favorites_data_table.set_track_plays(
                 current_track.id, current_track.plays
             )
-        
+
         self.queue_list.skip_track()
         self.update_now_playing()
 

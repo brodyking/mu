@@ -1,12 +1,13 @@
 import shutil
 import sqlite3
+from collections.abc import Iterator
 from pathlib import Path
-from typing import Tuple, Iterator
 
 from mu.database.album import Album
 from mu.database.file import File
-from mu.database.track import Track
 from mu.database.schemaerror import SchemaError
+from mu.database.track import Track
+
 
 class Database:
     DATABASE_VERSION = 1
@@ -36,7 +37,9 @@ class Database:
         # Validates that the locations exist and have the necessary files.
         self.validate_library()
 
-    def validate_library(self, database_folder=True, source_folder=True, albumart_folder=True):
+    def validate_library(
+        self, database_folder=True, source_folder=True, albumart_folder=True
+    ):
         """
         By default, checks to ensure the database, source_folder,
         and albumart_folder exist.
@@ -55,7 +58,7 @@ class Database:
                 ]
 
                 if current_version != self.DATABASE_VERSION and current_version != 0:
-                    raise SchemaError(self.DATABASE_VERSION,current_version) 
+                    raise SchemaError(self.DATABASE_VERSION, current_version)
 
                 connection.execute("""
                 CREATE TABLE IF NOT EXISTS "tracks" (
@@ -165,10 +168,10 @@ class Database:
             total = len(mp3s)
             for i, filepath in enumerate(mp3s, 1):
                 out = {
-                        "ok": True,
-                        "count": i,
-                        "total": total,
-                        "filename": filepath.name
+                    "ok": True,
+                    "count": i,
+                    "total": total,
+                    "filename": filepath.name,
                 }
                 try:
                     metadata = File.read_metadata(
@@ -176,7 +179,7 @@ class Database:
                     )  # Gets dict of files metadata
                     self.upsert_track(connection, metadata)  # Updates the track
                     yield out
-                except Exception as e:
+                except Exception:
                     out["ok"] = False
                     yield out
 
@@ -200,7 +203,7 @@ class Database:
         """
         Copies the file or files (if dir) to ~/mu/source,
         upserts metadata to the database.
-        Yields a dict with the current pos, total, and track filename 
+        Yields a dict with the current pos, total, and track filename
         """
         path = Path(path).resolve()
 
@@ -217,20 +220,19 @@ class Database:
             total = len(mp3s)
             for i, filepath in enumerate(mp3s, 1):
                 out = {
-                        "ok": True,
-                        "count": i,
-                        "total": total,
-                        "filename": filepath.name
+                    "ok": True,
+                    "count": i,
+                    "total": total,
+                    "filename": filepath.name,
                 }
                 try:
                     metadata = self.copy_file(filepath)
                     self.upsert_track(connection, metadata)
-                    yield out 
+                    yield out
                 except Exception as e:
                     print(e)
                     out["ok"] = False
                     yield out
-
 
     def search(self, term: str) -> list:
         """
@@ -267,7 +269,7 @@ class Database:
             raise ValueError(
                 "The search query is missing a prefix. "
                 "Please specify how you are searching by typing "
-                    "the prefix followed by a colon. Ex: \"artist:aphex twin\""
+                'the prefix followed by a colon. Ex: "artist:aphex twin"'
             )
         with sqlite3.connect(str(self.db_path)) as connection:
             connection.row_factory = sqlite3.Row
@@ -292,8 +294,7 @@ class Database:
                 export.append(Track(result))
             return export
 
-    def increment_play_count(
-        self, term: str, amount: int = 1) -> list[Track]:
+    def increment_play_count(self, term: str, amount: int = 1) -> list[Track]:
         """Increment track(s) play counts by either 1 or a custom amount"""
         tracks: list[Track] = self.search(f"{term}")
         results = []
@@ -310,8 +311,7 @@ class Database:
             connection.commit()
         return results
 
-    def list_library_tracks(
-        self, only_favorited: bool = False) -> dict:
+    def list_library_tracks(self, only_favorited: bool = False) -> dict:
         """
         Returns all tracks in a dict, with the key being the songs ID.
         """
@@ -361,8 +361,7 @@ class Database:
 
         return albums
 
-    def list_library_artists(
-        self, album_artist=False) -> list[str]:
+    def list_library_artists(self, album_artist=False) -> list[str]:
         """Returns a list of artists. Album artist supported with the arg above."""
         with sqlite3.connect(str(self.db_path)) as connection:
             col = "albumartist" if album_artist else "artist"

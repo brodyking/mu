@@ -1,5 +1,5 @@
 class Album:
-    def __init__(self, response:dict):
+    def __init__(self, response: dict):
         """
         Creates a album object from SQLite response
         """

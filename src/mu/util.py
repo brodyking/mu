@@ -123,9 +123,7 @@ class Interface:
                 f"{Interface.fmt(album.albumartist, 15)}"
             )
         elif artist is not None:
-            searchresult = (
-                f"{Color.red(artist)}"
-            )
+            searchresult = f"{Color.red(artist)}"
         else:
             searchresult = ""
 
@@ -152,14 +150,14 @@ class Interface:
 
     @staticmethod
     def print_version(client_version: str, database_version: int) -> None:
-       
+
         link_text = Color.blue("https://github.com/brodyking/mu")
 
-        client_version_text = (
-            Color.yellow("mu + muc: ") + Color.green(f"v{client_version}")
+        client_version_text = Color.yellow("mu + muc: ") + Color.green(
+            f"v{client_version}"
         )
-        database_version_text = (
-            Color.yellow("db schema: ") + Color.green(f"v{database_version}")
+        database_version_text = Color.yellow("db schema: ") + Color.green(
+            f"v{database_version}"
         )
 
         logo = (
@@ -168,7 +166,7 @@ class Interface:
             f"| |_| |\t{client_version_text}\n"
             f"| ._,_|\t{database_version_text}\n"
             f"|_|\n"
-            )
+        )
 
         lines = logo.split("\n")
         for line in lines:
