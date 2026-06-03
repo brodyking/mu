@@ -22,7 +22,7 @@ def cmd_scan(db: Database):
     for response in db.scan_source_folder():
         Interface.print(
             response["filename"],
-            count=[response["count"], response["total"]],
+            count=[response["count"] + 1, response["total"]],
             ok=response["ok"],
         )
 
@@ -57,7 +57,7 @@ def cmd_albums(db: Database):
     albums = db.list_library_albums()
     total = len(albums)
     for i, album in enumerate(albums):
-        Interface.print("", album=album, count=[i, total])
+        Interface.print("", album=album, count=[i + 1, total])
 
 
 def cmd_artists(db: Database, album_artist: bool = False):
@@ -65,7 +65,7 @@ def cmd_artists(db: Database, album_artist: bool = False):
     artists = db.list_library_artists(album_artist=album_artist)
     total = len(artists)
     for i, artist in enumerate(artists):
-        Interface.print("", artist=artist[0], count=[i, total])
+        Interface.print("", artist=artist[0], count=[i + 1, total])
 
 
 def cmd_import(db: Database, path: str):
@@ -73,7 +73,7 @@ def cmd_import(db: Database, path: str):
     for response in db.import_media(path):
         Interface.print(
             response["filename"],
-            count=[response["count"], response["total"]],
+            count=[response["count"] + 1, response["total"]],
             ok=response["ok"],
         )
 
@@ -83,7 +83,7 @@ def cmd_favorite(db: Database, term: str):
     tracks = db.favorite(term)
     total = len(tracks)
     for i, track in enumerate(tracks):
-        Interface.print("", track=track, count=[i, total])
+        Interface.print("", track=track, count=[i + 1, total])
 
 
 def cmd_search(db: Database, term: str):
@@ -92,7 +92,7 @@ def cmd_search(db: Database, term: str):
         tracks = db.search(term)
         total = len(tracks)
         for i, track in enumerate(tracks):
-            Interface.print("", track=track, count=[i, total])
+            Interface.print("", track=track, count=[i + 1, total])
     except ValueError:
         kw_missing_error = (
             "The search query is missing a prefix. "
