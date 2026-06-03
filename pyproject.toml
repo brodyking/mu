@@ -7,7 +7,7 @@ mu = "mu.main:main"
 muc = "muc.main:main"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/mu/"]
+packages = ["src/mu/", "src/muc/"]
 
 [tool.ruff]
 src = ["src"]
@@ -20,8 +20,4 @@ name = "mu"
 version = "0.1.2"
 requires-python = ">=3.12.13"
 description = "your personal music library"
-dependencies = [
-    "mutagen",
-    "textual",
-    "python-vlc"
-]
+dependencies = ["mutagen", "textual", "python-vlc"]
