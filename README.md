@@ -4,9 +4,16 @@
 
 <img src="docs/screenshot.png" alt="Screenshot of muc" width="100%">
 
-µ comes with mµc (`muc`) which is a tui music player that utilizes VLC for audio playback. 
+µ comes with mµc (`muc`) which is a tui music player that utilizes VLC for audio playback.
 
 ## Install
+
+- [μ - your personal music library](#μ---your-personal-music-library)
+  - [Install](#install)
+    - [Step 1: Download Python and VLC](#step-1:-download-python-and-vlc)
+    - [Step 2: Download the source code](#step-2:-download-the-source-code)
+    - [Step 3: Install as python package](#step-3:-install-as-python-package)
+  - [Usage](#usage)
 
 ### Step 1: Download Python and VLC
 
