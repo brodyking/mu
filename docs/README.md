@@ -5,8 +5,8 @@
 
 <h2>Chapters 📁</h2>
 
-- 1.0 [Installation]("#1.0---Installation")
-- 1.1 [File Structure]("#1.1---File-Structure")
+- [1.0 - Installation](#10---installation)
+- [1.1 - File Structure](#11---file-structure)
 
 ## 1.0 - Installation
 
