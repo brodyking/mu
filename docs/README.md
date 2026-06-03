@@ -15,7 +15,7 @@
 
 ## 1.0 - Installation
 
-Before proceeding, ensure you have Python >=v1.12.13 and VLC downloaded and installed.
+Before proceeding, ensure you have Python >=v3.12.13 and VLC downloaded and installed.
 
 Currently, the only way to install µ is as a python package.
 
