@@ -11,6 +11,7 @@ import argparse
 from importlib.metadata import version
 
 from mu.database.database import Database
+from mu.database.schemaerror import SchemaError
 from mu.util import Interface
 
 VERSION = version("mu")
@@ -223,9 +224,12 @@ def build_parser(db: Database) -> argparse.ArgumentParser:
 
 
 def main():
-    db = Database()
-    args = build_parser(db).parse_args()
-    args.func(args)
+    try:
+        db = Database()
+        args = build_parser(db).parse_args()
+        args.func(args)
+    except SchemaError as e:
+        Interface.print_outdated_version(e.expected, e.found)
 
 
 if __name__ == "__main__":
