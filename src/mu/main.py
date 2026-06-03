@@ -11,6 +11,7 @@ import argparse
 from importlib.metadata import version
 
 from mu.database.database import Database
+from mu.database.schemaerror import SchemaError
 from mu.util import Interface
 
 VERSION = version("mu")
@@ -87,10 +88,18 @@ def cmd_favorite(db: Database, term: str):
 
 def cmd_search(db: Database, term: str):
     """Search the database"""
-    tracks = db.search(term)
-    total = len(tracks)
-    for i, track in enumerate(tracks):
-        Interface.print("", track=track, count=[i, total])
+    try:
+        tracks = db.search(term)
+        total = len(tracks)
+        for i, track in enumerate(tracks):
+            Interface.print("", track=track, count=[i, total])
+    except ValueError:
+        kw_missing_error = (
+            "The search query is missing a prefix. "
+            "Please specify how you are searching by typing "
+            'the prefix followed by a colon. Ex: "artist:aphex twin"'
+        )
+        Interface.print(kw_missing_error, ok=False)
 
 
 def build_parser(db: Database) -> argparse.ArgumentParser:
@@ -215,9 +224,12 @@ def build_parser(db: Database) -> argparse.ArgumentParser:
 
 
 def main():
-    db = Database()
-    args = build_parser(db).parse_args()
-    args.func(args)
+    try:
+        db = Database()
+        args = build_parser(db).parse_args()
+        args.func(args)
+    except SchemaError as e:
+        Interface.print_outdated_version(e.expected, e.found)
 
 
 if __name__ == "__main__":
