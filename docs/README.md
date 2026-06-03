@@ -1,4 +1,4 @@
-# µ documentation
+<h1 align="center">📖 µ documentation</h1>
 
 Welcome to the mµ documentation! This is the best place to get started with mµ and mµc.
 
