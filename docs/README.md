@@ -10,8 +10,8 @@
 - [2.0 - Basic Usage](#20---basic-usage)
   - [2.1 - Importing Music](#21---importing-music)
   - [2.2 - Listing Tracks, Albums, and Artists](#22---listing-tracks-albums-and-artists)
-  - [2.2 - Searching tracks](#22---searching-tracks)
-  - [2.3 Favoriting tracks](#23-favoriting-tracks)
+  - [2.3 - Searching tracks](#23---searching-tracks)
+  - [2.4 Favoriting tracks](#24-favoriting-tracks)
 
 ## 1.0 - Installation
 
@@ -87,7 +87,7 @@ mu artists # lists all artists
 
 `mu artists` allows for the `-a` or `--albums` flag, which only returns album artists.
 
-### 2.2 - Searching tracks
+### 2.3 - Searching tracks
 
 You can search your music by using the `mu search` action. Searching uses "prefixes", which tell µ which coloum you are searching. 
 
@@ -127,7 +127,7 @@ mu search "artist:Pink Floyd"
 
 All actions that involve selecting a song will use this prefix syntax.
 
-### 2.3 Favoriting tracks
+### 2.4 Favoriting tracks
 
 To favorite track(s), use the same prefix convention while using the `favorite` action. This action toggles it's favorite status. It can be used on multiple tracks or a single track.
 
