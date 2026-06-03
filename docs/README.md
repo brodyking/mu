@@ -15,6 +15,8 @@
 
 ## 1.0 - Installation
 
+Before proceeding, ensure you have Python >=v1.12.13 and VLC downloaded and installed.
+
 Currently, the only way to install µ is as a python package.
 
 First, clone this repository somewhere where it can be left untouched. We recommend creating a folder in your home folder named `.mu` and cloning it there. This is done so you can update the software in the future.
