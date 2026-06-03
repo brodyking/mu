@@ -1,27 +1,17 @@
 # μ - your personal music library
 
-μ (mu) is a macos and linux music library management tool and music player. It
-can function both from the cli and a tui interface. Mu is designed to be
-portable (a single executable) and backup friendly. All music is stored in a
-hierarchical format, and the internal database is a simple sqlite file.
+μ (`mu`) is a MacOS and Linux music library management tool.Mu is designed to be backup friendly and programmable. All music is stored in a hierarchical format, and the internal database is a simple SQLite file.
 
-<!--toc:start-->
+<img src="docs/screenshot.png" alt="Screenshot of muc" width="100%">
 
-- [μ - your personal music library](#μ-your-personal-music-library)
-  - [Install](#install)
-    - [Step 1: Download Python and VLC](#step-1-download-python-and-vlc)
-    - [Step 2: Download the source code](#step-2-download-the-source-code)
-    - [Step 3: Install as python package](#step-3-install-as-python-package)
-  - [Usage](#usage)
-
-<!--toc:end-->
+µ comes with mµc (`muc`) which is a tui music player that utilizes VLC for audio playback. 
 
 ## Install
 
 ### Step 1: Download Python and VLC
 
-Please ensure you have python version 3.12.13 or newer downloaded, alongside
-pip. You must also have VLC downloaded for the client to play music.
+Please ensure you have **Python 3.12.13** or newer, alongside
+pip. You must also have VLC downloaded for mµc.
 
 ### Step 2: Download the source code
 
@@ -41,14 +31,14 @@ pip install .
 
 ## Usage
 
-Upon running `mu` for the first time, ms will create a folder in your music
+Upon running `mu` for the first time, mu will create a folder in your music
 directory (`~/Music/mu/`).
 
 - `~/Music/mu/source/` stores your music files.
 - `~/Music/mu/albumart/` stores album art files.
-- `~/Music/mu/ms.db` is the central database file.
+- `~/Music/mu/mu.db` is the central database file.
 
-The standard way to operate ms is through the terminal. To learn more about the
+The standard way to operate mu is through the terminal. To learn more about the
 commands and use of each command, run `-h` after each command.
 
 To use the player, run `muc`.
