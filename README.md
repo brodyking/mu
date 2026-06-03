@@ -11,5 +11,5 @@
 </p>
 
 <p align="center">
-  To get started with µ, checkout the <a href="docs/README.md">documentation</a>.
+  To get started with µ, checkout the <a href="./docs/README.md">documentation</a>.
 </p>
