@@ -29,8 +29,7 @@ class QueueList:
         self.queue = [int(id) for id in track_ids]
         self.pos = 0
 
-        current_track = self.get_current_track()
-        return current_track if current_track is Track else None
+        return self.get_current_track()
 
     def get_queue(self, offset=1) -> list:
         """
@@ -43,7 +42,7 @@ class QueueList:
             output.append(self.tracks[id])
         return output
 
-    def skip_track(self, offset: int = 1) -> Track:
+    def skip_track(self, offset: int = 1) -> Track | None:
         """
         Returns the next track and shifts the queue,
         or returns current track if none next.
@@ -56,4 +55,4 @@ class QueueList:
         if self.pos + offset < len(self.queue) and self.pos + offset >= 0:
             self.pos = (self.pos + offset) % len(self.queue)
 
-        return self.tracks[self.queue[self.pos]]
+        return self.get_current_track()

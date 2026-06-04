@@ -63,7 +63,6 @@ class Player:
         # 2. Find the index of the currently playing item
         current_media = self.player.get_media_player().get_media()  # type:ignore
         if not current_media:
-            print("No media is currently loaded.")
             return
 
         current_index = self.media_list.index_of_item(current_media)  # type:ignore
@@ -74,10 +73,6 @@ class Player:
         # 4. Keep the index within playlist boundaries
         if 0 <= new_index < total_tracks:
             self.player.play_item_at_index(new_index)  # type: ignore
-        else:
-            print(
-                f"Index {new_index} is out of bounds (Playlist size: {total_tracks})."
-            )
 
     def get_current_time(self) -> tuple[int, float]:
         """Returns a tuple of the current ms and the current percent of the track"""

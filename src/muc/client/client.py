@@ -151,8 +151,6 @@ class Client(App):
 
     def action_skip_track(self, offset: int) -> None:
         """Skips to a song in the queue by an offest if the song exists"""
-        if len(self.queue_list.queue) <= 0:
-            return
         track = self.queue_list.skip_track(offset)
         if track:
             self.player.skip_by_offset(offset)
@@ -213,6 +211,11 @@ class Client(App):
     def now_playing_progress_bar_clicked(
         self, event: NowPlayingProgressBar.Clicked
     ) -> None:
+        """
+        Moves the playhead to the new percentage.
+        UI updates happen when the player sends an event when
+        the tracks position changes.
+        """
         self.player.move_playhead_to_percentage(event.percentage)
 
     def track_finished_playing(self) -> None:
@@ -236,18 +239,18 @@ class Client(App):
         self.now_playing.progress.update_elapsed(current_ms)
 
     def update_now_playing(self) -> None:
+        """Updates the now playing widget with the current track"""
         track = self.queue_list.get_current_track()
         if track:
             self.now_playing.set_track(track)
             self.queue_data_table.update_queue(self.queue_list.get_queue())
 
-    def update_track_lists(self, tracks: dict) -> None:
-        self.tracks = tracks
-        self.queue_list.tracks = dict(self.tracks)
-        self.tracks_data_table.tracks = dict(self.tracks)
-
     def action_favorite_track(self) -> None:
-        """When f is pressed while browsing tracks"""
+        """
+        Favorites a track. If table is selected, then the track
+        is picked from the currently selected row. Else, it is
+        selected from the currently playing track.
+        """
         # Check if a table is focused
         track_id = None
         table = None
