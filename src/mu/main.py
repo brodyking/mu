@@ -103,6 +103,7 @@ def cmd_search(db: Database, term: str):
 
 
 def build_parser(db: Database) -> argparse.ArgumentParser:
+    """Builds the parser"""
     parser = argparse.ArgumentParser(
         prog="μ",
         description="your personal music library",
