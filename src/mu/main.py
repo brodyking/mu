@@ -91,12 +91,7 @@ def cmd_playlist_list(db: Database, term: str):
         else:
             Interface.print("Playlist does not exist", ok=False)
     except ValueError:
-        kw_missing_error = (
-            "The search query is missing a prefix."
-            "Please specify how you are searching by typing "
-            "the prefix followed by a colon. Ex: title:gym,id:1"
-        )
-        Interface.print(kw_missing_error, ok=False)
+        Interface.print_missing_prefix()
 
 
 def cmd_playlist_append(db: Database, playlist_term: str, tracks_term: str):
@@ -106,12 +101,7 @@ def cmd_playlist_append(db: Database, playlist_term: str, tracks_term: str):
             for i, track in enumerate(playlist.tracks):
                 Interface.print("", track=track, count=[i + 1, len(playlist.tracks)])
     except ValueError:
-        kw_missing_error = (
-            "The search query is missing a prefix."
-            "Please specify how you are searching by typing "
-            "the prefix followed by a colon. Ex: title:gym,id:1"
-        )
-        Interface.print(kw_missing_error, ok=False)
+        Interface.print_missing_prefix()
 
 
 def cmd_import(db: Database, path: str):
@@ -126,10 +116,13 @@ def cmd_import(db: Database, path: str):
 
 def cmd_favorite(db: Database, term: str):
     """Favorite track(s)"""
-    tracks = db.favorite(term)
-    total = len(tracks)
-    for i, track in enumerate(tracks):
-        Interface.print("", track=track, count=[i + 1, total])
+    try:
+        tracks = db.favorite(term)
+        total = len(tracks)
+        for i, track in enumerate(tracks):
+            Interface.print("", track=track, count=[i + 1, total])
+    except ValueError:
+        Interface.print_missing_prefix()
 
 
 def cmd_search(db: Database, term: str):
@@ -140,12 +133,7 @@ def cmd_search(db: Database, term: str):
         for i, track in enumerate(tracks):
             Interface.print("", track=track, count=[i + 1, total])
     except ValueError:
-        kw_missing_error = (
-            "The search query is missing a prefix. "
-            "Please specify how you are searching by typing "
-            'the prefix followed by a colon. Ex: "artist:aphex twin"'
-        )
-        Interface.print(kw_missing_error, ok=False)
+        Interface.print_missing_prefix()
 
 
 def build_parser(db: Database) -> argparse.ArgumentParser:

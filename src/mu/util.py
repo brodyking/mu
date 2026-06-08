@@ -196,3 +196,12 @@ class Interface:
         Interface.print("Library version is outdated or invalid.", ok=False)
         print(f"Database version:\t{database_version}")
         print(f"Library version:\t{library_version}")
+
+    @staticmethod
+    def print_missing_prefix():
+        kw_missing_error = (
+            "The search query is missing a prefix."
+            "Please specify how you are searching by typing "
+            "the prefix followed by a colon. Ex: title:gym,id:1"
+        )
+        Interface.print(kw_missing_error, ok=False)
