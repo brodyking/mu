@@ -9,6 +9,7 @@
 
 import argparse
 from importlib.metadata import version
+from multiprocessing import Value
 
 from mu.database.database import Database
 from mu.database.schemaerror import SchemaError
@@ -79,6 +80,23 @@ def cmd_playlist_create(db: Database, title: str, description: str):
     """Creates a playlist, prints it once created."""
     playlist = db.create_playlist(title, description=description)
     Interface.print("", playlist=playlist)
+
+
+def cmd_playlist_list(db: Database, term: str):
+    try:
+        playlist = db.get_playlist(term)
+        if playlist is not None:
+            for i, track in enumerate(playlist.tracks):
+                Interface.print("", track=track, count=[i + 1, len(playlist.tracks)])
+        else:
+            Interface.print("Playlist does not exist", ok=False)
+    except ValueError:
+        kw_missing_error = (
+            "The search query is missing a prefix."
+            "Please specify how you are searching by typing "
+            "the prefix followed by a colon. Ex: title:gym,id:1"
+        )
+        Interface.print(kw_missing_error, ok=False)
 
 
 def cmd_import(db: Database, path: str):
@@ -176,7 +194,8 @@ def _add_list_parser(db: Database, subparsers) -> None:
 
 def _add_playlist_parser(db: Database, subparsers) -> None:
     playlist_parser = subparsers.add_parser(
-        "playlist", help="crud operations for playlists"
+        "playlist",
+        help="crud operations for playlists",
     )
     playlist_subparsers = playlist_parser.add_subparsers(
         dest="action", required=True, help="operation"
@@ -188,6 +207,16 @@ def _add_playlist_parser(db: Database, subparsers) -> None:
     create.set_defaults(
         func=lambda args: cmd_playlist_create(db, args.title, args.description)
     )
+
+    list = playlist_subparsers.add_parser("list", help="list tracks in a playlist")
+    list.add_argument(
+        "term",
+        help=(
+            "the name of the playlist you are searching for."
+            "supports prefixes (id:, title:)"
+        ),
+    )
+    list.set_defaults(func=lambda args: cmd_playlist_list(db, args.term))
 
 
 def _add_scan_parser(db: Database, subparsers) -> None:
