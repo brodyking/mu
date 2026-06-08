@@ -75,21 +75,21 @@ You can also input different directories, or individual mp3 files.
 
 ### 2.2 - Listing Tracks, Albums, and Artists 
 
-Tracks, albums, and artists are all actions you can input into µ.
+By using the `list` action in µ, you can view all the albums, artists, and tracks in your library.
 
 ```
-mu tracks # lists all tracks
-mu albums # lists all albums
-mu artists # lists all artists
+mu list tracks # lists all tracks
+mu list albums # lists all albums
+mu list artists # lists all artists
 ```
 
-`mu tracks` allows for the `-f` or `--favorited` flag, which only returns favorited tracks.
+`mu list tracks` allows for the `-f` or `--favorited` flag, which only returns favorited tracks.
 
-`mu artists` allows for the `-a` or `--albums` flag, which only returns album artists.
+`mu list artists` allows for the `-a` or `--albums` flag, which only returns album artists.
 
 ### 2.3 - Searching tracks
 
-You can search your music by using the `mu search` action. Searching uses "prefixes", which tell µ which coloum you are searching. 
+You can search your music by using the `mu search` action. Searching uses "prefixes", which tell µ which coloum you are searching. The search algorithm only searches the `tracks` table in the database.
 
 Here are all the prefixes available:
 ```python
