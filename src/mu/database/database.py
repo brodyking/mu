@@ -465,6 +465,7 @@ class Database:
                 return None
 
     def get_playlist_tracks(self, playlist_id: int) -> list[Track]:
+        """Returns a list of tracks in a playlist, in order"""
         with sqlite3.connect(str(self.db_path)) as connection:
             connection.row_factory = sqlite3.Row
             cursor = connection.cursor()
@@ -481,6 +482,7 @@ class Database:
             return [Track(row) for row in cursor.fetchall()]
 
     def create_playlist(self, title: str, description: str = "") -> Playlist | None:
+        """Creates a playlist, returns the playlist"""
         with sqlite3.connect(str(self.db_path)) as connection:
             connection.row_factory = sqlite3.Row
 

@@ -61,7 +61,7 @@ def cmd_list_albums(db: Database):
 
 
 def cmd_list_artists(db: Database, album_artist: bool = False):
-    """Prints all the artits in the database"""
+    """Prints all the artists in the database"""
     artists = db.list_library_artists(album_artist=album_artist)
     total = len(artists)
     for i, artist in enumerate(artists):
@@ -69,12 +69,14 @@ def cmd_list_artists(db: Database, album_artist: bool = False):
 
 
 def cmd_list_playlists(db: Database):
+    """Prints all the playlists in the database"""
     playlists = db.list_playlists()
     for playlist in playlists:
         Interface.print("", playlist=playlist)
 
 
 def cmd_playlist_create(db: Database, title: str, description: str):
+    """Creates a playlist, prints it once created."""
     playlist = db.create_playlist(title, description=description)
     Interface.print("", playlist=playlist)
 
