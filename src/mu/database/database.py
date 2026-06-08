@@ -491,7 +491,9 @@ class Database:
             if not existing:
                 connection.execute(
                     """
-                    INSERT INTO playlists (title,description) VALUES (:title,:description)
+                INSERT INTO playlists
+                (title,description)
+                VALUES (:title,:description)
                 """,
                     (
                         title,
