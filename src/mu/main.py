@@ -77,19 +77,19 @@ def cmd_list_playlists(db: Database):
         Interface.print("", playlist=playlist)
 
 
-def cmd_playlist_create(db: Database, title: str, description: str):
-    """Creates a playlist, prints it once created."""
-    playlist = db.create_playlist(title, description=description)
-    Interface.print("", playlist=playlist)
-
-
-def cmd_playlist_list(db: Database, term: str):
+def cmd_list_playlist(db: Database, term: str):
     try:
         playlist = db.get_playlist(term)
         for i, track in enumerate(playlist.tracks):
             Interface.print("", track=track, count=[i + 1, len(playlist.tracks)])
     except ValueError as e:
         Interface.print(str(e), ok=False)
+
+
+def cmd_playlist_create(db: Database, title: str, description: str):
+    """Creates a playlist, prints it once created."""
+    playlist = db.create_playlist(title, description=description)
+    Interface.print("", playlist=playlist)
 
 
 def cmd_playlist_append(db: Database, playlist_term: str, tracks_term: str):
@@ -221,6 +221,18 @@ def _add_list_parser(db: Database, subparsers) -> None:
         "playlists", help="list all playlists in the library"
     ).set_defaults(func=lambda _: cmd_list_playlists(db))
 
+    playlist = list_subparsers.add_parser(
+        "playlist", help="list contents of a playlist"
+    )
+    playlist.add_argument(
+        "term",
+        help=(
+            "the name of the playlist you are searching for."
+            "supports prefixes (id:, title:)"
+        ),
+    )
+    playlist.set_defaults(func=lambda args: cmd_list_playlist(db, args.term))
+
 
 def _add_playlist_parser(db: Database, subparsers) -> None:
     playlist_parser = subparsers.add_parser(
@@ -237,16 +249,6 @@ def _add_playlist_parser(db: Database, subparsers) -> None:
     create.set_defaults(
         func=lambda args: cmd_playlist_create(db, args.title, args.description)
     )
-
-    list = playlist_subparsers.add_parser("list", help="list tracks in a playlist")
-    list.add_argument(
-        "term",
-        help=(
-            "the name of the playlist you are searching for."
-            "supports prefixes (id:, title:)"
-        ),
-    )
-    list.set_defaults(func=lambda args: cmd_playlist_list(db, args.term))
 
     append = playlist_subparsers.add_parser(
         "append", help="append track(s) to a playlist"
