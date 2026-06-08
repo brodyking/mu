@@ -99,6 +99,21 @@ def cmd_playlist_list(db: Database, term: str):
         Interface.print(kw_missing_error, ok=False)
 
 
+def cmd_playlist_append(db: Database, playlist_term: str, tracks_term: str):
+    try:
+        playlist = db.append_playlist(playlist_term, tracks_term)
+        if playlist is not None:
+            for i, track in enumerate(playlist.tracks):
+                Interface.print("", track=track, count=[i + 1, len(playlist.tracks)])
+    except ValueError:
+        kw_missing_error = (
+            "The search query is missing a prefix."
+            "Please specify how you are searching by typing "
+            "the prefix followed by a colon. Ex: title:gym,id:1"
+        )
+        Interface.print(kw_missing_error, ok=False)
+
+
 def cmd_import(db: Database, path: str):
     """Imports all files from the specified directory"""
     for response in db.import_media(path):
@@ -217,6 +232,17 @@ def _add_playlist_parser(db: Database, subparsers) -> None:
         ),
     )
     list.set_defaults(func=lambda args: cmd_playlist_list(db, args.term))
+
+    append = playlist_subparsers.add_parser(
+        "append", help="append track(s) to a playlist"
+    )
+    append.add_argument("playlist_term", help=("the search term for the playlist"))
+    append.add_argument(
+        "tracks_term", help=("the search term for the tracks being appended")
+    )
+    append.set_defaults(
+        func=lambda args: cmd_playlist_append(db, args.playlist_term, args.tracks_term)
+    )
 
 
 def _add_scan_parser(db: Database, subparsers) -> None:
