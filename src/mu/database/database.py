@@ -441,29 +441,30 @@ class Database:
         self, id: int | None = None, title: str | None = None
     ) -> Playlist | None:
         """Returns a playlist object from a playlist id"""
+
+        if id is None and title is None:
+            raise ValueError("You must specify a playlist ID or playlist title")
+
         with sqlite3.connect(str(self.db_path)) as connection:
             connection.row_factory = sqlite3.Row
             if id is not None:
                 col, val = "id", id
-            elif title is not None:
-                col, val = "title", title
             else:
-                col, val = None, None
+                col, val = "title", title
 
             response = connection.execute(
                 f"SELECT * FROM playlists WHERE {col}=?", (val,)
             ).fetchone()
 
-            if res
-
-                playlist = Playlist(
+            if response is not None:
+                return Playlist(
+                    response["id"],
                     response["title"],
                     description=response["description"],
                     tracks=self.get_playlist_tracks(response["id"]),
                 )
-                return playlist
             else:
-                raise ValueError("You must specify a playlist ID or playlist title")
+                return None
 
     def get_playlist_tracks(self, playlist_id: int) -> list[Track]:
         """Returns a list of tracks in a playlist, in order"""
@@ -511,3 +512,25 @@ class Database:
             ).fetchone()
 
             return self.get_playlist(id=response["id"])
+
+    def append_playlist(self, playlist_id: int, term: str) -> Playlist | None:
+        """Adds a track to the playlist"""
+        playlist = self.get_playlist(id=playlist_id)
+        tracks = self.search(term)
+        if playlist is None:
+            raise ValueError("Playlist does not exist")
+        position = len(playlist.tracks)
+        with sqlite3.connect(str(self.db_path)) as connection:
+            for track in tracks:
+                try:
+                    connection.execute(
+                        """
+                        INSERT INTO playlist_tracks (playlist_id, track_id, position)
+                        VALUES (?, ?, ?)
+                    """,
+                        (playlist_id, track.id, position),
+                    )
+                except sqlite3.IntegrityError:
+                    pass
+            connection.commit()
+            return self.get_playlist(playlist_id)
