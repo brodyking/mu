@@ -14,12 +14,13 @@ from pathlib import Path
 
 from mu.database.album import Album
 from mu.database.file import File
+from mu.database.playlist import Playlist
 from mu.database.schemaerror import SchemaError
 from mu.database.track import Track
 
 
 class Database:
-    DATABASE_VERSION = 1
+    DATABASE_VERSION = 2
 
     def __init__(self, **kwargs):
         """
@@ -69,26 +70,46 @@ class Database:
                 if current_version != self.DATABASE_VERSION and current_version != 0:
                     raise SchemaError(self.DATABASE_VERSION, current_version)
 
+                # Creates tracks table
                 connection.execute("""
-                CREATE TABLE IF NOT EXISTS "tracks" (
-                    "id"	INTEGER NOT NULL UNIQUE,
-                    "favorite" INT DEFAULT 0,
-                    "title"	TEXT,
-                    "artist"	TEXT,
-                    "album"	TEXT,
-                    "plays" INT DEFAULT 0,
-                    "time" TEXT,
-                    "dateadded" TEXT,
-                    "tracknumber"	INTEGER,
-                    "albumartist"	TEXT,
-                    "discnumber"	INTEGER,
-                    "genre"	TEXT,
-                    "date"	TEXT,
-                    "filepath" TEXT,
-                    "filename" TEXT,
-                    "albumart" TEXT,
-                    PRIMARY KEY("id" AUTOINCREMENT)
-                )
+                    CREATE TABLE IF NOT EXISTS "tracks" (
+                        "id"	INTEGER NOT NULL UNIQUE,
+                        "favorite" INT DEFAULT 0,
+                        "title"	TEXT,
+                        "artist"	TEXT,
+                        "album"	TEXT,
+                        "plays" INT DEFAULT 0,
+                        "time" TEXT,
+                        "dateadded" TEXT,
+                        "tracknumber"	INTEGER,
+                        "albumartist"	TEXT,
+                        "discnumber"	INTEGER,
+                        "genre"	TEXT,
+                        "date"	TEXT,
+                        "filepath" TEXT,
+                        "filename" TEXT,
+                        "albumart" TEXT,
+                        PRIMARY KEY("id" AUTOINCREMENT)
+                    )
+                """)
+                # Creates playlists table
+                connection.execute("""
+                    CREATE TABLE IF NOT EXISTS "playlists" (
+                        "id" INTEGER NOT NULL UNIQUE,
+                        "title" TEXT NOT NULL UNIQUE,
+                        "description" TEXT,
+                        PRIMARY KEY("id" AUTOINCREMENT)
+                    )
+                """)
+                # Creates playlist_tracks table
+                connection.execute("""
+                    CREATE TABLE IF NOT EXISTS "playlist_tracks" (
+                        "playlist_id" INTEGER NOT NULL REFERENCES playlists(id),
+                        "track_id"    INTEGER NOT NULL REFERENCES tracks(id),
+                        "position"    INTEGER NOT NULL,
+                        "date_added"  TEXT DEFAULT (datetime('now')),
+                        PRIMARY KEY (playlist_id, track_id)
+                    );
                 """)
                 connection.execute(f"PRAGMA user_version = {self.DATABASE_VERSION}")
                 connection.commit()
@@ -102,13 +123,13 @@ class Database:
 
     def reset_db(self) -> None:
         """
-        Deletes all tracks from database. Keeps files.
+        Deletes all tracks and playlists from database. Keeps files.
         """
         with sqlite3.connect(str(self.db_path)) as connection:
             connection.execute("DELETE FROM tracks;")
-            connection.execute(
-                "UPDATE sqlite_sequence SET seq = 0 WHERE name = 'tracks';"
-            )
+            connection.execute("DELETE FROM playlists;")
+            connection.execute("DELETE FROM playlist_tracks;")
+            connection.execute("UPDATE sqlite_sequence SET seq = 0;")
             connection.commit()
 
     def upsert_track(self, connection, metadata: dict) -> None:
@@ -339,8 +360,8 @@ class Database:
             else:
                 cursor.execute("""
                     SELECT * FROM tracks
-                    ORDER BY artist, 
-                    album, 
+                    ORDER BY artist,
+                    album,
                     CAST(discnumber AS INTEGER),
                     CAST(tracknumber AS INTEGER)
                 """)
@@ -375,9 +396,9 @@ class Database:
         with sqlite3.connect(str(self.db_path)) as connection:
             col = "albumartist" if album_artist else "artist"
             response = connection.execute(f"""
-            SELECT {col} 
+            SELECT {col}
             FROM tracks
-            GROUP BY {col} 
+            GROUP BY {col}
             ORDER BY {col} COLLATE NOCASE ASC
             """).fetchall()
 
@@ -386,6 +407,15 @@ class Database:
             artists.append(artist[0])
 
         return response
+
+    def list_playlists(self) -> list[Playlist]:
+        with sqlite3.connect(str(self.db_path)) as connection:
+            connection.row_factory = sqlite3.Row
+            response = connection.execute("SELECT * FROM playlists").fetchall()
+            output = []
+            for playlist in response:
+                output.append(self.get_playlist(playlist["id"]))
+            return output
 
     def favorite(self, term: str) -> list[Track]:
         """
@@ -406,3 +436,71 @@ class Database:
                 results.append(Track(cursor.fetchone()))
             connection.commit()
         return results
+
+    def get_playlist(
+        self, id: int | None = None, title: str | None = None
+    ) -> Playlist | None:
+        """Returns a playlist object from a playlist id"""
+        with sqlite3.connect(str(self.db_path)) as connection:
+            connection.row_factory = sqlite3.Row
+            if id is not None:
+                response = connection.execute(
+                    "SELECT * FROM playlists WHERE id=?", (id,)
+                ).fetchone()
+            elif title is not None:
+                response = connection.execute(
+                    "SELECT * FROM playlists WHERE title=?", (title,)
+                ).fetchone()
+
+            if response:
+                playlist = Playlist(
+                    response["title"],
+                    description=response["description"],
+                    tracks=self.get_playlist_tracks(response["id"]),
+                )
+                return playlist
+            else:
+                return None
+
+    def get_playlist_tracks(self, playlist_id: int) -> list[Track]:
+        with sqlite3.connect(str(self.db_path)) as connection:
+            connection.row_factory = sqlite3.Row
+            cursor = connection.cursor()
+            cursor.execute(
+                """
+                SELECT tracks.*
+                FROM tracks
+                JOIN playlist_tracks ON tracks.id = playlist_tracks.track_id
+                WHERE playlist_tracks.playlist_id = ?
+                ORDER BY playlist_tracks.position
+            """,
+                (playlist_id,),
+            )
+            return [Track(row) for row in cursor.fetchall()]
+
+    def create_playlist(self, title: str, description: str = None) -> None:
+        with sqlite3.connect(str(self.db_path)) as connection:
+            connection.row_factory = sqlite3.Row
+
+            # Checks if playlist already exists, if not creates it.
+            existing = connection.execute(
+                "SELECT * FROM playlists WHERE title=?", (title,)
+            ).fetchone()
+            if not existing:
+                connection.execute(
+                    """
+                    INSERT INTO playlists (title,description) VALUES (:title,:description)
+                """,
+                    (
+                        title,
+                        description,
+                    ),
+                )
+                connection.commit()
+
+            # Fetches the playlist from DB, and returns it
+            response = connection.execute(
+                "SELECT * FROM playlists WHERE title=?", (title,)
+            ).fetchone()
+
+            return self.get_playlist(id=response["id"])
