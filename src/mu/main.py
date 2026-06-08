@@ -68,6 +68,17 @@ def cmd_list_artists(db: Database, album_artist: bool = False):
         Interface.print("", artist=artist[0], count=[i + 1, total])
 
 
+def cmd_list_playlists(db: Database):
+    playlists = db.list_playlists()
+    for playlist in playlists:
+        Interface.print("", playlist=playlist)
+
+
+def cmd_playlist_create(db: Database, title: str, description: str):
+    playlist = db.create_playlist(title, description=description)
+    Interface.print("", playlist=playlist)
+
+
 def cmd_import(db: Database, path: str):
     """Imports all files from the specified directory"""
     for response in db.import_media(path):
@@ -105,7 +116,7 @@ def cmd_search(db: Database, term: str):
 def build_parser(db: Database) -> argparse.ArgumentParser:
     """Builds the parser"""
     parser = argparse.ArgumentParser(
-        prog="μ",
+        prog="mu",
         description="your personal music library",
         epilog="""
             Created and maintained by Brody King.
@@ -161,6 +172,40 @@ def build_parser(db: Database) -> argparse.ArgumentParser:
         "-a", "--albums", action="store_true", help="list only album artists"
     )
     artists_parser.set_defaults(func=lambda args: cmd_list_artists(db, args.albums))
+
+    # Listing -> Playlists
+    list_subparsers.add_parser(
+        "playlists",
+        help="list all playlists in the library",
+        description="List all playlists in the library",
+    ).set_defaults(func=lambda _: cmd_list_playlists(db))
+
+    # Playlists
+    playlist_parser = subparsers.add_parser(
+        "playlist",
+        help="crud operations for playlists",
+        description="Crud operations for playlists",
+    )
+
+    playlist_subparsers = playlist_parser.add_subparsers(
+        dest="action", required=True, help="operation"
+    )
+
+    # Playlists -> Create
+    create_playlist_parser = playlist_subparsers.add_parser(
+        "create",
+        help="create a new playlist",
+        description="""
+        Create a new playlist
+        """,
+    )
+    create_playlist_parser.add_argument("title", help="title of playlist")
+    create_playlist_parser.add_argument(
+        "-d", "--description", help="description of the playlist"
+    )
+    create_playlist_parser.set_defaults(
+        func=lambda args: cmd_playlist_create(db, args.title, args.description)
+    )
 
     # Scan
     subparsers.add_parser(

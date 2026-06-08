@@ -96,7 +96,9 @@ class Interface:
         - count (list): [current, total]. Defaults to empty.
         - track (Track): Prints track metadata
         - album (Album): Prints album metadata
-        - artist (str): Prints the artist names"""
+        - playlist (Playlist): Prints playlist metadata
+        - artist (str): Prints the artist names
+        """
 
         ok = kwargs.get("ok", True)  # Status. Shows check or x.
         count = kwargs.get(
@@ -105,6 +107,7 @@ class Interface:
         track = kwargs.get("track", None)
         album = kwargs.get("album", None)
         artist = kwargs.get("artist", None)
+        playlist = kwargs.get("playlist", None)
 
         prefix = Color.green("[✓] ") if ok else Color.red("[✘] ")
         counter = (
@@ -133,6 +136,12 @@ class Interface:
             )
         elif artist is not None:
             searchresult = f"{Color.red(artist)}"
+        elif playlist is not None:
+            searchresult = (
+                f"{Color.red(Interface.fmt(playlist.title, 15))} | "
+                f"{Color.green(Interface.fmt(str(len(playlist.tracks)), 3))} | "
+                f"{playlist.description}"
+            )
         else:
             searchresult = ""
 
