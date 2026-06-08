@@ -90,8 +90,8 @@ def cmd_playlist_list(db: Database, term: str):
                 Interface.print("", track=track, count=[i + 1, len(playlist.tracks)])
         else:
             Interface.print("Playlist does not exist", ok=False)
-    except ValueError:
-        Interface.print_missing_prefix()
+    except ValueError as e:
+        Interface.print(str(e), ok=False)
 
 
 def cmd_playlist_append(db: Database, playlist_term: str, tracks_term: str):
@@ -100,8 +100,8 @@ def cmd_playlist_append(db: Database, playlist_term: str, tracks_term: str):
         if playlist is not None:
             for i, track in enumerate(playlist.tracks):
                 Interface.print("", track=track, count=[i + 1, len(playlist.tracks)])
-    except ValueError:
-        Interface.print_missing_prefix()
+    except ValueError as e:
+        Interface.print(str(e), ok=False)
 
 
 def cmd_playlist_remove(db: Database, playlist_term: str, tracks_term: str):
@@ -110,8 +110,8 @@ def cmd_playlist_remove(db: Database, playlist_term: str, tracks_term: str):
         if playlist is not None:
             for i, track in enumerate(playlist.tracks):
                 Interface.print("", track=track, count=[i + 1, len(playlist.tracks)])
-    except ValueError:
-        Interface.print_missing_prefix()
+    except ValueError as e:
+        Interface.print(str(e), ok=False)
 
 
 def cmd_import(db: Database, path: str):
@@ -131,8 +131,8 @@ def cmd_favorite(db: Database, term: str):
         total = len(tracks)
         for i, track in enumerate(tracks):
             Interface.print("", track=track, count=[i + 1, total])
-    except ValueError:
-        Interface.print_missing_prefix()
+    except ValueError as e:
+        Interface.print(str(e), ok=False)
 
 
 def cmd_search(db: Database, term: str):
@@ -142,8 +142,8 @@ def cmd_search(db: Database, term: str):
         total = len(tracks)
         for i, track in enumerate(tracks):
             Interface.print("", track=track, count=[i + 1, total])
-    except ValueError:
-        Interface.print_missing_prefix()
+    except ValueError as e:
+        Interface.print(str(e), ok=False)
 
 
 def build_parser(db: Database) -> argparse.ArgumentParser:
