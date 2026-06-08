@@ -235,40 +235,6 @@ def build_parser(db: Database) -> argparse.ArgumentParser:
         func=lambda args: cmd_reset(db, skip_confirmation=args.skipconfirmation)
     )
 
-    # Tracks
-    tracks_parser = subparsers.add_parser(
-        "tracks",
-        help="list all tracks in the library",
-        description="""
-        List all your tracks, just your favorite tracks,
-        or albums in your library.
-        """,
-    )
-    tracks_parser.add_argument(
-        "-f", "--favorited", action="store_true", help="list only your favorite tracks"
-    )
-    tracks_parser.set_defaults(
-        func=lambda args: cmd_tracks(db, only_favorited=args.favorited)
-    )
-
-    # Albums
-    subparsers.add_parser(
-        "albums",
-        help="list all albums in the library",
-        description="List all albums in the library",
-    ).set_defaults(func=lambda _: cmd_albums(db))
-
-    # Artists
-    artists_parser = subparsers.add_parser(
-        "artists",
-        help="list all artists in the library",
-        description="List all artists in the library",
-    )
-    artists_parser.add_argument(
-        "-a", "--albums", action="store_true", help="list only album artists"
-    )
-    artists_parser.set_defaults(func=lambda args: cmd_artists(db, args.albums))
-
     # Favorite
     favorite_parser = subparsers.add_parser(
         "favorite",
