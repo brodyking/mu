@@ -598,3 +598,45 @@ class Database:
             connection.commit()
 
             return self.get_playlist(f"id:{playlist.id}")
+
+    def insert_into_playlist(
+        self, playlist_term: str, tracks_term: str, position: int
+    ) -> Playlist:
+        """Inserts tracks into the playlist at a specific position"""
+        playlist = self.get_playlist(playlist_term)
+        tracks = self.search(tracks_term)
+        with sqlite3.connect(str(self.db_path)) as connection:
+            # shift everything at or above the target position up
+            # to make room for the incoming tracks
+            connection.execute(
+                """
+                UPDATE playlist_tracks
+                SET position = position + ?
+                WHERE playlist_id = ? AND position >= ?
+            """,
+                (len(tracks), playlist.id, position),
+            )
+
+            # insert each track starting at the target position
+            for i, track in enumerate(tracks):
+                try:
+                    connection.execute(
+                        """
+                        INSERT INTO playlist_tracks (playlist_id, track_id, position)
+                        VALUES (?, ?, ?)
+                    """,
+                        (playlist.id, track.id, position + i),
+                    )
+                except sqlite3.IntegrityError:
+                    # shift back down by 1 to close the gap from the skipped track
+                    connection.execute(
+                        """
+                        UPDATE playlist_tracks
+                        SET position = position - 1
+                        WHERE playlist_id = ? AND position > ?
+                    """,
+                        (playlist.id, position + i),
+                    )
+
+            connection.commit()
+            return self.get_playlist(f"id:{playlist.id}")

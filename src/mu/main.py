@@ -8,7 +8,9 @@
 """
 
 import argparse
+import enum
 from importlib.metadata import version
+from multiprocessing import Value
 
 from mu.database.database import Database
 from mu.database.schemaerror import SchemaError
@@ -114,6 +116,17 @@ def cmd_playlist_delete(db: Database, playlist_term: str):
     try:
         db.delete_playlist(playlist_term)
         Interface.print("Playlist deleted")
+    except ValueError as e:
+        Interface.print(str(e), ok=False)
+
+
+def cmd_playlist_insert(
+    db: Database, playlist_term: str, tracks_term: str, position: int
+):
+    try:
+        playlist = db.insert_into_playlist(playlist_term, tracks_term, int(position))
+        for i, track in enumerate(playlist.tracks):
+            Interface.print("", track=track, count=[i + 1, len(playlist.tracks)])
     except ValueError as e:
         Interface.print(str(e), ok=False)
 
@@ -260,6 +273,22 @@ def _add_playlist_parser(db: Database, subparsers) -> None:
     delete = playlist_subparsers.add_parser("delete", help="delete a playlist")
     delete.add_argument("playlist_term", help=("the search term for the playlist"))
     delete.set_defaults(func=lambda args: cmd_playlist_delete(db, args.playlist_term))
+
+    insert = playlist_subparsers.add_parser(
+        "insert", help="insert track(s) to a playlist"
+    )
+    insert.add_argument("playlist_term", help=("the search term for the playlist"))
+    insert.add_argument(
+        "tracks_term", help=("the search term for the tracks being inserted")
+    )
+    insert.add_argument(
+        "position", help=("the position where the track(s) should be inserted")
+    )
+    insert.set_defaults(
+        func=lambda args: cmd_playlist_insert(
+            db, args.playlist_term, args.tracks_term, args.position
+        )
+    )
 
 
 def _add_scan_parser(db: Database, subparsers) -> None:
