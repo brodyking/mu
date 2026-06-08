@@ -414,7 +414,7 @@ class Database:
             response = connection.execute("SELECT * FROM playlists").fetchall()
             output = []
             for playlist in response:
-                output.append(self.get_playlist(playlist["id"]))
+                output.append(self.get_playlist(f"id:{playlist['id']}"))
             return output
 
     def favorite(self, term: str) -> list[Track]:
@@ -437,23 +437,28 @@ class Database:
             connection.commit()
         return results
 
-    def get_playlist(
-        self, id: int | None = None, title: str | None = None
-    ) -> Playlist | None:
-        """Returns a playlist object from a playlist id"""
+    def get_playlist(self, term: str) -> Playlist | None:
+        """Returns a playlist object from a playlist id. Uses prefixes. (title:,id:)"""
 
-        if id is None and title is None:
-            raise ValueError("You must specify a playlist ID or playlist title")
+        prefixes = ["title", "id"]
+
+        target_column = (
+            term.split(":", 1)[0] if term.split(":", 1)[0] in prefixes else None
+        )
+
+        if target_column is None:
+            raise ValueError(
+                "The search query is missing a prefix."
+                "Please specify how you are searching by typing "
+                "the prefix followed by a colon. Ex: title:gym,id:1"
+            )
 
         with sqlite3.connect(str(self.db_path)) as connection:
             connection.row_factory = sqlite3.Row
-            if id is not None:
-                col, val = "id", id
-            else:
-                col, val = "title", title
+            val = term.split(":", 1)[1]
 
             response = connection.execute(
-                f"SELECT * FROM playlists WHERE {col}=?", (val,)
+                f"SELECT * FROM playlists WHERE {target_column}=?", (val,)
             ).fetchone()
 
             if response is not None:
@@ -467,7 +472,11 @@ class Database:
                 return None
 
     def get_playlist_tracks(self, playlist_id: int) -> list[Track]:
-        """Returns a list of tracks in a playlist, in order"""
+        """
+        Returns a list of tracks in a playlist, in order.
+        This is a supporting method to get get_playlist() method
+        and should not be used alone.
+        """
         with sqlite3.connect(str(self.db_path)) as connection:
             connection.row_factory = sqlite3.Row
             cursor = connection.cursor()
@@ -511,12 +520,12 @@ class Database:
                 "SELECT * FROM playlists WHERE title=?", (title,)
             ).fetchone()
 
-            return self.get_playlist(id=response["id"])
+            return self.get_playlist(f"id:{response['id']}")
 
-    def append_playlist(self, playlist_id: int, term: str) -> Playlist | None:
+    def append_playlist(self, playlist_term: str, track_term: str) -> Playlist | None:
         """Adds a track to the playlist"""
-        playlist = self.get_playlist(id=playlist_id)
-        tracks = self.search(term)
+        playlist = self.get_playlist(playlist_term)
+        tracks = self.search(track_term)
         if playlist is None:
             raise ValueError("Playlist does not exist")
         position = len(playlist.tracks)
@@ -528,9 +537,9 @@ class Database:
                         INSERT INTO playlist_tracks (playlist_id, track_id, position)
                         VALUES (?, ?, ?)
                     """,
-                        (playlist_id, track.id, position),
+                        (playlist.id, track.id, position),
                     )
                 except sqlite3.IntegrityError:
-                    pass
+                    continue
             connection.commit()
-            return self.get_playlist(playlist_id)
+            return self.get_playlist(f"id:{playlist.id}")
