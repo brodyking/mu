@@ -444,17 +444,18 @@ class Database:
         with sqlite3.connect(str(self.db_path)) as connection:
             connection.row_factory = sqlite3.Row
             if id is not None:
-                response = connection.execute(
-                    "SELECT * FROM playlists WHERE id=?", (id,)
-                ).fetchone()
+                col, val = "id", id
             elif title is not None:
-                response = connection.execute(
-                    "SELECT * FROM playlists WHERE title=?", (title,)
-                ).fetchone()
+                col, val = "title", title
             else:
-                response = None
+                col, val = None, None
 
-            if response:
+            response = connection.execute(
+                f"SELECT * FROM playlists WHERE {col}=?", (val,)
+            ).fetchone()
+
+            if res
+
                 playlist = Playlist(
                     response["title"],
                     description=response["description"],
@@ -462,7 +463,7 @@ class Database:
                 )
                 return playlist
             else:
-                return None
+                raise ValueError("You must specify a playlist ID or playlist title")
 
     def get_playlist_tracks(self, playlist_id: int) -> list[Track]:
         """Returns a list of tracks in a playlist, in order"""
