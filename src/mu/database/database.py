@@ -451,6 +451,8 @@ class Database:
                 response = connection.execute(
                     "SELECT * FROM playlists WHERE title=?", (title,)
                 ).fetchone()
+            else:
+                response = None
 
             if response:
                 playlist = Playlist(
@@ -478,7 +480,7 @@ class Database:
             )
             return [Track(row) for row in cursor.fetchall()]
 
-    def create_playlist(self, title: str, description: str = None) -> None:
+    def create_playlist(self, title: str, description: str = "") -> Playlist | None:
         with sqlite3.connect(str(self.db_path)) as connection:
             connection.row_factory = sqlite3.Row
 
