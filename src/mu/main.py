@@ -45,14 +45,14 @@ def cmd_reset(db: Database, skip_confirmation=False):
         )
 
 
-def cmd_tracks(db: Database, only_favorited: bool = False):
+def cmd_list_tracks(db: Database, only_favorited: bool = False):
     """Prints all tracks in the database"""
     tracks = db.list_library_tracks(only_favorited=only_favorited)
     for track_id in tracks:
         Interface.print("", track=tracks[track_id])
 
 
-def cmd_albums(db: Database):
+def cmd_list_albums(db: Database):
     """Prints all albums in the database"""
     albums = db.list_library_albums()
     total = len(albums)
@@ -60,7 +60,7 @@ def cmd_albums(db: Database):
         Interface.print("", album=album, count=[i + 1, total])
 
 
-def cmd_artists(db: Database, album_artist: bool = False):
+def cmd_list_artists(db: Database, album_artist: bool = False):
     """Prints all the artits in the database"""
     artists = db.list_library_artists(album_artist=album_artist)
     total = len(artists)
