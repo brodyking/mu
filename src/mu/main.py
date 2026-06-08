@@ -10,8 +10,6 @@
 import argparse
 from importlib.metadata import version
 
-from typing_extensions import Required
-
 from mu.database.database import Database
 from mu.database.schemaerror import SchemaError
 from mu.util import Interface
