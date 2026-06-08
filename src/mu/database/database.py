@@ -543,3 +543,40 @@ class Database:
                     continue
             connection.commit()
             return self.get_playlist(f"id:{playlist.id}")
+
+    def remove_from_playlist(
+        self, playlist_term: str, tracks_term: str
+    ) -> Playlist | None:
+        """Removes track(s) from a playlist"""
+        playlist = self.get_playlist(playlist_term)
+        tracks = self.search(tracks_term)
+        if playlist is None:
+            raise ValueError("Playlist does not exist")
+        with sqlite3.connect(str(self.db_path)) as connection:
+            for track in tracks:
+                # Deletes the entry from playlist_tracks
+                connection.execute(
+                    """
+                    DELETE FROM playlist_tracks
+                    WHERE playlist_id = ? AND track_id = ?
+                """,
+                    (playlist.id, track.id),
+                )
+
+            # Cleans up the gap in positioning
+            connection.execute(
+                """
+                UPDATE playlist_tracks
+                SET position = (
+                    SELECT COUNT(*) FROM playlist_tracks p2
+                    WHERE p2.playlist_id = playlist_tracks.playlist_id
+                    AND p2.position <= playlist_tracks.position
+                )
+                WHERE playlist_id = ?
+                """,
+                (playlist.id,),
+            )
+
+            connection.commit()
+
+            return self.get_playlist(f"id:{playlist.id}")

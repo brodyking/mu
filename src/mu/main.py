@@ -104,6 +104,16 @@ def cmd_playlist_append(db: Database, playlist_term: str, tracks_term: str):
         Interface.print_missing_prefix()
 
 
+def cmd_playlist_remove(db: Database, playlist_term: str, tracks_term: str):
+    try:
+        playlist = db.remove_from_playlist(playlist_term, tracks_term)
+        if playlist is not None:
+            for i, track in enumerate(playlist.tracks):
+                Interface.print("", track=track, count=[i + 1, len(playlist.tracks)])
+    except ValueError:
+        Interface.print_missing_prefix()
+
+
 def cmd_import(db: Database, path: str):
     """Imports all files from the specified directory"""
     for response in db.import_media(path):
@@ -230,6 +240,17 @@ def _add_playlist_parser(db: Database, subparsers) -> None:
     )
     append.set_defaults(
         func=lambda args: cmd_playlist_append(db, args.playlist_term, args.tracks_term)
+    )
+
+    remove = playlist_subparsers.add_parser(
+        "remove", help="remove track(s) from a playlist"
+    )
+    remove.add_argument("playlist_term", help=("the search term for the playlist"))
+    remove.add_argument(
+        "tracks_term", help=("the search term for the tracks being remove.d")
+    )
+    remove.set_defaults(
+        func=lambda args: cmd_playlist_remove(db, args.playlist_term, args.tracks_term)
     )
 
 
