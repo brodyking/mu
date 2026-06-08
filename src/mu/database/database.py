@@ -437,7 +437,7 @@ class Database:
             connection.commit()
         return results
 
-    def get_playlist(self, term: str) -> Playlist | None:
+    def get_playlist(self, term: str) -> Playlist:
         """Returns a playlist object from a playlist id. Uses prefixes. (title:,id:)"""
 
         prefixes = ["title", "id"]
@@ -469,7 +469,7 @@ class Database:
                     tracks=self._get_playlist_tracks(response["id"]),
                 )
             else:
-                return None
+                raise ValueError("Playlist does not exist")
 
     def _get_playlist_tracks(self, playlist_id: int) -> list[Track]:
         """
@@ -526,8 +526,6 @@ class Database:
         """Adds track(s) to the playlist"""
         playlist = self.get_playlist(playlist_term)
         tracks = self.search(tracks_term)
-        if playlist is None:
-            raise ValueError("Playlist does not exist")
         position = len(playlist.tracks)
         with sqlite3.connect(str(self.db_path)) as connection:
             for track in tracks:
@@ -544,14 +542,34 @@ class Database:
             connection.commit()
             return self.get_playlist(f"id:{playlist.id}")
 
+    def delete_playlist(self, playlist_term: str) -> bool:
+        """Deletes a playlist"""
+        playlist = self.get_playlist(playlist_term)
+        with sqlite3.connect(str(self.db_path)) as connection:
+            connection.execute(
+                """
+                DELETE FROM playlist_tracks
+                WHERE playlist_id = ?
+            """,
+                (playlist.id,),
+            )
+            connection.execute(
+                """
+                DELETE FROM playlists
+                WHERE id = ?
+            """,
+                (playlist.id,),
+            )
+            connection.commit()
+            return True
+        return False
+
     def remove_from_playlist(
         self, playlist_term: str, tracks_term: str
     ) -> Playlist | None:
         """Removes track(s) from a playlist"""
         playlist = self.get_playlist(playlist_term)
         tracks = self.search(tracks_term)
-        if playlist is None:
-            raise ValueError("Playlist does not exist")
         with sqlite3.connect(str(self.db_path)) as connection:
             for track in tracks:
                 # Deletes the entry from playlist_tracks

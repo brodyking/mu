@@ -9,7 +9,6 @@
 
 import argparse
 from importlib.metadata import version
-from multiprocessing import Value
 
 from mu.database.database import Database
 from mu.database.schemaerror import SchemaError
@@ -85,11 +84,8 @@ def cmd_playlist_create(db: Database, title: str, description: str):
 def cmd_playlist_list(db: Database, term: str):
     try:
         playlist = db.get_playlist(term)
-        if playlist is not None:
-            for i, track in enumerate(playlist.tracks):
-                Interface.print("", track=track, count=[i + 1, len(playlist.tracks)])
-        else:
-            Interface.print("Playlist does not exist", ok=False)
+        for i, track in enumerate(playlist.tracks):
+            Interface.print("", track=track, count=[i + 1, len(playlist.tracks)])
     except ValueError as e:
         Interface.print(str(e), ok=False)
 
@@ -110,6 +106,14 @@ def cmd_playlist_remove(db: Database, playlist_term: str, tracks_term: str):
         if playlist is not None:
             for i, track in enumerate(playlist.tracks):
                 Interface.print("", track=track, count=[i + 1, len(playlist.tracks)])
+    except ValueError as e:
+        Interface.print(str(e), ok=False)
+
+
+def cmd_playlist_delete(db: Database, playlist_term: str):
+    try:
+        db.delete_playlist(playlist_term)
+        Interface.print("Playlist deleted")
     except ValueError as e:
         Interface.print(str(e), ok=False)
 
@@ -252,6 +256,10 @@ def _add_playlist_parser(db: Database, subparsers) -> None:
     remove.set_defaults(
         func=lambda args: cmd_playlist_remove(db, args.playlist_term, args.tracks_term)
     )
+
+    delete = playlist_subparsers.add_parser("delete", help="delete a playlist")
+    delete.add_argument("playlist_term", help=("the search term for the playlist"))
+    delete.set_defaults(func=lambda args: cmd_playlist_delete(db, args.playlist_term))
 
 
 def _add_scan_parser(db: Database, subparsers) -> None:
