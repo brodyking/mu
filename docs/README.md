@@ -9,9 +9,16 @@
   - [1.1 - File Structure](#11---file-structure)
 - [2.0 - Basic Usage](#20---basic-usage)
   - [2.1 - Importing Music](#21---importing-music)
-  - [2.2 - Listing Tracks, Albums, and Artists](#22---listing-tracks-albums-and-artists)
+  - [2.2 - Listing Tracks, Albums, Artists, Playlists, and Playlist tracks](#22---listing-tracks-albums-artists-playlists-and-playlist-tracks)
   - [2.3 - Searching tracks](#23---searching-tracks)
-  - [2.4 Favoriting tracks](#24-favoriting-tracks)
+  - [2.4 - Favoriting tracks](#24---favoriting-tracks)
+- [3.0 - Playlists](#30---playlists)
+  - [3.1 - Creating and deleting playlists](#31---creating-and-deleting-playlists)
+  - [3.2 - Appending, Inserting, and Removing tracks](#32---appending-inserting-and-removing-tracks)
+    - [3.2.1 - Appending tracks](#321---appending-tracks)
+    - [3.2.2 - Inserting tracks](#322---inserting-tracks)
+    - [3.2.3 - Removing tracks](#323---removing-tracks)
+  - [3.3 - Listing contents of playlists](#33---listing-contents-of-playlists)
 
 ## 1.0 - Installation
 
@@ -73,14 +80,16 @@ mu import .
 
 You can also input different directories, or individual mp3 files.
 
-### 2.2 - Listing Tracks, Albums, and Artists 
+### 2.2 - Listing Tracks, Albums, Artists, Playlists, and Playlist tracks
 
-By using the `list` action in µ, you can view all the albums, artists, and tracks in your library.
+By using the `list` action in µ, you can view all the albums, artists, tracks, and playlists in your library.
 
 ```
-mu list tracks # lists all tracks
 mu list albums # lists all albums
 mu list artists # lists all artists
+mu list tracks # lists all tracks
+mu list playlists # lists all playlists
+mu list playlist # lists playlist tracks
 ```
 
 `mu list tracks` allows for the `-f` or `--favorited` flag, which only returns favorited tracks.
@@ -127,12 +136,68 @@ mu search "artist:Pink Floyd"
 
 All actions that involve selecting a song will use this prefix syntax.
 
-### 2.4 Favoriting tracks
-
+### 2.4 - Favoriting tracks
 To favorite track(s), use the same prefix convention while using the `favorite` action. This action toggles it's favorite status. It can be used on multiple tracks or a single track.
 
 Say I'd like to favorite "Covet", 
 
 ```
 mu favorite "title:Covet"
+```
+
+
+## 3.0 - Playlists
+Playlists inside of µ are similar to most other platforms out there. The `playlist` action allows you to interact with them. The only real difference is you cannot have duplicate tracks in a playlist.
+
+Similarly to tracks, all commands that are provided with `playlist` (except `create`) require them. The only available prefixes are `title:` and `id:`
+
+### 3.1 - Creating and deleting playlists
+To create a playlist, use the `create` argument.
+
+```
+mu playlist create "Gym" # Creates a new empty playlist called "Gym"
+```
+
+The create argument also accepts `-d` or `--description` flag, which allows you to add a description to your playlist.
+
+To delete a playlist, use the `delete` argument.
+
+```
+mu playlist delete "title:Gym" # Deletes the "Gym playlist"
+mu playlist delete "id:1" # Deletes whatever playlist has the ID 1
+```
+
+### 3.2 - Appending, Inserting, and Removing tracks
+These operations leverage the use of track prefixes alongside playlist prefixes.
+
+#### 3.2.1 - Appending tracks
+To append a track to the end of a playlist, use the `append` argument.
+
+```
+mu playlist append "title:Gym" "title:Time" # Adds the track "Time" to the end of the "Gym" playlist.
+```
+
+#### 3.2.2 - Inserting tracks
+To insert a track, its the same syntax but with the position as the final argument. Note that playlists list of tracks start a `0`, not at `1` like you might expect.
+
+```
+mu playlist insert "title:Gym" "title:Time" 3 # Inserts the track at the 3rd position
+```
+
+You can add multiple tracks aswell, by using the same prefixes supported by `search`.
+
+#### 3.2.3 - Removing tracks
+
+To delete track(s) from a playlist, use the `remove` argument.
+
+```
+mu playlist remove "title:Gym" "title:Time" # Removes "Time" from the "Gym" playlist
+```
+
+### 3.3 - Listing contents of playlists
+
+To list the contents of a playlist, refer to the `list` action from earlier chapters. Simply use the same prefix system as before.
+
+```
+mu list playlist "title:Gym"
 ```

@@ -138,6 +138,7 @@ class Interface:
             searchresult = f"{Color.red(artist)}"
         elif playlist is not None:
             searchresult = (
+                f"{Color.light_gray('#' + str(playlist.id).rjust(4, '0'))} "
                 f"{Color.red(Interface.fmt(playlist.title, 15))} | "
                 f"{Color.green(Interface.fmt(str(len(playlist.tracks)), 3))} | "
                 f"{playlist.description}"

@@ -8,7 +8,9 @@
 """
 
 import argparse
+import enum
 from importlib.metadata import version
+from multiprocessing import Value
 
 from mu.database.database import Database
 from mu.database.schemaerror import SchemaError
@@ -61,7 +63,7 @@ def cmd_list_albums(db: Database):
 
 
 def cmd_list_artists(db: Database, album_artist: bool = False):
-    """Prints all the artits in the database"""
+    """Prints all the artists in the database"""
     artists = db.list_library_artists(album_artist=album_artist)
     total = len(artists)
     for i, artist in enumerate(artists):
@@ -69,14 +71,64 @@ def cmd_list_artists(db: Database, album_artist: bool = False):
 
 
 def cmd_list_playlists(db: Database):
+    """Prints all the playlists in the database"""
     playlists = db.list_playlists()
     for playlist in playlists:
         Interface.print("", playlist=playlist)
 
 
+def cmd_list_playlist(db: Database, term: str):
+    try:
+        playlist = db.get_playlist(term)
+        for i, track in enumerate(playlist.tracks):
+            Interface.print("", track=track, count=[i + 1, len(playlist.tracks)])
+    except ValueError as e:
+        Interface.print(str(e), ok=False)
+
+
 def cmd_playlist_create(db: Database, title: str, description: str):
+    """Creates a playlist, prints it once created."""
     playlist = db.create_playlist(title, description=description)
     Interface.print("", playlist=playlist)
+
+
+def cmd_playlist_append(db: Database, playlist_term: str, tracks_term: str):
+    try:
+        playlist = db.append_playlist(playlist_term, tracks_term)
+        if playlist is not None:
+            for i, track in enumerate(playlist.tracks):
+                Interface.print("", track=track, count=[i + 1, len(playlist.tracks)])
+    except ValueError as e:
+        Interface.print(str(e), ok=False)
+
+
+def cmd_playlist_remove(db: Database, playlist_term: str, tracks_term: str):
+    try:
+        playlist = db.remove_from_playlist(playlist_term, tracks_term)
+        if playlist is not None:
+            for i, track in enumerate(playlist.tracks):
+                Interface.print("", track=track, count=[i + 1, len(playlist.tracks)])
+    except ValueError as e:
+        Interface.print(str(e), ok=False)
+
+
+def cmd_playlist_delete(db: Database, playlist_term: str):
+    try:
+        db.delete_playlist(playlist_term)
+        Interface.print("Playlist deleted")
+    except ValueError as e:
+        Interface.print(str(e), ok=False)
+
+
+def cmd_playlist_insert(
+    db: Database, playlist_term: str, tracks_term: str, position: int
+):
+    try:
+        playlist = db.insert_into_playlist(playlist_term, tracks_term, int(position))
+        for i, track in enumerate(playlist.tracks):
+            Interface.print("", track=track, count=[i + 1, len(playlist.tracks)])
+    except ValueError as e:
+        Interface.print(str(e), ok=False)
 
 
 def cmd_import(db: Database, path: str):
@@ -91,10 +143,13 @@ def cmd_import(db: Database, path: str):
 
 def cmd_favorite(db: Database, term: str):
     """Favorite track(s)"""
-    tracks = db.favorite(term)
-    total = len(tracks)
-    for i, track in enumerate(tracks):
-        Interface.print("", track=track, count=[i + 1, total])
+    try:
+        tracks = db.favorite(term)
+        total = len(tracks)
+        for i, track in enumerate(tracks):
+            Interface.print("", track=track, count=[i + 1, total])
+    except ValueError as e:
+        Interface.print(str(e), ok=False)
 
 
 def cmd_search(db: Database, term: str):
@@ -104,180 +159,189 @@ def cmd_search(db: Database, term: str):
         total = len(tracks)
         for i, track in enumerate(tracks):
             Interface.print("", track=track, count=[i + 1, total])
-    except ValueError:
-        kw_missing_error = (
-            "The search query is missing a prefix. "
-            "Please specify how you are searching by typing "
-            'the prefix followed by a colon. Ex: "artist:aphex twin"'
-        )
-        Interface.print(kw_missing_error, ok=False)
+    except ValueError as e:
+        Interface.print(str(e), ok=False)
 
 
 def build_parser(db: Database) -> argparse.ArgumentParser:
-    """Builds the parser"""
     parser = argparse.ArgumentParser(
         prog="mu",
         description="your personal music library",
-        epilog="""
-            Created and maintained by Brody King.
-            You can find this project at https://github.com/brodyking/mu
-        """,
+        epilog="Created and maintained by Brody King. https://github.com/brodyking/mu",
     )
-
     subparsers = parser.add_subparsers(
         dest="action", help="options for library", required=True
     )
 
-    # Listing
-    list_parser = subparsers.add_parser(
-        "list",
-        help="list different parts of your library",
-        description="List different parts of your library",
-    )
+    _add_list_parser(db, subparsers)
+    _add_playlist_parser(db, subparsers)
+    _add_scan_parser(db, subparsers)
+    _add_version_parser(db, subparsers)
+    _add_reset_parser(db, subparsers)
+    _add_favorite_parser(db, subparsers)
+    _add_import_parser(db, subparsers)
+    _add_search_parser(db, subparsers)
 
+    return parser
+
+
+def _add_list_parser(db: Database, subparsers) -> None:
+    list_parser = subparsers.add_parser(
+        "list", help="list different parts of your library"
+    )
     list_subparsers = list_parser.add_subparsers(
         dest="list_type", required=True, help="what to list"
     )
 
-    # Listing -> Tracks
-    list_tracks_parser = list_subparsers.add_parser(
-        "tracks",
-        help="list all tracks in the library",
-        description="""
-        List all your tracks, just your favorite tracks,
-        or albums in your library.
-        """,
-    )
-    list_tracks_parser.add_argument(
+    # tracks
+    tracks = list_subparsers.add_parser("tracks", help="list all tracks in the library")
+    tracks.add_argument(
         "-f", "--favorited", action="store_true", help="list only your favorite tracks"
     )
-    list_tracks_parser.set_defaults(
+    tracks.set_defaults(
         func=lambda args: cmd_list_tracks(db, only_favorited=args.favorited)
     )
 
-    # Listing -> Albums
+    # albums
     list_subparsers.add_parser(
-        "albums",
-        help="list all albums in the library",
-        description="List all albums in the library",
+        "albums", help="list all albums in the library"
     ).set_defaults(func=lambda _: cmd_list_albums(db))
 
-    # Listing -> Artists
-    artists_parser = list_subparsers.add_parser(
-        "artists",
-        help="list all artists in the library",
-        description="List all artists in the library",
+    # artists
+    artists = list_subparsers.add_parser(
+        "artists", help="list all artists in the library"
     )
-    artists_parser.add_argument(
+    artists.add_argument(
         "-a", "--albums", action="store_true", help="list only album artists"
     )
-    artists_parser.set_defaults(func=lambda args: cmd_list_artists(db, args.albums))
+    artists.set_defaults(func=lambda args: cmd_list_artists(db, args.albums))
 
-    # Listing -> Playlists
+    # playlists
     list_subparsers.add_parser(
-        "playlists",
-        help="list all playlists in the library",
-        description="List all playlists in the library",
+        "playlists", help="list all playlists in the library"
     ).set_defaults(func=lambda _: cmd_list_playlists(db))
 
-    # Playlists
+    playlist = list_subparsers.add_parser(
+        "playlist", help="list contents of a playlist"
+    )
+    playlist.add_argument(
+        "term",
+        help=(
+            "the name of the playlist you are searching for."
+            "supports prefixes (id:, title:)"
+        ),
+    )
+    playlist.set_defaults(func=lambda args: cmd_list_playlist(db, args.term))
+
+
+def _add_playlist_parser(db: Database, subparsers) -> None:
     playlist_parser = subparsers.add_parser(
         "playlist",
         help="crud operations for playlists",
-        description="Crud operations for playlists",
     )
-
     playlist_subparsers = playlist_parser.add_subparsers(
         dest="action", required=True, help="operation"
     )
 
-    # Playlists -> Create
-    create_playlist_parser = playlist_subparsers.add_parser(
-        "create",
-        help="create a new playlist",
-        description="""
-        Create a new playlist
-        """,
-    )
-    create_playlist_parser.add_argument("title", help="title of playlist")
-    create_playlist_parser.add_argument(
-        "-d", "--description", help="description of the playlist"
-    )
-    create_playlist_parser.set_defaults(
+    create = playlist_subparsers.add_parser("create", help="create a new playlist")
+    create.add_argument("title", help="title of playlist")
+    create.add_argument("-d", "--description", help="description of the playlist")
+    create.set_defaults(
         func=lambda args: cmd_playlist_create(db, args.title, args.description)
     )
 
-    # Scan
+    append = playlist_subparsers.add_parser(
+        "append", help="append track(s) to a playlist"
+    )
+    append.add_argument("playlist_term", help=("the search term for the playlist"))
+    append.add_argument(
+        "tracks_term", help=("the search term for the tracks being appended")
+    )
+    append.set_defaults(
+        func=lambda args: cmd_playlist_append(db, args.playlist_term, args.tracks_term)
+    )
+
+    remove = playlist_subparsers.add_parser(
+        "remove", help="remove track(s) from a playlist"
+    )
+    remove.add_argument("playlist_term", help=("the search term for the playlist"))
+    remove.add_argument(
+        "tracks_term", help=("the search term for the tracks being remove.d")
+    )
+    remove.set_defaults(
+        func=lambda args: cmd_playlist_remove(db, args.playlist_term, args.tracks_term)
+    )
+
+    delete = playlist_subparsers.add_parser("delete", help="delete a playlist")
+    delete.add_argument("playlist_term", help=("the search term for the playlist"))
+    delete.set_defaults(func=lambda args: cmd_playlist_delete(db, args.playlist_term))
+
+    insert = playlist_subparsers.add_parser(
+        "insert", help="insert track(s) to a playlist"
+    )
+    insert.add_argument("playlist_term", help=("the search term for the playlist"))
+    insert.add_argument(
+        "tracks_term", help=("the search term for the tracks being inserted")
+    )
+    insert.add_argument(
+        "position", help=("the position where the track(s) should be inserted")
+    )
+    insert.set_defaults(
+        func=lambda args: cmd_playlist_insert(
+            db, args.playlist_term, args.tracks_term, args.position
+        )
+    )
+
+
+def _add_scan_parser(db: Database, subparsers) -> None:
     subparsers.add_parser(
-        "scan",
-        help="imports all files in Source folder",
-        description="Imports all the files in the Source folder.",
+        "scan", help="imports all files in Source folder"
     ).set_defaults(func=lambda _: cmd_scan(db))
 
-    # Version
-    subparsers.add_parser(
-        "version", help="get current version", description="Get the current verson."
-    ).set_defaults(func=lambda _: cmd_version(db))
 
-    # Reset
-    reset_parser = subparsers.add_parser(
-        "reset",
-        help="reset the internal database (keeps songs)",
-        description="Reset's the internal database, keeps songs.",
+def _add_version_parser(db: Database, subparsers) -> None:
+    subparsers.add_parser("version", help="get current version").set_defaults(
+        func=lambda _: cmd_version(db)
     )
-    reset_parser.add_argument(
+
+
+def _add_reset_parser(db: Database, subparsers) -> None:
+    reset = subparsers.add_parser(
+        "reset", help="reset the internal database (keeps songs)"
+    )
+    reset.add_argument(
         "-y",
         "--skipconfirmation",
-        help="skip confirmation and reset",
         action="store_true",
+        help="skip confirmation and reset",
     )
-    reset_parser.set_defaults(
+    reset.set_defaults(
         func=lambda args: cmd_reset(db, skip_confirmation=args.skipconfirmation)
     )
 
-    # Favorite
-    favorite_parser = subparsers.add_parser(
-        "favorite",
-        help="favorite or unfavorite tack(s)",
-        description="Favorite or unfavorite a track. Uses same prefixes as search.",
-    )
-    favorite_parser.add_argument(
+
+def _add_favorite_parser(db: Database, subparsers) -> None:
+    favorite = subparsers.add_parser("favorite", help="favorite or unfavorite track(s)")
+    favorite.add_argument(
         "term",
         help="the name of the track you wish to favorite (use id: to select by id)",
     )
-    favorite_parser.set_defaults(func=lambda args: cmd_favorite(db, args.term))
+    favorite.set_defaults(func=lambda args: cmd_favorite(db, args.term))
 
-    # Importing
-    import_parser = subparsers.add_parser(
-        "import",
-        help="import individual files",
-        description="""
-            Import file(s) to Mu. Directories or individual files can be selected.
-        """,
-    )
-    import_parser.add_argument("filepath", help="path to the file being imported")
-    import_parser.set_defaults(func=lambda args: cmd_import(db, args.filepath))
 
-    # Searching
-    search_parser = subparsers.add_parser(
-        "search",
-        help="search the library",
-        description="""Search your library.
-            You can search with prefixes aswell.
-            By typing id:, album:, title:, artist:, or albumartist: in front,
-            you can narrow your search.
-        """,
-    )
-    search_parser.add_argument(
+def _add_import_parser(db: Database, subparsers) -> None:
+    imp = subparsers.add_parser("import", help="import individual files")
+    imp.add_argument("filepath", help="path to the file being imported")
+    imp.set_defaults(func=lambda args: cmd_import(db, args.filepath))
+
+
+def _add_search_parser(db: Database, subparsers) -> None:
+    search = subparsers.add_parser("search", help="search the library")
+    search.add_argument(
         "term",
-        help="""
-            the name of the item(s) you are searching for.
-            supports prefixes (id:,album:,etc)
-        """,
+        help="the name of the item(s) you are searching for. supports prefixes (id:, album:, etc)",
     )
-    search_parser.set_defaults(func=lambda args: cmd_search(db, args.term))
-
-    return parser
+    search.set_defaults(func=lambda args: cmd_search(db, args.term))
 
 
 def main():

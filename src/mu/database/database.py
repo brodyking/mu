@@ -414,7 +414,7 @@ class Database:
             response = connection.execute("SELECT * FROM playlists").fetchall()
             output = []
             for playlist in response:
-                output.append(self.get_playlist(playlist["id"]))
+                output.append(self.get_playlist(f"id:{playlist['id']}"))
             return output
 
     def favorite(self, term: str) -> list[Track]:
@@ -437,32 +437,46 @@ class Database:
             connection.commit()
         return results
 
-    def get_playlist(
-        self, id: int | None = None, title: str | None = None
-    ) -> Playlist | None:
-        """Returns a playlist object from a playlist id"""
+    def get_playlist(self, term: str) -> Playlist:
+        """Returns a playlist object from a playlist id. Uses prefixes. (title:,id:)"""
+
+        prefixes = ["title", "id"]
+
+        target_column = (
+            term.split(":", 1)[0] if term.split(":", 1)[0] in prefixes else None
+        )
+
+        if target_column is None:
+            raise ValueError(
+                "The search query is missing a prefix."
+                "Please specify how you are searching by typing "
+                "the prefix followed by a colon. Ex: title:gym,id:1"
+            )
+
         with sqlite3.connect(str(self.db_path)) as connection:
             connection.row_factory = sqlite3.Row
-            if id is not None:
-                response = connection.execute(
-                    "SELECT * FROM playlists WHERE id=?", (id,)
-                ).fetchone()
-            elif title is not None:
-                response = connection.execute(
-                    "SELECT * FROM playlists WHERE title=?", (title,)
-                ).fetchone()
+            val = term.split(":", 1)[1]
 
-            if response:
-                playlist = Playlist(
+            response = connection.execute(
+                f"SELECT * FROM playlists WHERE {target_column}=?", (val,)
+            ).fetchone()
+
+            if response is not None:
+                return Playlist(
+                    response["id"],
                     response["title"],
                     description=response["description"],
-                    tracks=self.get_playlist_tracks(response["id"]),
+                    tracks=self._get_playlist_tracks(response["id"]),
                 )
-                return playlist
             else:
-                return None
+                raise ValueError("Playlist does not exist")
 
-    def get_playlist_tracks(self, playlist_id: int) -> list[Track]:
+    def _get_playlist_tracks(self, playlist_id: int) -> list[Track]:
+        """
+        Returns a list of tracks in a playlist, in order.
+        This is a supporting method to get get_playlist() method
+        and should not be used alone.
+        """
         with sqlite3.connect(str(self.db_path)) as connection:
             connection.row_factory = sqlite3.Row
             cursor = connection.cursor()
@@ -478,7 +492,8 @@ class Database:
             )
             return [Track(row) for row in cursor.fetchall()]
 
-    def create_playlist(self, title: str, description: str = None) -> None:
+    def create_playlist(self, title: str, description: str = "") -> Playlist | None:
+        """Creates a playlist, returns the playlist"""
         with sqlite3.connect(str(self.db_path)) as connection:
             connection.row_factory = sqlite3.Row
 
@@ -489,7 +504,9 @@ class Database:
             if not existing:
                 connection.execute(
                     """
-                    INSERT INTO playlists (title,description) VALUES (:title,:description)
+                INSERT INTO playlists
+                (title,description)
+                VALUES (:title,:description)
                 """,
                     (
                         title,
@@ -503,4 +520,123 @@ class Database:
                 "SELECT * FROM playlists WHERE title=?", (title,)
             ).fetchone()
 
-            return self.get_playlist(id=response["id"])
+            return self.get_playlist(f"id:{response['id']}")
+
+    def append_playlist(self, playlist_term: str, tracks_term: str) -> Playlist | None:
+        """Adds track(s) to the playlist"""
+        playlist = self.get_playlist(playlist_term)
+        tracks = self.search(tracks_term)
+        position = len(playlist.tracks)
+        with sqlite3.connect(str(self.db_path)) as connection:
+            for track in tracks:
+                try:
+                    connection.execute(
+                        """
+                        INSERT INTO playlist_tracks (playlist_id, track_id, position)
+                        VALUES (?, ?, ?)
+                    """,
+                        (playlist.id, track.id, position),
+                    )
+                except sqlite3.IntegrityError:
+                    continue
+            connection.commit()
+            return self.get_playlist(f"id:{playlist.id}")
+
+    def delete_playlist(self, playlist_term: str) -> bool:
+        """Deletes a playlist"""
+        playlist = self.get_playlist(playlist_term)
+        with sqlite3.connect(str(self.db_path)) as connection:
+            connection.execute(
+                """
+                DELETE FROM playlist_tracks
+                WHERE playlist_id = ?
+            """,
+                (playlist.id,),
+            )
+            connection.execute(
+                """
+                DELETE FROM playlists
+                WHERE id = ?
+            """,
+                (playlist.id,),
+            )
+            connection.commit()
+            return True
+        return False
+
+    def remove_from_playlist(
+        self, playlist_term: str, tracks_term: str
+    ) -> Playlist | None:
+        """Removes track(s) from a playlist"""
+        playlist = self.get_playlist(playlist_term)
+        tracks = self.search(tracks_term)
+        with sqlite3.connect(str(self.db_path)) as connection:
+            for track in tracks:
+                # Deletes the entry from playlist_tracks
+                connection.execute(
+                    """
+                    DELETE FROM playlist_tracks
+                    WHERE playlist_id = ? AND track_id = ?
+                """,
+                    (playlist.id, track.id),
+                )
+
+            # Cleans up the gap in positioning
+            connection.execute(
+                """
+                UPDATE playlist_tracks
+                SET position = (
+                    SELECT COUNT(*) FROM playlist_tracks p2
+                    WHERE p2.playlist_id = playlist_tracks.playlist_id
+                    AND p2.position <= playlist_tracks.position
+                )
+                WHERE playlist_id = ?
+                """,
+                (playlist.id,),
+            )
+
+            connection.commit()
+
+            return self.get_playlist(f"id:{playlist.id}")
+
+    def insert_into_playlist(
+        self, playlist_term: str, tracks_term: str, position: int
+    ) -> Playlist:
+        """Inserts tracks into the playlist at a specific position"""
+        playlist = self.get_playlist(playlist_term)
+        tracks = self.search(tracks_term)
+        with sqlite3.connect(str(self.db_path)) as connection:
+            # shift everything at or above the target position up
+            # to make room for the incoming tracks
+            connection.execute(
+                """
+                UPDATE playlist_tracks
+                SET position = position + ?
+                WHERE playlist_id = ? AND position >= ?
+            """,
+                (len(tracks), playlist.id, position),
+            )
+
+            # insert each track starting at the target position
+            for i, track in enumerate(tracks):
+                try:
+                    connection.execute(
+                        """
+                        INSERT INTO playlist_tracks (playlist_id, track_id, position)
+                        VALUES (?, ?, ?)
+                    """,
+                        (playlist.id, track.id, position + i),
+                    )
+                except sqlite3.IntegrityError:
+                    # shift back down by 1 to close the gap from the skipped track
+                    connection.execute(
+                        """
+                        UPDATE playlist_tracks
+                        SET position = position - 1
+                        WHERE playlist_id = ? AND position > ?
+                    """,
+                        (playlist.id, position + i),
+                    )
+
+            connection.commit()
+            return self.get_playlist(f"id:{playlist.id}")
