@@ -522,10 +522,10 @@ class Database:
 
             return self.get_playlist(f"id:{response['id']}")
 
-    def append_playlist(self, playlist_term: str, track_term: str) -> Playlist | None:
-        """Adds a track to the playlist"""
+    def append_playlist(self, playlist_term: str, tracks_term: str) -> Playlist | None:
+        """Adds track(s) to the playlist"""
         playlist = self.get_playlist(playlist_term)
-        tracks = self.search(track_term)
+        tracks = self.search(tracks_term)
         if playlist is None:
             raise ValueError("Playlist does not exist")
         position = len(playlist.tracks)
