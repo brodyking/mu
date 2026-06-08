@@ -466,12 +466,12 @@ class Database:
                     response["id"],
                     response["title"],
                     description=response["description"],
-                    tracks=self.get_playlist_tracks(response["id"]),
+                    tracks=self._get_playlist_tracks(response["id"]),
                 )
             else:
                 return None
 
-    def get_playlist_tracks(self, playlist_id: int) -> list[Track]:
+    def _get_playlist_tracks(self, playlist_id: int) -> list[Track]:
         """
         Returns a list of tracks in a playlist, in order.
         This is a supporting method to get get_playlist() method
