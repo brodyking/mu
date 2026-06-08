@@ -17,7 +17,7 @@ from mu.util import Interface
 VERSION = version("mu")
 
 
-def _cmd_scan(db: Database):
+def cmd_scan(db: Database):
     """Scans the source folder"""
     for response in db.scan_source_folder():
         Interface.print(
@@ -27,12 +27,12 @@ def _cmd_scan(db: Database):
         )
 
 
-def _cmd_version(db: Database):
+def cmd_version(db: Database):
     """Prints the version of mu+muc+db"""
     Interface.print_version(VERSION, db.DATABASE_VERSION)
 
 
-def _cmd_reset(db: Database, skip_confirmation=False):
+def cmd_reset(db: Database, skip_confirmation=False):
     """Asks for confirmation from the user, resets the DB"""
     if skip_confirmation or Interface.prompt_bool(
         "Are you sure you want to erase the database file? "
@@ -45,14 +45,14 @@ def _cmd_reset(db: Database, skip_confirmation=False):
         )
 
 
-def _cmd_list_tracks(db: Database, only_favorited: bool = False):
+def cmd_list_tracks(db: Database, only_favorited: bool = False):
     """Prints all tracks in the database"""
     tracks = db.list_library_tracks(only_favorited=only_favorited)
     for track_id in tracks:
         Interface.print("", track=tracks[track_id])
 
 
-def _cmd_list_albums(db: Database):
+def cmd_list_albums(db: Database):
     """Prints all albums in the database"""
     albums = db.list_library_albums()
     total = len(albums)
@@ -60,7 +60,7 @@ def _cmd_list_albums(db: Database):
         Interface.print("", album=album, count=[i + 1, total])
 
 
-def _cmd_list_artists(db: Database, album_artist: bool = False):
+def cmd_list_artists(db: Database, album_artist: bool = False):
     """Prints all the artists in the database"""
     artists = db.list_library_artists(album_artist=album_artist)
     total = len(artists)
@@ -68,20 +68,20 @@ def _cmd_list_artists(db: Database, album_artist: bool = False):
         Interface.print("", artist=artist[0], count=[i + 1, total])
 
 
-def _cmd_list_playlists(db: Database):
+def cmd_list_playlists(db: Database):
     """Prints all the playlists in the database"""
     playlists = db.list_playlists()
     for playlist in playlists:
         Interface.print("", playlist=playlist)
 
 
-def _cmd_playlist_create(db: Database, title: str, description: str):
+def cmd_playlist_create(db: Database, title: str, description: str):
     """Creates a playlist, prints it once created."""
     playlist = db.create_playlist(title, description=description)
     Interface.print("", playlist=playlist)
 
 
-def _cmd_import(db: Database, path: str):
+def cmd_import(db: Database, path: str):
     """Imports all files from the specified directory"""
     for response in db.import_media(path):
         Interface.print(
@@ -91,7 +91,7 @@ def _cmd_import(db: Database, path: str):
         )
 
 
-def _cmd_favorite(db: Database, term: str):
+def cmd_favorite(db: Database, term: str):
     """Favorite track(s)"""
     tracks = db.favorite(term)
     total = len(tracks)
@@ -99,7 +99,7 @@ def _cmd_favorite(db: Database, term: str):
         Interface.print("", track=track, count=[i + 1, total])
 
 
-def _cmd_search(db: Database, term: str):
+def cmd_search(db: Database, term: str):
     """Search the database"""
     try:
         tracks = db.search(term)
@@ -151,13 +151,13 @@ def _add_list_parser(db: Database, subparsers) -> None:
         "-f", "--favorited", action="store_true", help="list only your favorite tracks"
     )
     tracks.set_defaults(
-        func=lambda args: _cmd_list_tracks(db, only_favorited=args.favorited)
+        func=lambda args: cmd_list_tracks(db, only_favorited=args.favorited)
     )
 
     # albums
     list_subparsers.add_parser(
         "albums", help="list all albums in the library"
-    ).set_defaults(func=lambda _: _cmd_list_albums(db))
+    ).set_defaults(func=lambda _: cmd_list_albums(db))
 
     # artists
     artists = list_subparsers.add_parser(
@@ -166,12 +166,12 @@ def _add_list_parser(db: Database, subparsers) -> None:
     artists.add_argument(
         "-a", "--albums", action="store_true", help="list only album artists"
     )
-    artists.set_defaults(func=lambda args: _cmd_list_artists(db, args.albums))
+    artists.set_defaults(func=lambda args: cmd_list_artists(db, args.albums))
 
     # playlists
     list_subparsers.add_parser(
         "playlists", help="list all playlists in the library"
-    ).set_defaults(func=lambda _: _cmd_list_playlists(db))
+    ).set_defaults(func=lambda _: cmd_list_playlists(db))
 
 
 def _add_playlist_parser(db: Database, subparsers) -> None:
@@ -186,19 +186,19 @@ def _add_playlist_parser(db: Database, subparsers) -> None:
     create.add_argument("title", help="title of playlist")
     create.add_argument("-d", "--description", help="description of the playlist")
     create.set_defaults(
-        func=lambda args: _cmd_playlist_create(db, args.title, args.description)
+        func=lambda args: cmd_playlist_create(db, args.title, args.description)
     )
 
 
 def _add_scan_parser(db: Database, subparsers) -> None:
     subparsers.add_parser(
         "scan", help="imports all files in Source folder"
-    ).set_defaults(func=lambda _: _cmd_scan(db))
+    ).set_defaults(func=lambda _: cmd_scan(db))
 
 
 def _add_version_parser(db: Database, subparsers) -> None:
     subparsers.add_parser("version", help="get current version").set_defaults(
-        func=lambda _: _cmd_version(db)
+        func=lambda _: cmd_version(db)
     )
 
 
@@ -213,7 +213,7 @@ def _add_reset_parser(db: Database, subparsers) -> None:
         help="skip confirmation and reset",
     )
     reset.set_defaults(
-        func=lambda args: _cmd_reset(db, skip_confirmation=args.skipconfirmation)
+        func=lambda args: cmd_reset(db, skip_confirmation=args.skipconfirmation)
     )
 
 
@@ -223,13 +223,13 @@ def _add_favorite_parser(db: Database, subparsers) -> None:
         "term",
         help="the name of the track you wish to favorite (use id: to select by id)",
     )
-    favorite.set_defaults(func=lambda args: _cmd_favorite(db, args.term))
+    favorite.set_defaults(func=lambda args: cmd_favorite(db, args.term))
 
 
 def _add_import_parser(db: Database, subparsers) -> None:
     imp = subparsers.add_parser("import", help="import individual files")
     imp.add_argument("filepath", help="path to the file being imported")
-    imp.set_defaults(func=lambda args: _cmd_import(db, args.filepath))
+    imp.set_defaults(func=lambda args: cmd_import(db, args.filepath))
 
 
 def _add_search_parser(db: Database, subparsers) -> None:
@@ -238,7 +238,7 @@ def _add_search_parser(db: Database, subparsers) -> None:
         "term",
         help="the name of the item(s) you are searching for. supports prefixes (id:, album:, etc)",
     )
-    search.set_defaults(func=lambda args: _cmd_search(db, args.term))
+    search.set_defaults(func=lambda args: cmd_search(db, args.term))
 
 
 def main():
