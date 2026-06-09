@@ -220,7 +220,7 @@ def _add_list_parser(db: Database, subparsers) -> None:
     ).set_defaults(func=lambda _: cmd_list_playlists(db))
 
     playlist = list_subparsers.add_parser(
-        "playlist", help="list contents of a playlist"
+        "playlist", help="list all tracks in a playlist"
     )
     playlist.add_argument(
         "term",
