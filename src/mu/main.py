@@ -8,9 +8,7 @@
 """
 
 import argparse
-import enum
 from importlib.metadata import version
-from multiprocessing import Value
 
 from mu.database.database import Database
 from mu.database.schemaerror import SchemaError
@@ -222,7 +220,7 @@ def _add_list_parser(db: Database, subparsers) -> None:
     ).set_defaults(func=lambda _: cmd_list_playlists(db))
 
     playlist = list_subparsers.add_parser(
-        "playlist", help="list contents of a playlist"
+        "playlist", help="list all tracks in a playlist"
     )
     playlist.add_argument(
         "term",
@@ -339,7 +337,9 @@ def _add_search_parser(db: Database, subparsers) -> None:
     search = subparsers.add_parser("search", help="search the library")
     search.add_argument(
         "term",
-        help="the name of the item(s) you are searching for. supports prefixes (id:, album:, etc)",
+        help=(
+            "the name of the item(s) you are searching for.prefixes (id:, album:, etc)"
+        ),
     )
     search.set_defaults(func=lambda args: cmd_search(db, args.term))
 
