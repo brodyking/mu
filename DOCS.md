@@ -1,6 +1,10 @@
-<h1 align="center">µ documentation</h1>
+<h1 align="center">µ / documentation</h1>
 <p align="center">
   Welcome to the <b>µ documentation</b>! This is the best place to get started with µ and mµc.
+  <br>
+  If you encounter any issues with µ, I highly recommend reading the <a href="./BUGS.md">known bugs</a> page.
+<p align="center">
+    Quick links: <a href="./README.md">README.md</a> &middot; <a href="./BUGS.md">BUGS.md</a>
 </p>
 
 <h2>Chapters 📁</h2>
@@ -21,6 +25,7 @@
   - [3.3 - Listing contents of playlists](#33---listing-contents-of-playlists)
 
 ## 1.0 - Installation
+µ is offically supported on MacOS and Linux. While Windows *might* work, bug reports submitted from Windows machines will be ignored/closed.  
 
 Before proceeding, ensure you have Python >=v3.12.13 and VLC downloaded and installed.
 
@@ -28,9 +33,10 @@ Currently, the only way to install µ is as a python package.
 
 First, clone this repository somewhere where it can be left untouched. We recommend creating a folder in your home folder named `.mu` and cloning it there. This is done so you can update the software in the future.
 ```
-mkdir ~/.mu/
-cd ~/.mu/
+cd ~
 git clone https://github.com/brodyking/mu.git
+mv ~/mu/ ~/.mu/
+cd ~/.mu/
 ```
 
 Once the repo is cloned, you can simply install it as a python package.
@@ -38,9 +44,10 @@ Once the repo is cloned, you can simply install it as a python package.
 pip install -e .
 ```
 
-If you wish to update the client, all you have todo is pull the repo.
+If you wish to update the client, all you have todo is pull the repo while inside of the directory.
 
 ```
+cd ~/.mu/
 git pull
 ```
 
@@ -63,7 +70,7 @@ The `~/Music/mu/` folder can be backed up and then restored to preserve your mus
 
 ## 2.0 - Basic Usage
 
-The two basic commands that µ comes with are `mu` and `muc`.
+The two basic commands that µ come with are `mu` and `muc`.
 
 - `mu` allows you to interact with µ through the cli. Almost all operations that are supported by the database are supported through the CLI. 
 - `muc` starts the tui client for µ. It is currently the only way to interact with µ. Support for mobile/web is planned.
