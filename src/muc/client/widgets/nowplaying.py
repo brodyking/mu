@@ -7,12 +7,14 @@
 
 """
 
+from PIL import Image as PILImage
 from textual import on
 from textual.app import ComposeResult
 from textual.containers import Horizontal, Vertical
 from textual.events import Click
 from textual.message import Message
 from textual.widgets import Button, Label, ProgressBar, Static
+from textual_image.widget import Image
 
 from mu.database.track import Track
 
@@ -185,6 +187,13 @@ class NowPlayingTrackInfo(Static):
 
 class NowPlaying(Static):
     DEFAULT_CSS = """
+
+        Image {
+            max-width: 8;
+            max-height: 3;
+            padding-right: 2;
+        }
+
         NowPlaying > Vertical {
             width: 100%;
             height: 7;
@@ -208,6 +217,7 @@ class NowPlaying(Static):
 
     def __init__(self):
         super().__init__()
+        self.cover_art = Image("")
         self.track_info = NowPlayingTrackInfo(id="now-playing-track-info")
         self.controls = NowPlayingControls(id="now-playing-controls")
         self.progress = NowPlayingProgress(id="now-playing-progress")
@@ -215,9 +225,16 @@ class NowPlaying(Static):
     def compose(self) -> ComposeResult:
         with Vertical():
             with Horizontal():
+                yield self.cover_art
                 yield self.track_info
                 yield self.controls
             yield self.progress
+
+    @staticmethod
+    def fit_image(path: str, width: int, height: int) -> PILImage.Image:
+        img = PILImage.open(path)
+        img.thumbnail((width, height), PILImage.LANCZOS)
+        return img
 
     def set_track(self, track: Track):
         self.track_info.set_info(
@@ -225,6 +242,7 @@ class NowPlaying(Static):
         )
         self.controls.set_favorite(track.favorite)
         self.progress.set_track(track)
+        self.cover_art.image = self.fit_image(track.albumart, 200, 100)
 
     def on_mount(self) -> None:
         pass
