@@ -113,6 +113,11 @@ class PlaylistDataTable(Static):
     }
     """
 
+    BINDINGS = [
+        ("H", "focus_table(0)", "Focus Playlists"),
+        ("L", "focus_table(1)", "Focus Tracks"),
+    ]
+
     def __init__(self, playlists: list[Playlist], *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.playlists = playlists
@@ -131,6 +136,13 @@ class PlaylistDataTable(Static):
         with Horizontal():
             yield self.playlist_playlists_data_table
             yield self.playlist_tracks_data_table
+
+    def action_focus_table(self, table: int):
+        """Focuses different tables. 0: Playlists, 1: Playlist Tracks"""
+        if table == 0:
+            self.playlist_playlists_data_table.main_table.focus()
+        else:
+            self.playlist_tracks_data_table.main_table.focus()
 
     @on(DataTable.RowSelected, "#playlist-playlists-data-table-main-table")
     def row_selected(self, event: DataTable.RowSelected) -> None:
