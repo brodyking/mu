@@ -168,58 +168,58 @@ class Client(App):
             self.player.skip_by_offset(offset)
             self.update_now_playing()
 
-    @on(DataTable.RowSelected)
-    def row_selected(self, event: DataTable.RowSelected) -> None:
+    @on(
+        DataTable.RowSelected,
+        """
+        #queue-data-table-main-table,
+        #favorites-data-table-main-table,
+        #queue-data-table-main-table,
+        #tracks-data-table-main-table,
+        #playlist-tracks-data-table-main-table
+        """,
+    )
+    def tracks_row_selected(self, event: DataTable.RowSelected) -> None:
         """Logic when a cell is clicked. Starts now playing and the queue."""
 
-        active_tab = self.tabs.active
-        tabs_with_tracks = ["tracks-tab", "favorites-tab", "queue-tab", "playlists-tab"]
-
-        # Select tab based on what is active
-        if active_tab == "tracks-tab":
-            table = self.tracks_data_table.main_table
-        elif active_tab == "favorites-tab":
-            table = self.favorites_data_table.main_table
-        elif active_tab == "queue-tab":
-            table = self.queue_data_table.main_table
-        elif active_tab == "albums-tab":
-            table = self.albums_data_table.main_table
-        elif active_tab == "artists-tab":
-            table = self.artists_data_table.main_table
-        elif active_tab == "playlists-tab":
-            table = self.playlists_data_table.playlist_tracks_data_table.main_table
-        else:
+        tab_to_table = {
+            "tracks-tab": self.tracks_data_table.main_table,
+            "favorites-tab": self.favorites_data_table.main_table,
+            "queue-tab": self.queue_data_table.main_table,
+            "playlists-tab": self.playlists_data_table.playlist_tracks_data_table.main_table,
+        }
+        table = tab_to_table.get(self.tabs.active)
+        if table is None:
             return
 
-        start_index = event.cursor_row  # Get the starting row index from the event
-
-        if active_tab in tabs_with_tracks:
-            """If a track is selected"""
-            row_count = table.row_count
-            # Loop through the integer indices from the start to the end
-            queue_ids = []
-            for row_id in range(start_index, row_count):
-                try:
-                    cell_value = table.get_cell_at(Coordinate(row_id, 0))
-                    queue_ids.append(str(cell_value))
-                except Exception:
-                    continue
+        start_index = event.cursor_row
+        queue_ids = []
+        for row_id in range(start_index, table.row_count):
             try:
-                id = table.get_cell_at(Coordinate(event.cursor_row, 0))
-                self.play_track(self.tracks[id], queue_ids)
-            except Exception as e:
-                self.app.notify(f"Error fetching cell data: {e}", severity="error")
-        elif self.tabs.active == "albums-tab":
-            """If a album is selected"""
-            album_title = table.get_cell_at(Coordinate(event.cursor_row, 0))
-            self.tracks_data_table.search.value = f"album:{album_title}"
-            self.tracks_data_table.main_table.focus()
+                queue_ids.append(str(table.get_cell_at(Coordinate(row_id, 0))))
+            except Exception:
+                continue
 
-        elif self.tabs.active == "artists-tab":
-            """If a artist is selected"""
-            artist = table.get_cell_at(Coordinate(event.cursor_row, 0))
-            self.albums_data_table.search.value = f"albumartist:{artist}"
-            self.albums_data_table.main_table.focus()
+        try:
+            track_id = table.get_cell_at(Coordinate(start_index, 0))
+            self.play_track(self.tracks[track_id], queue_ids)
+        except Exception as e:
+            self.notify(f"Error fetching cell data: {e}", severity="error")
+
+    @on(DataTable.RowSelected, "#album-data-table-main-table")
+    def albums_row_selected(self, event: DataTable.RowSelected):
+        """If a album is selected"""
+        table = self.albums_data_table.main_table
+        album_title = table.get_cell_at(Coordinate(event.cursor_row, 0))
+        self.tracks_data_table.search.value = f"album:{album_title}"
+        self.tracks_data_table.main_table.focus()
+
+    @on(DataTable.RowSelected, "#artist-data-table-main-table")
+    def artist_row_selected(self, event: DataTable.RowSelected):
+        """If a artist is selected"""
+        table = self.artists_data_table.main_table
+        artist = table.get_cell_at(Coordinate(event.cursor_row, 0))
+        self.albums_data_table.search.value = f"albumartist:{artist}"
+        self.albums_data_table.main_table.focus()
 
     @on(NowPlayingProgressBar.Clicked)
     def now_playing_progress_bar_clicked(
