@@ -47,7 +47,28 @@ class Client(App):
             border: none;
             padding: 0;
         }
-    """
+        Tabs {
+            border: none;
+            height:1;
+            background: $panel;
+        }
+        Tab.-active {
+            background: $primary;
+            color: $text
+        }
+        Tabs > Underline {
+            display: none;
+        }
+/* Make the underline bar invisible */
+Underline > .underline--bar {
+    color: transparent;
+    background: transparent;
+}
+
+/* Also hide it when the Tabs widget is focused */
+Tabs:focus .underline--bar {
+    background: transparent;
+}    """
 
     BINDINGS = [
         ("q", "goto_tab(0)", "Queue"),
@@ -71,7 +92,9 @@ class Client(App):
         self.artists: list = self.db.list_library_artists(album_artist=True)
         self.playlists: list = self.db.list_playlists()
         self.queue_list = QueueList(self.tracks)
+
         self.theme = "catppuccin-mocha"
+        self.animation_level = "none"
 
         self.now_playing = NowPlaying()
         self.queue_data_table = QueueDataTable(
