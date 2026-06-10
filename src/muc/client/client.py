@@ -31,7 +31,9 @@ class Client(App):
         Vertical {
             height: 100%;
         }
-
+        NowPlaying {
+            height: 7;
+        }
         TabbedContent {
             height: 1fr;
         }
