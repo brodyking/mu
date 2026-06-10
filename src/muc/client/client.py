@@ -280,6 +280,11 @@ class Client(App):
             table = self.queue_data_table
         elif self.focused == self.favorites_data_table.main_table:
             table = self.favorites_data_table
+        elif (
+            self.focused
+            == self.playlists_data_table.playlist_tracks_data_table.main_table
+        ):
+            table = self.playlists_data_table.playlist_tracks_data_table
         elif len(self.queue_list.queue) > 0:
             track = self.queue_list.get_current_track()
             if track:
