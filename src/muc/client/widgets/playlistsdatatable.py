@@ -7,23 +7,23 @@
 
 """
 
+from unicodedata import ucd_3_2_0
+
+from rich.box import HEAVY
 from textual import on
 from textual.app import ComposeResult
-from textual.widgets import Input, Static
+from textual.events import Compose
+from textual.widgets import DataTable, Input, Static
 
 from mu.database.playlist import Playlist
+from mu.database.track import Track
+from muc.client.widgets.nowplaying import Horizontal
+from muc.client.widgets.tracksdatatable import TracksDataTable
 from muc.client.widgets.vimdatatable import VimDataTable
 
 
-class PlaylistDataTable(Static):
+class PlaylistPlaylistsDataTable(Static):
     BINDINGS = [("/", "focus_search", "Search")]
-
-    CSS = """
-    VimDataTable {
-        width: auto;
-        height: auto;
-    }
-    """
 
     def __init__(self, playlists: list, search_id: str, main_table_id: str):
         super().__init__()
@@ -90,7 +90,7 @@ class PlaylistDataTable(Static):
 
         # Add the maximum width to your column metadata definition
         columns = [
-            ("id", "Id", 25),
+            ("id", "Id", 5),
             ("title", "Title", 15),
             ("description", "Description", 20),
         ]
@@ -106,3 +106,52 @@ class PlaylistDataTable(Static):
             table.add_row(*row_tuple, key=str(i))
 
         table.focus()
+
+
+class PlaylistDataTable(Static):
+    DEFAULT_CSS = """
+    PlaylistPlaylistsDataTable {
+        width: 30;
+    }
+    TracksDataTable {
+        width: 1fr;
+    }
+    """
+
+    def __init__(self, playlists: list[Playlist], *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.playlists = playlists
+        self.playlist_playlists_data_table = PlaylistPlaylistsDataTable(
+            self.playlists,
+            "playlist-playlists-data-table-search",
+            "playlist-playlists-data-table-main-table",
+        )
+        self.playlist_tracks_data_table = TracksDataTable(
+            [],
+            "playlist-tracks-data-table-search",
+            "playlist-tracks-data-table-main-table",
+        )
+
+    def compose(self) -> ComposeResult:
+        with Horizontal():
+            yield self.playlist_playlists_data_table
+            yield self.playlist_tracks_data_table
+
+    @on(DataTable.RowSelected, "#playlist-playlists-data-table-main-table")
+    def row_selected(self, event: DataTable.RowSelected) -> None:
+        """
+        Populates seperate table with tracks from the playlist
+        Then changes focus
+        """
+        row_pos = event.cursor_row
+        playlist = self.playlists[row_pos]
+        tracks_sorted: dict = dict()
+        for track in playlist.tracks:
+            tracks_sorted[track.id] = track
+        self.playlist_tracks_data_table.tracks = tracks_sorted
+        self.playlist_tracks_data_table.generate_full_rows()
+        # TODO: Make this table refresh by generate,
+        #       not working for some reason so im just filtering an empty string
+        self.playlist_tracks_data_table.filter_table("")
+
+        self.playlist_tracks_data_table.main_table.focus()

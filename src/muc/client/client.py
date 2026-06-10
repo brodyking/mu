@@ -88,8 +88,6 @@ class Client(App):
 
         self.playlists_data_table = PlaylistDataTable(
             self.playlists,
-            "playlist-data-table-search",
-            "playlist-data-table-main-table",
         )
 
         self.tabs = TabbedContent(id="tabs")
@@ -141,7 +139,7 @@ class Client(App):
             elif self.tabs.active == "favorites-tab":
                 self.favorites_data_table.main_table.focus()
             elif self.tabs.active == "playlists-tab":
-                self.playlists_data_table.main_table.focus()
+                self.playlists_data_table.playlist_playlists_data_table.main_table.focus()
         except ValueError:
             pass
 
@@ -175,7 +173,7 @@ class Client(App):
         """Logic when a cell is clicked. Starts now playing and the queue."""
 
         active_tab = self.tabs.active
-        tabs_with_tracks = ["tracks-tab", "favorites-tab", "queue-tab"]
+        tabs_with_tracks = ["tracks-tab", "favorites-tab", "queue-tab", "playlists-tab"]
 
         # Select tab based on what is active
         if active_tab == "tracks-tab":
@@ -188,6 +186,8 @@ class Client(App):
             table = self.albums_data_table.main_table
         elif active_tab == "artists-tab":
             table = self.artists_data_table.main_table
+        elif active_tab == "playlists-tab":
+            table = self.playlists_data_table.playlist_tracks_data_table.main_table
         else:
             return
 
@@ -308,3 +308,6 @@ class Client(App):
             self.tracks_data_table.set_track_favorite(track_id, result.favorite)
             self.queue_data_table.set_track_favorite(track_id, result.favorite)
             self.favorites_data_table.set_track_favorite(track_id, result.favorite)
+            self.playlists_data_table.playlist_tracks_data_table.set_track_favorite(
+                track_id, result.favorite
+            )
