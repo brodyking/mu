@@ -116,7 +116,7 @@ class Client(App):
                     yield self.playlists_data_table
 
     def action_goto_tab(self, tabid: int) -> None:
-        """Switches to a dedicated tab with h or l keys."""
+        """Switches to a dedicated tab."""
         all_tabs = [
             ("queue-tab", self.queue_data_table.main_table),
             ("favorites-tab", self.favorites_data_table.main_table),
@@ -155,10 +155,13 @@ class Client(App):
 
     def action_skip_track(self, offset: int) -> None:
         """Skips to a song in the queue by an offest if the song exists"""
-        track = self.queue_list.skip_track(offset)
-        if track:
-            self.player.skip_by_offset(offset)
-            self.update_now_playing()
+        try:
+            track = self.queue_list.skip_track(offset)
+            if track:
+                self.player.skip_by_offset(offset)
+                self.update_now_playing()
+        except ValueError as e:
+            self.notify(str(e), severity="warning")
 
     @on(
         DataTable.RowSelected,
