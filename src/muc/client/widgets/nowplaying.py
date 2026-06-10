@@ -28,7 +28,7 @@ class NowPlayingControls(Static):
             border: none;
             height: 3;
             min-height: 3;
-            max-width: 6; 
+            max-width: 6;
             min-width: 1;
             padding: 0 0;
             margin: 0 0 0 1;
@@ -110,8 +110,7 @@ class NowPlayingProgress(Static):
         NowPlayingProgress {
             height: 2;
             padding: 0;
-            padding-left: 2;
-            padding-right: 2;
+            padding-top:1;
         }
         NowPlayingProgress > Horizontal {
             width: 100%;
@@ -188,16 +187,16 @@ class NowPlaying(Static):
     DEFAULT_CSS = """
         NowPlaying > Vertical {
             width: 100%;
-            height: 5;
+            height: 7;
             padding: 1;
             padding-left: 2;
             padding-right: 2
         }
         NowPlayingTrackInfo {
             width: 1fr;
-            height: auto;
+            height: 1fr;
         }
-        NowPlayingControls { 
+        NowPlayingControls {
             width: auto;
             height:auto;
         }
@@ -218,7 +217,7 @@ class NowPlaying(Static):
             with Horizontal():
                 yield self.track_info
                 yield self.controls
-        yield self.progress
+            yield self.progress
 
     def set_track(self, track: Track):
         self.track_info.set_info(

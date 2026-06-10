@@ -20,7 +20,7 @@ class TracksDataTable(Static):
     CSS = """
     TracksDataTable {
         width: auto;
-        height: auto;
+        height: 1fr;
     }
     """
 
