@@ -28,10 +28,18 @@ from muc.player.player import Player
 
 class Client(App):
     CSS = """
-        TracksDataTable,QueueDataTable,AlbumsDataTable,ArtistsDataTable {
-            height: 1fr;
+        Vertical {
+            height: 100%;
         }
 
+        TabbedContent {
+            height: 1fr;
+        }
+        TracksDataTable,QueueDataTable,AlbumsDataTable,ArtistsDataTable {
+            height: 1fr;
+            max_height: 1fr;
+            overflow-y: auto;
+        }
         Input {
             height:1;
             border: none;
