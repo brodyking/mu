@@ -7,16 +7,11 @@
 
 """
 
-from unicodedata import ucd_3_2_0
-
-from rich.box import HEAVY
 from textual import on
 from textual.app import ComposeResult
-from textual.events import Compose
 from textual.widgets import DataTable, Input, Static
 
 from mu.database.playlist import Playlist
-from mu.database.track import Track
 from muc.client.widgets.nowplaying import Horizontal
 from muc.client.widgets.tracksdatatable import TracksDataTable
 from muc.client.widgets.vimdatatable import VimDataTable
@@ -127,7 +122,7 @@ class PlaylistDataTable(Static):
             "playlist-playlists-data-table-main-table",
         )
         self.playlist_tracks_data_table = TracksDataTable(
-            [],
+            dict(),
             "playlist-tracks-data-table-search",
             "playlist-tracks-data-table-main-table",
         )

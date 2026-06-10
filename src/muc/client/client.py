@@ -118,29 +118,21 @@ class Client(App):
     def action_goto_tab(self, tabid: int) -> None:
         """Switches to a dedicated tab with h or l keys."""
         all_tabs = [
-            "queue-tab",
-            "favorites-tab",
-            "tracks-tab",
-            "albums-tab",
-            "artists-tab",
-            "playlists-tab",
+            ("queue-tab", self.queue_data_table.main_table),
+            ("favorites-tab", self.favorites_data_table.main_table),
+            ("tracks-tab", self.tracks_data_table.main_table),
+            ("albums-tab", self.albums_data_table.main_table),
+            ("artists-tab", self.artists_data_table.main_table),
+            (
+                "playlists-tab",
+                self.playlists_data_table.playlist_playlists_data_table.main_table,
+            ),
         ]
         try:
-            self.tabs.active = all_tabs[tabid]
-
-            if self.tabs.active == "tracks-tab":
-                self.tracks_data_table.main_table.focus()
-            elif self.tabs.active == "queue-tab":
-                self.queue_data_table.main_table.focus()
-            elif self.tabs.active == "albums-tab":
-                self.albums_data_table.main_table.focus()
-            elif self.tabs.active == "artists-tab":
-                self.artists_data_table.main_table.focus()
-            elif self.tabs.active == "favorites-tab":
-                self.favorites_data_table.main_table.focus()
-            elif self.tabs.active == "playlists-tab":
-                self.playlists_data_table.playlist_playlists_data_table.main_table.focus()
-        except ValueError:
+            tab_id, table = all_tabs[tabid]
+            self.tabs.active = tab_id
+            table.focus()
+        except (ValueError, IndexError):
             pass
 
     def play_track(self, track: Track, queue_ids: list) -> None:
