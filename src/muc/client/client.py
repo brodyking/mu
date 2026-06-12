@@ -150,6 +150,10 @@ Tabs:focus .underline--bar {
                     yield self.playlists_data_table
         yield MuFooter()
 
+    def on_mount(self) -> None:
+        """Focuses playlists playlist list upon starting"""
+        self.playlists_data_table.playlist_playlists_data_table.main_table.focus()
+
     def action_goto_tab(self, tabid: int) -> None:
         """Switches to a dedicated tab."""
         all_tabs = [
