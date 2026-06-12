@@ -264,12 +264,32 @@ class Database:
                     out["ok"] = False
                     yield out
 
-    def search(self, term: str) -> list:
+    def search(self, term: str) -> list[Track]:
         """
-        Searches the database for tracks with prefix support.
-        If no prefix is given, it will search by id.
-        Returns a list of tracks.
+        Searches the database for tracks using prefix:value filters.
+
+        Syntax:
+            {prefix}:{value}                    single filter
+            {prefix}:{value}&{prefix}:{value}   AND — all filters must match
+            {prefix}:{value}+{prefix}:{value}   OR  — either query can match
+
+        Prefixes:
+            id, title, artist, album, genre, date, plays, favorite,
+            time, dateadded, tracknumber, albumartist, discnumber,
+            filepath, filename, albumart
+
+        Examples:
+            "artist:Pink Floyd"
+                All tracks by Pink Floyd.
+            "artist:Pink Floyd&title:Time"
+                Pink Floyd tracks where the title contains 'Time'.
+            "artist:Pink Floyd+artist:Radiohead"
+                All tracks by either Pink Floyd or Radiohead.
+
+        Returns a list of Track objects.
         """
+
+        queries = term.split("+")
 
         # All col's in the database
         prefixes = [
@@ -290,39 +310,45 @@ class Database:
             "filename",
             "albumart",
         ]
+        output = []
 
-        # Finds the target column if user is using a prefix.
-        target_column = (
-            term.split(":", 1)[0] if term.split(":", 1)[0] in prefixes else None
-        )
-        if target_column is None:
-            raise ValueError(
-                "The search query is missing a prefix. "
-                "Please specify how you are searching by typing "
-                'the prefix followed by a colon. Ex: "artist:aphex twin"'
-            )
+        parsed_queries = []
+        for query in queries:
+            filters = query.split("&")
+            parsed_query = []
+            for filter in filters:
+                filter = filter.strip()
+                prefix, sep, value = filter.partition(":")
+                prefix, value = prefix.strip(), value.strip()
+                if not sep or prefix not in prefixes:
+                    raise ValueError(
+                        f"Invalid search query {filter!r}. "
+                        'Use a prefix like "artist:aphex twin".'
+                    )
+                if not value:
+                    raise ValueError(
+                        f"Search query {filter!r} has no value after the prefix."
+                    )
+                parsed_query.append((prefix, value))
+            parsed_queries.append(parsed_query)
         with sqlite3.connect(str(self.db_path)) as connection:
             connection.row_factory = sqlite3.Row
             cursor = connection.cursor()
-
-            # Specific Search
-            value = term.split(":", 1)[1]
-
-            if target_column == "id":
-                # IDs usually need to be exact
-                query = "SELECT * FROM tracks WHERE id = ?"
-                cursor.execute(query, (value,))
-            else:
-                # Text searches use LIKE and wildcards
-                # We wrap the value in % so it finds partial matches
-                query = f"SELECT * FROM tracks WHERE {target_column} LIKE ?"
-                cursor.execute(query, (f"%{value}%",))
-
-            results = cursor.fetchall()
-            export = []
-            for i, result in enumerate(results):
-                export.append(Track(result))
-            return export
+            for query in parsed_queries:
+                statement = ""
+                values = []
+                for i, (prefix, value) in enumerate(query):
+                    if i > 0:
+                        statement += " AND "
+                    if prefix == "id":
+                        statement += "id = ?"
+                        values.append(value)
+                    else:
+                        statement += f"{prefix} LIKE ? COLLATE NOCASE"
+                        values.append(f"%{value}%")
+                cursor.execute(f"SELECT * FROM tracks WHERE {statement}", values)
+                output.extend(Track(row) for row in cursor)  # inside the loop
+        return output
 
     def increment_play_count(self, term: str, amount: int = 1) -> list[Track]:
         """Increment track(s) play counts by either 1 or a custom amount"""
