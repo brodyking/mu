@@ -46,39 +46,48 @@ class PlaylistPlaylistsDataTable(Static):
         self.main_table.focus()
 
     def filter_table(self, search_term: str) -> None:
+        """Filters a table with the same prefix/query support as the database"""
         table = self.main_table
-        search_term = search_term.lower()
+        queries = search_term.split("+")
+        prefixes = {"id": 0, "title": 1, "description": 2}
 
         if not search_term:
             filtered_rows = self.full_rows
         else:
-            prefixes = {
-                "id": 0,
-                "title": 1,
-                "description": 2,
-            }
+            filtered_rows = []
+            for query in queries:
+                filters = query.split("&")
+                # Start with all rows, then narrow down
+                query_rows = set(map(tuple, self.full_rows))
 
-            if ":" in search_term and search_term.split(":", 1)[0] in prefixes.keys():
-                # Filter rows based on prefix provided
-                filtered_rows = [
-                    row
-                    for row in self.full_rows
-                    if search_term.split(":", 1)[1]
-                    in str(row[prefixes.get(search_term.split(":", 1)[0])]).lower()
-                ]
-            else:
-                # Filter rows based on Title (index 2) or Artist (index 3)
-                filtered_rows = [
-                    row
-                    for row in self.full_rows
-                    if search_term in str(row[0]).lower()
-                    or search_term in str(row[1]).lower()
-                ]
+                for filter in filters:
+                    filter = filter.strip()
+                    if ":" not in filter:
+                        value = filter.lower()
+                        query_rows &= {
+                            tuple(row)
+                            for row in self.full_rows
+                            if value in str(row[1]).lower()
+                        }
+                    else:
+                        prefix, sep, value = filter.partition(":")
+                        prefix, value = prefix.strip(), value.strip().lower()
+                        if sep and prefix in prefixes and value:
+                            row_index = prefixes[prefix]
+                            query_rows &= {
+                                tuple(row)
+                                for row in self.full_rows
+                                if value in str(row[row_index]).lower()
+                            }
 
+                # Add rows matched by this query group (avoiding duplicates)
+                for row in self.full_rows:
+                    if tuple(row) in query_rows and row not in filtered_rows:
+                        filtered_rows.append(row)
         table.clear()
 
-        for i, row in enumerate(filtered_rows):
-            table.add_row(*row, key=str(i))
+        for row in filtered_rows:
+            table.add_row(*row, key=str(row[0]))
 
     def on_mount(self) -> None:
         table = self.main_table
@@ -95,10 +104,10 @@ class PlaylistPlaylistsDataTable(Static):
             table.add_column(label, key=key, width=max_w)
 
         self.full_rows = []
-        for i, playlist in enumerate(self.playlists):
+        for playlist in self.playlists:
             row_tuple = (playlist.id, playlist.title, playlist.description)
             self.full_rows.append(row_tuple)
-            table.add_row(*row_tuple, key=str(i))
+            table.add_row(*row_tuple, key=str(playlist.id))
 
         table.focus()
 

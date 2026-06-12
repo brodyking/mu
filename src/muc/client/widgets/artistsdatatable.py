@@ -50,16 +50,46 @@ class ArtistsDataTable(Static):
         self.main_table.focus()
 
     def filter_table(self, search_term: str) -> None:
+        """Filters a table with the same prefix/query support as the database"""
         table = self.main_table
-        search_term = search_term.lower()
+        queries = search_term.split("+")
+        prefixes = {
+            "artist": 0,
+        }
 
         if not search_term:
             filtered_rows = self.full_rows
         else:
-            filtered_rows = [
-                row for row in self.full_rows if search_term in str(row[0]).lower()
-            ]
+            filtered_rows = []
+            for query in queries:
+                filters = query.split("&")
+                # Start with all rows, then narrow down
+                query_rows = set(map(tuple, self.full_rows))
 
+                for filter in filters:
+                    filter = filter.strip()
+                    if ":" not in filter:
+                        value = filter.lower()
+                        query_rows &= {
+                            tuple(row)
+                            for row in self.full_rows
+                            if value in str(row[0]).lower()
+                        }
+                    else:
+                        prefix, sep, value = filter.partition(":")
+                        prefix, value = prefix.strip(), value.strip().lower()
+                        if sep and prefix in prefixes and value:
+                            row_index = prefixes[prefix]
+                            query_rows &= {
+                                tuple(row)
+                                for row in self.full_rows
+                                if value in str(row[row_index]).lower()
+                            }
+
+                # Add rows matched by this query group (avoiding duplicates)
+                for row in self.full_rows:
+                    if tuple(row) in query_rows and row not in filtered_rows:
+                        filtered_rows.append(row)
         table.clear()
 
         for i, row in enumerate(filtered_rows):
@@ -80,6 +110,6 @@ class ArtistsDataTable(Static):
         self.full_rows = []
         for i, artist in enumerate(self.artists):
             self.full_rows.append(artist)
-            table.add_row(*artist, key=str(i))
+            table.add_row(*artist, key=str(artist))
 
         table.focus()
