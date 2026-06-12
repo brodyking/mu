@@ -198,8 +198,6 @@ class NowPlaying(Static):
             width: 100%;
             height: 7;
             padding: 1;
-            padding-left: 2;
-            padding-right: 2
         }
         NowPlayingTrackInfo {
             width: 1fr;
