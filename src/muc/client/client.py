@@ -120,9 +120,7 @@ class Client(App):
             self.artists, "artist-data-table-search", "artist-data-table-main-table"
         )
 
-        self.playlists_data_table = PlaylistDataTable(
-            self.playlists,
-        )
+        self.playlists_data_table = PlaylistDataTable(self.playlists, self.tracks)
 
         self.tabs = TabbedContent(id="tabs")
         self.tabs.can_focus_children = False
@@ -342,7 +340,6 @@ class Client(App):
 
         if result:
             self.tracks[track_id] = result
-            self.queue_list.tracks[track_id] = result
 
             if not table:
                 self.now_playing.controls.set_favorite(result.favorite)
