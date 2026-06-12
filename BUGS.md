@@ -24,8 +24,8 @@ N/A
 
 ## Bugs (mµc) 🪳
 
-- [ ] Favoriting a track does not update in playlist list
+- [x] Favoriting a track does not update in playlist list
   - Occours only if a playlist is not yet loaded, or reloaded.
   - This is due to the fact that tracks are stored as objects, not ids, inside of playlists.
   - Planned fix is to only store ID's, and reference the track dict stored by the client.
-- [ ] Playlist list is not auto focused on app startup.
+- [x] Playlist list is not auto focused on app startup.
