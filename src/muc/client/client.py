@@ -19,6 +19,7 @@ from muc.client.queuelist import QueueList
 from muc.client.widgets.albumsdatatable import AlbumsDataTable
 from muc.client.widgets.artistsdatatable import ArtistsDataTable
 from muc.client.widgets.favoritesdatatable import FavoritesDataTable
+from muc.client.widgets.mufooter import MuFooter
 from muc.client.widgets.nowplaying import NowPlaying, NowPlayingProgressBar
 from muc.client.widgets.playlistsdatatable import PlaylistDataTable
 from muc.client.widgets.queuedatatable import QueueDataTable
@@ -147,6 +148,7 @@ Tabs:focus .underline--bar {
                     yield self.artists_data_table
                 with TabPane("󱝟 Playlists (p)", id="playlists-tab"):
                     yield self.playlists_data_table
+        yield MuFooter()
 
     def action_goto_tab(self, tabid: int) -> None:
         """Switches to a dedicated tab."""
