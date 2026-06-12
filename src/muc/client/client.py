@@ -340,7 +340,6 @@ class Client(App):
 
         if result:
             self.tracks[track_id] = result
-            self.queue_list.tracks[track_id] = result
 
             if not table:
                 self.now_playing.controls.set_favorite(result.favorite)
