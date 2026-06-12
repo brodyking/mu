@@ -60,16 +60,16 @@ class Client(App):
         Tabs > Underline {
             display: none;
         }
-/* Make the underline bar invisible */
-Underline > .underline--bar {
-    color: transparent;
-    background: transparent;
-}
+        /* Make the underline bar invisible */
+        Underline > .underline--bar {
+            color: transparent;
+            background: transparent;
+        }
 
-/* Also hide it when the Tabs widget is focused */
-Tabs:focus .underline--bar {
-    background: transparent;
-}    """
+        /* Also hide it when the Tabs widget is focused */
+        Tabs:focus .underline--bar {
+            background: transparent;
+        }    """
 
     BINDINGS = [
         ("q", "goto_tab(0)", "Queue"),
