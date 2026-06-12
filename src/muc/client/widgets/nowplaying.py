@@ -7,6 +7,8 @@
 
 """
 
+import platform
+
 from PIL import Image as PILImage
 from textual import on
 from textual.app import ComposeResult
@@ -17,6 +19,8 @@ from textual.widgets import Button, Label, ProgressBar, Static
 from textual_image.widget import Image
 
 from mu.database.track import Track
+
+IS_UNIX = platform.system() in ("Darwin", "Linux")
 
 
 class NowPlayingControls(Static):
@@ -215,7 +219,7 @@ class NowPlaying(Static):
 
     def __init__(self):
         super().__init__()
-        self.cover_art = Image("")
+        self.cover_art = Image("") if IS_UNIX else None
         self.track_info = NowPlayingTrackInfo(id="now-playing-track-info")
         self.controls = NowPlayingControls(id="now-playing-controls")
         self.progress = NowPlayingProgress(id="now-playing-progress")
@@ -223,15 +227,33 @@ class NowPlaying(Static):
     def compose(self) -> ComposeResult:
         with Vertical():
             with Horizontal():
-                yield self.cover_art
+                if IS_UNIX:
+                    yield self.cover_art
                 yield self.track_info
                 yield self.controls
             yield self.progress
 
     @staticmethod
-    def fit_image(path: str, width: int, height: int) -> PILImage.Image:
+    def fit_image(path: str, max_cells_w: int, max_cells_h: int) -> PILImage.Image:
+        try:
+            import fcntl
+            import struct
+            import termios
+
+            buf = struct.pack("HHHH", 0, 0, 0, 0)
+            result = fcntl.ioctl(1, termios.TIOCGWINSZ, buf)
+            rows, cols, xpix, ypix = struct.unpack("HHHH", result)
+            if rows > 0 and cols > 0 and xpix > 0 and ypix > 0:
+                cell_w, cell_h = xpix // cols, ypix // rows
+            else:
+                cell_w, cell_h = 8, 16
+        except Exception:
+            cell_w, cell_h = 8, 16
+
+        target_px_w = max_cells_w * cell_w
+        target_px_h = max_cells_h * cell_h * 2
         img = PILImage.open(path)
-        img.thumbnail((width, height), PILImage.LANCZOS)
+        img.thumbnail((target_px_w, target_px_h), PILImage.LANCZOS)
         return img
 
     def set_track(self, track: Track):
@@ -240,7 +262,8 @@ class NowPlaying(Static):
         )
         self.controls.set_favorite(track.favorite)
         self.progress.set_track(track)
-        self.cover_art.image = self.fit_image(track.albumart, 200, 100)
+        if IS_UNIX and self.cover_art:
+            self.cover_art.image = self.fit_image(track.albumart, 6, 4)
 
     def on_mount(self) -> None:
         pass
