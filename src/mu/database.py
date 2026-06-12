@@ -12,11 +12,11 @@ import sqlite3
 from collections.abc import Iterator
 from pathlib import Path
 
-from mu.database.album import Album
-from mu.database.file import File
-from mu.database.playlist import Playlist
-from mu.database.schemaerror import SchemaError
-from mu.database.track import Track
+from mu.album import Album
+from mu.file import File
+from mu.playlist import Playlist
+from mu.schemaerror import SchemaError
+from mu.track import Track
 
 
 class Database:

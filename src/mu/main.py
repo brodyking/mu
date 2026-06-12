@@ -10,8 +10,8 @@
 import argparse
 from importlib.metadata import version
 
-from mu.database.database import Database
-from mu.database.schemaerror import SchemaError
+from mu.database import Database
+from mu.schemaerror import SchemaError
 from mu.util import Interface
 
 VERSION = version("mu")

@@ -11,8 +11,8 @@ from textual import on
 from textual.app import ComposeResult
 from textual.widgets import DataTable, Input, Static
 
-from mu.database.playlist import Playlist
-from mu.database.track import Track
+from mu.playlist import Playlist
+from mu.track import Track
 from muc.client.widgets.nowplaying import Horizontal
 from muc.client.widgets.tracksdatatable import TracksDataTable
 from muc.client.widgets.vimdatatable import VimDataTable

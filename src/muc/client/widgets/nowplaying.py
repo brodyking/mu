@@ -18,7 +18,7 @@ from textual.message import Message
 from textual.widgets import Button, Label, ProgressBar, Static
 from textual_image.widget import Image
 
-from mu.database.track import Track
+from mu.track import Track
 
 IS_UNIX = platform.system() in ("Darwin", "Linux")
 

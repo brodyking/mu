@@ -7,7 +7,7 @@
 
 """
 
-from mu.database.track import Track
+from mu.track import Track
 
 
 class Playlist:
