@@ -19,6 +19,7 @@ from muc.client.queuelist import QueueList
 from muc.client.widgets.albumsdatatable import AlbumsDataTable
 from muc.client.widgets.artistsdatatable import ArtistsDataTable
 from muc.client.widgets.favoritesdatatable import FavoritesDataTable
+from muc.client.widgets.mufooter import MuFooter
 from muc.client.widgets.nowplaying import NowPlaying, NowPlayingProgressBar
 from muc.client.widgets.playlistsdatatable import PlaylistDataTable
 from muc.client.widgets.queuedatatable import QueueDataTable
@@ -47,7 +48,28 @@ class Client(App):
             border: none;
             padding: 0;
         }
-    """
+        Tabs {
+            border: none;
+            height:1;
+            background: $panel;
+        }
+        Tab.-active {
+            background: $primary;
+            color: $text
+        }
+        Tabs > Underline {
+            display: none;
+        }
+/* Make the underline bar invisible */
+Underline > .underline--bar {
+    color: transparent;
+    background: transparent;
+}
+
+/* Also hide it when the Tabs widget is focused */
+Tabs:focus .underline--bar {
+    background: transparent;
+}    """
 
     BINDINGS = [
         ("q", "goto_tab(0)", "Queue"),
@@ -71,7 +93,9 @@ class Client(App):
         self.artists: list = self.db.list_library_artists(album_artist=True)
         self.playlists: list = self.db.list_playlists()
         self.queue_list = QueueList(self.tracks)
+
         self.theme = "catppuccin-mocha"
+        self.animation_level = "none"
 
         self.now_playing = NowPlaying()
         self.queue_data_table = QueueDataTable(
@@ -124,6 +148,11 @@ class Client(App):
                     yield self.artists_data_table
                 with TabPane("󱝟 Playlists (p)", id="playlists-tab"):
                     yield self.playlists_data_table
+        yield MuFooter()
+
+    def on_mount(self) -> None:
+        """Focuses playlists playlist list upon starting"""
+        self.playlists_data_table.playlist_playlists_data_table.main_table.focus()
 
     def action_goto_tab(self, tabid: int) -> None:
         """Switches to a dedicated tab."""
