@@ -12,6 +12,7 @@ from textual.app import ComposeResult
 from textual.widgets import DataTable, Input, Static
 
 from mu.database.playlist import Playlist
+from mu.database.track import Track
 from muc.client.widgets.nowplaying import Horizontal
 from muc.client.widgets.tracksdatatable import TracksDataTable
 from muc.client.widgets.vimdatatable import VimDataTable
@@ -127,9 +128,10 @@ class PlaylistDataTable(Static):
         ("L", "focus_table(1)", "Focus Tracks"),
     ]
 
-    def __init__(self, playlists: list[Playlist], *args, **kwargs):
+    def __init__(self, playlists: list[Playlist], tracks: dict[Track], *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.playlists = playlists
+        self.tracks = tracks
         self.playlist_playlists_data_table = PlaylistPlaylistsDataTable(
             self.playlists,
             "playlist-playlists-data-table-search",
@@ -163,7 +165,7 @@ class PlaylistDataTable(Static):
         playlist = self.playlists[row_pos]
         tracks_sorted: dict = dict()
         for track in playlist.tracks:
-            tracks_sorted[track.id] = track
+            tracks_sorted[track.id] = self.tracks[track.id]
         self.playlist_tracks_data_table.tracks = tracks_sorted
         self.playlist_tracks_data_table.generate_full_rows()
         # TODO: Make this table refresh by generate,

@@ -7,12 +7,12 @@
 
 """
 
-from warnings import filters
 
 from textual import on
 from textual.app import ComposeResult
 from textual.widgets import Input, Static
 
+from mu.database.track import Track
 from muc.client.widgets.vimdatatable import VimDataTable
 
 
@@ -26,7 +26,7 @@ class TracksDataTable(Static):
     }
     """
 
-    def __init__(self, tracks: dict, search_id: str, main_table_id: str):
+    def __init__(self, tracks: dict[Track], search_id: str, main_table_id: str):
         super().__init__()
         self.tracks = tracks
         self.full_rows: list = []
