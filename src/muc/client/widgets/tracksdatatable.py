@@ -7,6 +7,8 @@
 
 """
 
+from warnings import filters
+
 from textual import on
 from textual.app import ComposeResult
 from textual.widgets import Input, Static
@@ -76,48 +78,63 @@ class TracksDataTable(Static):
             return
 
     def filter_table(self, search_term: str) -> None:
+        """Filters a table with the same prefix/query support as the database"""
         table = self.main_table
-        search_term = search_term.lower()
+        queries = search_term.split("+")
+        prefixes = {
+            "id": 0,
+            "favorite": 1,
+            "title": 2,
+            "artist": 3,
+            "album": 4,
+            "plays": 5,
+            "time": 6,
+            "dateadded": 7,
+            "tracknumber": 8,
+            "albumartist": 9,
+            "discnumber": 10,
+            "genre": 11,
+            "date": 12,
+            "filepath": 13,
+            "filename": 14,
+            "albumart": 15,
+        }
 
         if not search_term:
             filtered_rows = self.full_rows
         else:
-            prefixes = {
-                "id": 0,
-                "favorite": 1,
-                "title": 2,
-                "artist": 3,
-                "album": 4,
-                "plays": 5,
-                "time": 6,
-                "dateadded": 7,
-                "tracknumber": 8,
-                "albumartist": 9,
-                "discnumber": 10,
-                "genre": 11,
-                "date": 12,
-                "filepath": 13,
-                "filename": 14,
-                "albumart": 15,
-            }
+            filtered_rows = []
+            for query in queries:
+                filters = query.split("&")
+                # Start with all rows, then narrow down
+                query_rows = set(map(tuple, self.full_rows))
 
-            if ":" in search_term and search_term.split(":", 1)[0] in prefixes.keys():
-                # Filter rows based on prefix provided
-                filtered_rows = [
-                    row
-                    for row in self.full_rows
-                    if search_term.split(":", 1)[1]
-                    in str(row[prefixes.get(search_term.split(":", 1)[0])]).lower()
-                ]
-            else:
-                # Filter rows based on Title (index 2) or Artist (index 3)
-                filtered_rows = [
-                    row
-                    for row in self.full_rows
-                    if search_term in str(row[2]).lower()
-                    or search_term in str(row[3]).lower()
-                ]
+                for filter in filters:
+                    filter = filter.strip()
+                    if ":" not in filter:
+                        value = filter.lower()
+                        query_rows &= {
+                            tuple(row)
+                            for row in self.full_rows
+                            if value in str(row[2]).lower()
+                            or value in str(row[3]).lower()
+                            or value in str(row[4]).lower()
+                        }
+                    else:
+                        prefix, sep, value = filter.partition(":")
+                        prefix, value = prefix.strip(), value.strip().lower()
+                        if sep and prefix in prefixes and value:
+                            row_index = prefixes[prefix]
+                            query_rows &= {
+                                tuple(row)
+                                for row in self.full_rows
+                                if value in str(row[row_index]).lower()
+                            }
 
+                # Add rows matched by this query group (avoiding duplicates)
+                for row in self.full_rows:
+                    if tuple(row) in query_rows and row not in filtered_rows:
+                        filtered_rows.append(row)
         table.clear()
 
         for row in filtered_rows:
