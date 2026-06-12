@@ -32,6 +32,7 @@ Before proceeding, ensure you have Python >=v3.12.13 and VLC downloaded and inst
 Currently, the only way to install µ is as a python package.
 
 First, clone this repository somewhere where it can be left untouched. We recommend creating a folder in your home folder named `.mu` and cloning it there. This is done so you can update the software in the future.
+
 ```
 cd ~
 git clone https://github.com/brodyking/mu.git
@@ -60,7 +61,7 @@ Upon running `mu` for the first time, or utiliznig a library that interacts with
 ├── albumart/ 
 ├── mu.db #
 └── source/
-````
+```
 
 - `albumart/` contains all albumart for all tracks. It does not contain duplicates, and it's location is stored in the database
 - `source/` contains all the original mp3 files. 
@@ -105,7 +106,13 @@ mu list playlist # lists playlist tracks
 
 ### 2.3 - Searching tracks
 
-You can search your music by using the `mu search` action. Searching uses "prefixes", which tell µ which coloum you are searching. The search algorithm only searches the `tracks` table in the database.
+You can search your music by using the `mu search` action. Searching only returns tracks and searches the `tracks` table. There a 2 components to searching: **filters** and **queries**.
+
+A **filter** is a single sort on a column. The syntax takes a prefix and a value.
+
+```
+{prefix}:{value}
+```
 
 Here are all the prefixes available:
 ```python
@@ -129,19 +136,18 @@ prefixes = [
 ]
 ```
 
-When searching, you must specify the col, followed by a colon, with the term afterwords.
+A **query** is a set of filters. You can combine multiple filters together using the `&` operand. Heres an example where we a "Time" by "Pink Floyd" 
 
 ```
-{prefix}:{term}
+mu search title:Time&artist:Pink Floyd
 ```
 
-Lets say I want to find all tracks by Pink Floyd. Here is the command todo so.
-
+You can also use multiple queries using the `+` operand. For example, say you wanted the track mentoined above, plus all tracks in the album "The Wall"
 ```
-mu search "artist:Pink Floyd"
+mu search title:Time&artist:PinkFloyd+album:The Wall
 ```
 
-All actions that involve selecting a song will use this prefix syntax.
+All actions that involve selecting a song will use this prefix syntax. These features are also all supported by mµc.
 
 ### 2.4 - Favoriting tracks
 To favorite track(s), use the same prefix convention while using the `favorite` action. This action toggles it's favorite status. It can be used on multiple tracks or a single track.
