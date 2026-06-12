@@ -244,7 +244,10 @@ class Client(App):
         """If a album is selected"""
         table = self.albums_data_table.main_table
         album_title = table.get_cell_at(Coordinate(event.cursor_row, 0))
-        self.tracks_data_table.search.value = f"album:{album_title}"
+        album_artist = table.get_cell_at(Coordinate(event.cursor_row, 1))
+        self.tracks_data_table.search.value = (
+            f"album:{album_title}&albumartist:{album_artist}"
+        )
         self.tracks_data_table.main_table.focus()
 
     @on(DataTable.RowSelected, "#artist-data-table-main-table")
