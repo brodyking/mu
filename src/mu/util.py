@@ -168,22 +168,22 @@ class Interface:
         return text.ljust(width)
 
     @staticmethod
-    def print_version(client_version: str, database_version: int) -> None:
+    def print_version(client_version: str, database_schema: int) -> None:
 
         link_text = Color.blue("https://github.com/brodyking/mu")
 
         client_version_text = Color.yellow("mu + muc: ") + Color.green(
             f"v{client_version}"
         )
-        database_version_text = Color.yellow("db schema: ") + Color.green(
-            f"v{database_version}"
+        database_schema_text = Color.yellow("db schema: ") + Color.green(
+            f"v{database_schema}"
         )
 
         logo = (
             f" _   _ \n"
             f"| | | |\t{link_text}\n"
             f"| |_| |\t{client_version_text}\n"
-            f"| ._,_|\t{database_version_text}\n"
+            f"| ._,_|\t{database_schema_text}\n"
             f"|_|\n"
         )
 
@@ -192,7 +192,7 @@ class Interface:
             print(Color.red(line))
 
     @staticmethod
-    def print_outdated_version(database_version: int, library_version: int) -> None:
-        Interface.print("Library version is outdated or invalid.", ok=False)
-        print(f"Database version:\t{database_version}")
+    def print_incorrect_schema(database_schema: int, library_version: int) -> None:
+        Interface.print("Library schema version is outdated or invalid.", ok=False)
+        print(f"Database version:\t{database_schema}")
         print(f"Library version:\t{library_version}")

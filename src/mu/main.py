@@ -29,7 +29,7 @@ def cmd_scan(db: Database):
 
 def cmd_version(db: Database):
     """Prints the version of mu+muc+db"""
-    Interface.print_version(VERSION, db.DATABASE_VERSION)
+    Interface.print_version(VERSION, db.DATABASE_SCHEMA)
 
 
 def cmd_reset(db: Database, skip_confirmation=False):
@@ -350,7 +350,7 @@ def main():
         args = build_parser(db).parse_args()
         args.func(args)
     except SchemaError as e:
-        Interface.print_outdated_version(e.expected, e.found)
+        Interface.print_incorrect_schema(e.expected, e.found)
 
 
 if __name__ == "__main__":

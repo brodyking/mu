@@ -20,7 +20,7 @@ from mu.track import Track
 
 
 class Database:
-    DATABASE_VERSION = 2
+    DATABASE_SCHEMA = 2
 
     def __init__(self, **kwargs):
         """
@@ -67,8 +67,8 @@ class Database:
                     0
                 ]
 
-                if current_version != self.DATABASE_VERSION and current_version != 0:
-                    raise SchemaError(self.DATABASE_VERSION, current_version)
+                if current_version != self.DATABASE_SCHEMA and current_version != 0:
+                    raise SchemaError(self.DATABASE_SCHEMA, current_version)
 
                 # Creates tracks table
                 connection.execute("""
@@ -111,7 +111,7 @@ class Database:
                         PRIMARY KEY (playlist_id, track_id)
                     );
                 """)
-                connection.execute(f"PRAGMA user_version = {self.DATABASE_VERSION}")
+                connection.execute(f"PRAGMA user_version = {self.DATABASE_SCHEMA}")
                 connection.commit()
 
         if source_folder:
