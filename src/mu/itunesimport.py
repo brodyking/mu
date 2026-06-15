@@ -101,13 +101,16 @@ class ITunesImport:
 
     def upsert_tracks(self, connection) -> Iterator[Track]:
         for plist_track, metadata in self.parse_tracks():
-            if "Date Added" in plist_track.keys():
+            keys = plist_track.keys()
+            if "Date Added" in keys:
                 metadata["dateadded"] = plist_track["Date Added"]
             track = self.db.upsert_track(connection, metadata)
-            if "Play Count" in plist_track.keys():
+            if "Play Count" in keys:
                 track = self.db.increment_play_count(
                     f"id:{track.id}", plist_track["Play Count"], set=True
                 )[0]
+            if "Favorited" in keys or "Loved" in keys:
+                track = self.db.favorite(f"id:{track.id}")[0]
             self.ids[plist_track["Track ID"]] = track.id
             yield track
 
