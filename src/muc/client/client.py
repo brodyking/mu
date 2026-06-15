@@ -7,11 +7,11 @@
 
 """
 
-from textual import on
+from textual import events, on
 from textual.app import App, ComposeResult
 from textual.containers import Vertical
 from textual.coordinate import Coordinate
-from textual.widgets import DataTable, TabbedContent, TabPane
+from textual.widgets import DataTable, Label, TabbedContent, TabPane
 
 from mu.database import Database
 from mu.track import Track
@@ -266,6 +266,28 @@ class Client(App):
         the tracks position changes.
         """
         self.player.move_playhead_to_percentage(event.percentage)
+
+    @on(events.Click, "#now-playing-track-info-artist")
+    def search_currently_playing_artist(self) -> None:
+        """
+        Shows all albums by the currently playing artist.
+        """
+        current_track = self.queue_list.get_current_track()
+        if current_track is not None:
+            artist = current_track.artist
+            self.albums_data_table.search.value = f"albumartist:{artist}"
+            self.albums_data_table.main_table.focus()
+
+    @on(events.Click, "#now-playing-track-info-album")
+    def search_currently_playing_album(self) -> None:
+        """
+        Shows all tracks from the currently playing album.
+        """
+        current_track = self.queue_list.get_current_track()
+        if current_track is not None:
+            album = current_track.album
+            self.tracks_data_table.search.value = f"album:{album}"
+            self.tracks_data_table.main_table.focus()
 
     def track_finished_playing(self) -> None:
         """This function is called when the track finishes from the player"""
