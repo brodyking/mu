@@ -237,7 +237,7 @@ class Database:
         """
         Copies the file or files (if dir) to ~/mu/source,
         upserts metadata to the database.
-        Yields a dict with the current pos, total, and track
+        Yields a dict with the current pos, total, and filename
         """
         path = Path(path).resolve()
 
