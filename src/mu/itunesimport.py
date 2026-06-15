@@ -14,6 +14,7 @@ from pathlib import Path
 from urllib.parse import unquote, urlparse
 
 from mu.database import Database
+from mu.playlist import Playlist
 from mu.track import Track
 from mu.util import Interface
 
@@ -69,18 +70,36 @@ class ITunesImport:
         metadata = self.db.copy_file(path)
         return metadata
 
-    def parse_tracks(self, root) -> Iterator[tuple[dict, dict]]:
+    def parse_tracks(self) -> Iterator[tuple[dict, dict]]:
         """
         Yields a tuple of the plist track and the files metadata
         """
-        top_dict = self.parse_plist_dict(root[0])
+        top_dict = self.parse_plist_dict(self.root[0])
         tracks = top_dict.get("Tracks", {})
 
         for plist_id, plist_track in tracks.items():
             yield (plist_track, self.parse_track(plist_track))
 
+    def parse_playlists(self) -> Iterator[dict]:
+        """
+        Yields a dict of the plist playlist
+        """
+        top_dict = self.parse_plist_dict(self.root[0])
+        playlists = top_dict.get("Playlists", {})
+        for playlist in playlists:
+            mu_ids = []
+            if "Playlist Items" in playlist.keys():
+                for plist_track in playlist["Playlist Items"]:
+                    plist_id = plist_track["Track ID"]
+                    mu_ids.append(self.ids[plist_id])
+            yield {
+                "title": playlist["Name"],
+                "description": playlist["Description"],
+                "tracks": mu_ids,
+            }
+
     def upsert_tracks(self, connection) -> Iterator[Track]:
-        for plist_track, metadata in self.parse_tracks(self.root):
+        for plist_track, metadata in self.parse_tracks():
             if "Date Added" in plist_track.keys():
                 metadata["dateadded"] = plist_track["Date Added"]
             track = self.db.upsert_track(connection, metadata)
@@ -91,7 +110,19 @@ class ITunesImport:
             self.ids[plist_track["Track ID"]] = track.id
             yield track
 
+    def upsert_playlists(self, connection) -> Iterator[Track]:
+        for playlist in self.parse_playlists():
+            mu_playlist = self.db.create_playlist(
+                playlist["title"], description=playlist["description"]
+            )
+            if mu_playlist:
+                for mu_track_id in playlist["tracks"]:
+                    self.db.append_playlist(f"id:{mu_playlist.id}", f"id:{mu_track_id}")
+                    yield self.db.search(f"id:{mu_track_id}")[0]
+
     def start(self) -> None:
         with sqlite3.connect(str(self.db.db_path)) as connection:
             for track in self.upsert_tracks(connection):
-                Interface.print("iTunes Import >> Upsert ", track=track)
+                Interface.print("iTunes Import >> Upsert Track ", track=track)
+            for track in self.upsert_playlists(connection):
+                Interface.print("iTunes Import >> Upsert Playlist", track=track)

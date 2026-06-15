@@ -133,8 +133,8 @@ def cmd_playlist_insert(
 def cmd_import(db: Database, path: str, itunes: bool):
     """Imports all files from the specified directory"""
     if itunes:
-        converter = ITunesImport(db, path)
-        converter.start()
+        importer = ITunesImport(db, path)
+        importer.start()
         return
     for response in db.import_media(path):
         Interface.print(
