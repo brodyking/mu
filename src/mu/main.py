@@ -11,6 +11,7 @@ import argparse
 from importlib.metadata import version
 
 from mu.database import Database
+from mu.itunesconvert import ITunesConvert
 from mu.schemaerror import SchemaError
 from mu.util import Interface
 
@@ -129,8 +130,12 @@ def cmd_playlist_insert(
         Interface.print(str(e), ok=False)
 
 
-def cmd_import(db: Database, path: str):
+def cmd_import(db: Database, path: str, itunes: bool):
     """Imports all files from the specified directory"""
+    if itunes:
+        converter = ITunesConvert(db, path)
+        converter.start()
+        return
     for response in db.import_media(path):
         Interface.print(
             response["filename"],
@@ -329,8 +334,11 @@ def _add_favorite_parser(db: Database, subparsers) -> None:
 
 def _add_import_parser(db: Database, subparsers) -> None:
     imp = subparsers.add_parser("import", help="import individual files")
-    imp.add_argument("filepath", help="path to the file being imported")
-    imp.set_defaults(func=lambda args: cmd_import(db, args.filepath))
+    imp.add_argument(
+        "-i", "--itunes", help="import from a itunes xml export", action="store_true"
+    )
+    imp.add_argument("filepath", help="path to the file(s) being imported")
+    imp.set_defaults(func=lambda args: cmd_import(db, args.filepath, args.itunes))
 
 
 def _add_search_parser(db: Database, subparsers) -> None:
