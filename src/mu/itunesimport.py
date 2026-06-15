@@ -11,7 +11,6 @@ import sqlite3
 import xml.etree.ElementTree as ET
 from collections.abc import Iterator
 from pathlib import Path
-from posix import stat
 from urllib.parse import unquote, urlparse
 
 from mu.database import Database
@@ -132,4 +131,4 @@ class ITunesImport:
             for track in self.upsert_tracks(connection):
                 Interface.print("iTunes Import >> Upsert Track ", track=track)
             for playlist in self.upsert_playlists(connection):
-                Interface.print("iTunes Import >> Upsert Playlist", playlist=playlist)
+                Interface.print("iTunes Import >> Upsert Playlist ", playlist=playlist)
