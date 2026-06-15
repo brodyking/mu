@@ -132,7 +132,7 @@ class Database:
             connection.execute("UPDATE sqlite_sequence SET seq = 0;")
             connection.commit()
 
-    def upsert_track(self, connection, metadata: dict) -> None:
+    def upsert_track(self, connection, metadata: dict) -> Track:
         """
         Puts all song metadata along with album art and file location
         into the database.
@@ -162,8 +162,9 @@ class Database:
             """,
                 metadata,
             )
+            row_id = existing[0]
         else:
-            connection.execute(
+            cursor = connection.execute(
                 """
                 INSERT INTO tracks (
                    title, artist, album, time, dateadded,
@@ -177,13 +178,16 @@ class Database:
             """,
                 metadata,
             )
+            row_id = cursor.lastrowid
 
         connection.commit()
 
-    def upsert_track_once(self, metadata: dict) -> None:
+        return self.search(f"id:{row_id}")[0]
+
+    def upsert_track_once(self, metadata: dict) -> Track:
         with sqlite3.connect(str(self.db_path)) as connection:
             connection.row_factory = sqlite3.Row
-            self.upsert_track(connection, metadata)
+            return self.upsert_track(connection, metadata)
 
     def scan_source_folder(self) -> Iterator[dict]:
         """
@@ -233,7 +237,7 @@ class Database:
         """
         Copies the file or files (if dir) to ~/mu/source,
         upserts metadata to the database.
-        Yields a dict with the current pos, total, and track filename
+        Yields a dict with the current pos, total, and track
         """
         path = Path(path).resolve()
 
@@ -350,8 +354,10 @@ class Database:
                 output.extend(Track(row) for row in cursor)  # inside the loop
         return output
 
-    def increment_play_count(self, term: str, amount: int = 1) -> list[Track]:
-        """Increment track(s) play counts by either 1 or a custom amount"""
+    def increment_play_count(
+        self, term: str, amount: int = 1, set: bool = False
+    ) -> list[Track]:
+        """Increment track(s) play counts by either 1 or a custom amount."""
         tracks: list[Track] = self.search(f"{term}")
         results = []
         with sqlite3.connect(self.db_path) as connection:
@@ -360,7 +366,7 @@ class Database:
             for track in tracks:
                 cursor.execute(
                     "UPDATE tracks SET plays = ? WHERE id = ?",
-                    (track.plays + amount, track.id),
+                    (amount if set else (track.plays + amount), track.id),
                 )
                 cursor.execute("SELECT * FROM tracks WHERE id = ?", (track.id,))
                 results.append(Track(cursor.fetchone()))
