@@ -13,8 +13,8 @@ from textual.containers import Vertical
 from textual.coordinate import Coordinate
 from textual.widgets import DataTable, TabbedContent, TabPane
 
-from mu.database.database import Database
-from mu.database.track import Track
+from mu.database import Database
+from mu.track import Track
 from muc.client.queuelist import QueueList
 from muc.client.widgets.albumsdatatable import AlbumsDataTable
 from muc.client.widgets.artistsdatatable import ArtistsDataTable
