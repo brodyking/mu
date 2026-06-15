@@ -11,7 +11,7 @@ from textual import events, on
 from textual.app import App, ComposeResult
 from textual.containers import Vertical
 from textual.coordinate import Coordinate
-from textual.widgets import DataTable, Label, TabbedContent, TabPane
+from textual.widgets import DataTable, TabbedContent, TabPane
 
 from mu.database import Database
 from mu.track import Track
