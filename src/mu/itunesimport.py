@@ -14,6 +14,7 @@ from pathlib import Path
 from urllib.parse import unquote, urlparse
 
 from mu.database import Database
+from mu.track import Track
 from mu.util import Interface
 
 
@@ -78,15 +79,19 @@ class ITunesImport:
         for plist_id, plist_track in tracks.items():
             yield (plist_track, self.parse_track(plist_track))
 
+    def upsert_tracks(self, connection) -> Iterator[Track]:
+        for plist_track, metadata in self.parse_tracks(self.root):
+            if "Date Added" in plist_track.keys():
+                metadata["dateadded"] = plist_track["Date Added"]
+            track = self.db.upsert_track(connection, metadata)
+            if "Play Count" in plist_track.keys():
+                track = self.db.increment_play_count(
+                    f"id:{track.id}", plist_track["Play Count"], set=True
+                )[0]
+            self.ids[plist_track["Track ID"]] = track.id
+            yield track
+
     def start(self) -> None:
         with sqlite3.connect(str(self.db.db_path)) as connection:
-            for plist_track, metadata in self.parse_tracks(self.root):
-                if "Date Added" in plist_track.keys():
-                    metadata["dateadded"] = plist_track["Date Added"]
-                track = self.db.upsert_track(connection, metadata)
-                if "Play Count" in plist_track.keys():
-                    track = self.db.increment_play_count(
-                        f"id:{track.id}", plist_track["Play Count"], set=True
-                    )[0]
-                self.ids[plist_track["Track ID"]] = track.id
-                Interface.print("", track=track)
+            for track in self.upsert_tracks(connection):
+                Interface.print("iTunes Import >> Upsert ", track=track)
