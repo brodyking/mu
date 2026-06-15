@@ -14,9 +14,10 @@ from pathlib import Path
 from urllib.parse import unquote, urlparse
 
 from mu.database import Database
+from mu.util import Interface
 
 
-class ITunesConvert:
+class ITunesImport:
     def __init__(self, db: Database, filepath: Path | str):
         self.db, self.filepath = db, filepath
         self.ids = dict()  # iTunes track id -> mu track id
@@ -31,7 +32,7 @@ class ITunesConvert:
         for i in range(0, len(children) - 1, 2):
             key = children[i].text
             value_elem = children[i + 1]
-            result[key] = ITunesConvert.parse_plist_value(value_elem)
+            result[key] = ITunesImport.parse_plist_value(value_elem)
         return result
 
     @staticmethod
@@ -51,9 +52,9 @@ class ITunesConvert:
         elif tag == "date":
             return elem.text  # keep as string, or parse with datetime if needed
         elif tag == "dict":
-            return ITunesConvert.parse_plist_dict(elem)
+            return ITunesImport.parse_plist_dict(elem)
         elif tag == "array":
-            return [ITunesConvert.parse_plist_value(child) for child in elem]
+            return [ITunesImport.parse_plist_value(child) for child in elem]
         else:
             return elem.text
 
@@ -63,7 +64,7 @@ class ITunesConvert:
         return Path(unquote(parsed.path))
 
     def parse_track(self, plist_track) -> dict:
-        path = ITunesConvert.plist_url_to_path(plist_track["Location"])
+        path = ITunesImport.plist_url_to_path(plist_track["Location"])
         metadata = self.db.copy_file(path)
         return metadata
 
@@ -84,7 +85,8 @@ class ITunesConvert:
                     metadata["dateadded"] = plist_track["Date Added"]
                 track = self.db.upsert_track(connection, metadata)
                 if "Play Count" in plist_track.keys():
-                    self.db.increment_play_count(
+                    track = self.db.increment_play_count(
                         f"id:{track.id}", plist_track["Play Count"], set=True
-                    )
+                    )[0]
                 self.ids[plist_track["Track ID"]] = track.id
+                Interface.print("", track=track)

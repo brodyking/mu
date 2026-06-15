@@ -11,7 +11,7 @@ import argparse
 from importlib.metadata import version
 
 from mu.database import Database
-from mu.itunesconvert import ITunesConvert
+from mu.itunesimport import ITunesImport
 from mu.schemaerror import SchemaError
 from mu.util import Interface
 
@@ -133,7 +133,7 @@ def cmd_playlist_insert(
 def cmd_import(db: Database, path: str, itunes: bool):
     """Imports all files from the specified directory"""
     if itunes:
-        converter = ITunesConvert(db, path)
+        converter = ITunesImport(db, path)
         converter.start()
         return
     for response in db.import_media(path):
