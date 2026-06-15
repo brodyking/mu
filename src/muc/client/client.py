@@ -38,10 +38,14 @@ class Client(App):
         TabbedContent {
             height: 1fr;
         }
-        TracksDataTable,QueueDataTable,AlbumsDataTable,ArtistsDataTable {
+        TracksDataTable,QueueDataTable,AlbumsDataTable,ArtistsDataTable,PlaylistPlaylistsDataTable {
             height: 1fr;
             max_height: 1fr;
             overflow-y: auto;
+        }
+        PlaylistPlaylistsDataTable,PlaylistDataTable {
+            scrollbar-size: 0 0;
+            scrollbar-visibility: hidden;
         }
         Input {
             height:1;
