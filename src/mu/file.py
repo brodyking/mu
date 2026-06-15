@@ -39,6 +39,7 @@ class File:
 
             tags = EasyID3(filepath)
         except MutagenError:
+            time_mins, time_secs = 0, 0
             tags = {}
 
         return {
