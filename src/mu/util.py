@@ -146,7 +146,7 @@ class Interface:
         else:
             searchresult = ""
 
-        print(f"{prefix}{counter}{searchresult}{content}")
+        print(f"{prefix}{content}{counter}{searchresult}")
 
     @staticmethod
     def prompt_bool(content: str) -> bool:
