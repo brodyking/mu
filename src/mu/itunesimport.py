@@ -11,6 +11,7 @@ import sqlite3
 import xml.etree.ElementTree as ET
 from collections.abc import Iterator
 from pathlib import Path
+from posix import stat
 from urllib.parse import unquote, urlparse
 
 from mu.database import Database
@@ -110,19 +111,22 @@ class ITunesImport:
             self.ids[plist_track["Track ID"]] = track.id
             yield track
 
-    def upsert_playlists(self, connection) -> Iterator[Track]:
+    def upsert_playlists(self, connection) -> Iterator[Playlist]:
         for playlist in self.parse_playlists():
             mu_playlist = self.db.create_playlist(
                 playlist["title"], description=playlist["description"]
             )
             if mu_playlist:
+                statement = ""
                 for mu_track_id in playlist["tracks"]:
-                    self.db.append_playlist(f"id:{mu_playlist.id}", f"id:{mu_track_id}")
-                    yield self.db.search(f"id:{mu_track_id}")[0]
+                    statement += f"id:{mu_track_id}+"
+                if statement:
+                    self.db.append_playlist(f"id:{mu_playlist.id}", statement[:-1])
+                yield self.db.get_playlist(f"id:{mu_playlist.id}")
 
     def start(self) -> None:
         with sqlite3.connect(str(self.db.db_path)) as connection:
             for track in self.upsert_tracks(connection):
                 Interface.print("iTunes Import >> Upsert Track ", track=track)
-            for track in self.upsert_playlists(connection):
-                Interface.print("iTunes Import >> Upsert Playlist", track=track)
+            for playlist in self.upsert_playlists(connection):
+                Interface.print("iTunes Import >> Upsert Playlist", playlist=playlist)
