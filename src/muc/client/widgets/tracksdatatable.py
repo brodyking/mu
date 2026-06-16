@@ -9,8 +9,11 @@
 
 from textual import on
 from textual.app import ComposeResult
+from textual.containers import Container, Grid, Horizontal, Vertical
+from textual.coordinate import Coordinate
+from textual.events import Click
 from textual.screen import ModalScreen
-from textual.widgets import DataTable, Input, Static
+from textual.widgets import Button, DataTable, Input, Static
 
 from mu.track import Track
 from muc.client.widgets.vimdatatable import VimDataTable
@@ -23,7 +26,8 @@ class SortPopup(ModalScreen[str]):
         align: center middle;
 
         /* The alpha percentage allows the underlying app screen to show through */
-        background: black 40%;
+        /*background: black 40%;*/
+        background: transparent;
     }
 
     VimDataTable {
@@ -40,52 +44,56 @@ class SortPopup(ModalScreen[str]):
 
     """
 
-    OPTIONS = {
-        "Sort by Id (i)": "id",
-        "Sort by Title (t)": "title",
-        "Sort by Artist (A)": "artist",
-        "Sort by Album (a)": "album",
-        "Sort by Plays (p)": "plays",
-        "Sort by Date Added (d)": "dateadded",
-        "Sort by Genre (g)": "genre",
-        "Sort by Date (d)": "date",
-        "Cancel (esc)": "cancel",
-    }
+    TABLE = [
+        ("i", "Sort by Id"),
+        ("t", "Sort by Title"),
+        ("A", "Sort by Artist"),
+        ("a", "Sort by Album"),
+        ("p", "Sort by Plays"),
+        ("d", "Sort by Date Added"),
+        ("g", "Sort by Genre"),
+        ("d", "Sort by Date"),
+        ("esc", "Cancel"),
+    ]
 
     BINDINGS = [
         ("enter", "option_selected", "Select Option"),
         ("escape", "cancel_popup", "Close"),
         ("i", "dismiss_msg('id')", "Id"),
-        ("t", "dismiss_msg('title')", "title"),
-        ("A", "dismiss_msg('artist')", "artist"),
-        ("a", "dismiss_msg('album')", "album"),
-        ("p", "dismiss_msg('plays')", "plays"),
-        ("d", "dismiss_msg('dateadded')", "dateadded"),
-        ("g", "dismiss_msg('genre')", "genre"),
-        ("d", "dismiss_msg('date')", "date"),
+        ("t", "dismiss_msg('title')", "Title"),
+        ("A", "dismiss_msg('artist')", "Artist"),
+        ("a", "dismiss_msg('album')", "Album"),
+        ("p", "dismiss_msg('plays')", "Plays"),
+        ("d", "dismiss_msg('dateadded')", "Dateadded"),
+        ("g", "dismiss_msg('genre')", "Genre"),
+        ("d", "dismiss_msg('date')", "Date"),
     ]
 
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
-        self.sort_options_data_table = VimDataTable()
+        self.sort_options_data_table = VimDataTable(cursor_type="row")
 
     def compose(self) -> ComposeResult:
         yield self.sort_options_data_table
 
     def on_mount(self) -> None:
 
-        self.sort_options_data_table.add_column("Sorting Options", key=0, width=100)
+        self.sort_options_data_table.add_column("Bind", key=0, width=4)
+        self.sort_options_data_table.add_column("Sorting Options", key=1, width=100)
 
-        for option_key in self.OPTIONS.keys():
-            self.sort_options_data_table.add_row(option_key)
+        for row in self.TABLE:
+            self.sort_options_data_table.add_row(row[0], row[1])
 
     def action_dismiss_msg(self, message: str):
         self.dismiss(message)
 
-    @on(DataTable.CellSelected)
-    def action_option_selected(self, event: DataTable.CellSelected):
-        if event.value:
-            self.dismiss(self.OPTIONS[str(event.value)])
+    @on(DataTable.RowSelected)
+    def action_option_selected(self, event: DataTable.RowSelected):
+        row = event.cursor_row
+        value = self.sort_options_data_table.get_cell_at(Coordinate(row, 1))
+        print(value)
+        if value and "Sort by" in value:
+            self.dismiss(value[7:].lower())
         else:
             self.dismiss("cancel")
 
@@ -96,10 +104,20 @@ class SortPopup(ModalScreen[str]):
 class TracksDataTable(Static):
     BINDINGS = [("/", "focus_search", "Search"), ("comma", "open_sort", "Sort")]
 
-    CSS = """
+    DEFAULT_CSS = """
     TracksDataTable {
-        width: auto;
+        width: 1fr;
         height: 1fr;
+    }
+    TracksDataTable > Vertical > Horizontal {
+        height: 1;
+    }
+    TracksDataTable > Vertical > Horizontal > Input {
+        width: 1fr;
+    }
+    #sort-button {
+        width: 4;
+        max-width:4;
     }
     """
 
@@ -110,13 +128,18 @@ class TracksDataTable(Static):
 
         self.search = Input(placeholder="Filter tracks (/)", id=search_id)
         self.main_table = VimDataTable(cursor_type="row", id=main_table_id)
+        self.sort_button = Button("󰒼", compact=True, id="sort-button")
         self.sort_popup = SortPopup()
 
     def compose(self) -> ComposeResult:
-        yield self.search
-        yield self.main_table
+        with Vertical():
+            with Horizontal():
+                yield self.search
+                yield self.sort_button
+            yield self.main_table
 
     # 2. Listen for the click event on that specific button
+    @on(Button.Pressed, "#sort-button")
     def action_open_sort(self) -> None:
         # 3. Trigger the popup event here
         self.app.push_screen(SortPopup(), self.handle_popup_result)
