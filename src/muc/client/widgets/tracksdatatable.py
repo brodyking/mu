@@ -9,10 +9,8 @@
 
 from textual import on
 from textual.app import ComposeResult
-from textual.containers import Center, Grid, Middle, Vertical
-from textual.coordinate import Coordinate
 from textual.screen import ModalScreen
-from textual.widgets import Button, DataTable, Input, Label, Static
+from textual.widgets import DataTable, Input, Static
 
 from mu.track import Track
 from muc.client.widgets.vimdatatable import VimDataTable
@@ -43,15 +41,28 @@ class SortPopup(ModalScreen[str]):
     """
 
     OPTIONS = {
-        "Sort by Id": "id",
-        "Sort by Title": "title",
-        "Sort by Artist": "artist",
-        "Cancel": "cancel",
+        "Sort by Id (i)": "id",
+        "Sort by Title (t)": "title",
+        "Sort by Artist (A)": "artist",
+        "Sort by Album (a)": "album",
+        "Sort by Plays (p)": "plays",
+        "Sort by Date Added (d)": "dateadded",
+        "Sort by Genre (g)": "genre",
+        "Sort by Date (d)": "date",
+        "Cancel (esc)": "cancel",
     }
 
     BINDINGS = [
         ("enter", "option_selected", "Select Option"),
         ("escape", "cancel_popup", "Close"),
+        ("i", "dismiss_msg('id')", "Id"),
+        ("t", "dismiss_msg('title')", "title"),
+        ("A", "dismiss_msg('artist')", "artist"),
+        ("a", "dismiss_msg('album')", "album"),
+        ("p", "dismiss_msg('plays')", "plays"),
+        ("d", "dismiss_msg('dateadded')", "dateadded"),
+        ("g", "dismiss_msg('genre')", "genre"),
+        ("d", "dismiss_msg('date')", "date"),
     ]
 
     def __init__(self, *args, **kwargs) -> None:
@@ -68,15 +79,18 @@ class SortPopup(ModalScreen[str]):
         for option_key in self.OPTIONS.keys():
             self.sort_options_data_table.add_row(option_key)
 
+    def action_dismiss_msg(self, message: str):
+        self.dismiss(message)
+
     @on(DataTable.CellSelected)
     def action_option_selected(self, event: DataTable.CellSelected):
         if event.value:
             self.dismiss(self.OPTIONS[str(event.value)])
         else:
-            self.dismiss(self.OPTIONS["Cancel"])
+            self.dismiss("cancel")
 
     def action_cancel_popup(self):
-        self.dismiss(self.OPTIONS["Cancel"])
+        self.dismiss("cancel")
 
 
 class TracksDataTable(Static):
@@ -89,7 +103,7 @@ class TracksDataTable(Static):
     }
     """
 
-    def __init__(self, tracks: dict[Track], search_id: str, main_table_id: str):
+    def __init__(self, tracks: dict[int, Track], search_id: str, main_table_id: str):
         super().__init__()
         self.tracks = tracks
         self.full_rows: list = []
