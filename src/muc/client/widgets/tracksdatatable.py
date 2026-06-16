@@ -9,14 +9,78 @@
 
 from textual import on
 from textual.app import ComposeResult
-from textual.widgets import Input, Static
+from textual.containers import Center, Grid, Middle, Vertical
+from textual.coordinate import Coordinate
+from textual.screen import ModalScreen
+from textual.widgets import Button, DataTable, Input, Label, Static
 
 from mu.track import Track
 from muc.client.widgets.vimdatatable import VimDataTable
 
 
+class SortPopup(ModalScreen[str]):
+    DEFAULT_CSS = """
+    SortPopup {
+        /* Forces everything inside the modal screen to center perfectly */
+        align: center middle;
+
+        /* The alpha percentage allows the underlying app screen to show through */
+        background: black 40%;
+    }
+
+    VimDataTable {
+        /* CRITICAL: Explicit dimensions isolate the popup geometry */
+        width: 50;
+        height: auto;
+
+        /* Internal formatting */
+        border: heavy $primary;
+        padding: 0 0;
+        align: center middle;
+        overflow:hidden;
+    }
+
+    """
+
+    OPTIONS = {
+        "Sort by Id": "id",
+        "Sort by Title": "title",
+        "Sort by Artist": "artist",
+        "Cancel": "cancel",
+    }
+
+    BINDINGS = [
+        ("enter", "option_selected", "Select Option"),
+        ("escape", "cancel_popup", "Close"),
+    ]
+
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self.sort_options_data_table = VimDataTable()
+
+    def compose(self) -> ComposeResult:
+        yield self.sort_options_data_table
+
+    def on_mount(self) -> None:
+
+        self.sort_options_data_table.add_column("Sorting Options", key=0, width=100)
+
+        for option_key in self.OPTIONS.keys():
+            self.sort_options_data_table.add_row(option_key)
+
+    @on(DataTable.CellSelected)
+    def action_option_selected(self, event: DataTable.CellSelected):
+        if event.value:
+            self.dismiss(self.OPTIONS[str(event.value)])
+        else:
+            self.dismiss(self.OPTIONS["Cancel"])
+
+    def action_cancel_popup(self):
+        self.dismiss(self.OPTIONS["Cancel"])
+
+
 class TracksDataTable(Static):
-    BINDINGS = [("/", "focus_search", "Search")]
+    BINDINGS = [("/", "focus_search", "Search"), ("comma", "open_sort", "Sort")]
 
     CSS = """
     TracksDataTable {
@@ -32,10 +96,21 @@ class TracksDataTable(Static):
 
         self.search = Input(placeholder="Filter tracks (/)", id=search_id)
         self.main_table = VimDataTable(cursor_type="row", id=main_table_id)
+        self.sort_popup = SortPopup()
 
     def compose(self) -> ComposeResult:
         yield self.search
         yield self.main_table
+
+    # 2. Listen for the click event on that specific button
+    def action_open_sort(self) -> None:
+        # 3. Trigger the popup event here
+        self.app.push_screen(SortPopup(), self.handle_popup_result)
+
+    def handle_popup_result(self, result: str | None) -> None:
+        # 4. Handle whatever the user picked in the popup
+        if result:
+            self.notify(result)
 
     # Focuses search with "/" key
     def action_focus_search(self) -> None:
