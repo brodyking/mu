@@ -7,11 +7,12 @@
 
 """
 
+from typing import Literal
+
 from textual import on
 from textual.app import ComposeResult
-from textual.containers import Container, Grid, Horizontal, Vertical
+from textual.containers import Horizontal, Vertical
 from textual.coordinate import Coordinate
-from textual.events import Click
 from textual.screen import ModalScreen
 from textual.widgets import Button, DataTable, Input, Static
 
@@ -45,20 +46,22 @@ class SortPopup(ModalScreen[str]):
     """
 
     TABLE = [
-        ("i", "Sort by Id"),
-        ("t", "Sort by Title"),
         ("A", "Sort by Artist"),
         ("a", "Sort by Album"),
-        ("p", "Sort by Plays"),
+        ("D", "Sort by Date"),
         ("d", "Sort by Date Added"),
         ("g", "Sort by Genre"),
-        ("d", "Sort by Date"),
+        ("i", "Sort by Id"),
+        ("p", "Sort by Plays"),
+        ("s", "Sort by Shuffle"),
+        ("t", "Sort by Title"),
+        ("r", "Reset"),
         ("esc", "Cancel"),
     ]
 
     BINDINGS = [
         ("enter", "option_selected", "Select Option"),
-        ("escape", "cancel_popup", "Close"),
+        ("escape", "dismiss_msg('cancel')", "Close"),
         ("i", "dismiss_msg('id')", "Id"),
         ("t", "dismiss_msg('title')", "Title"),
         ("A", "dismiss_msg('artist')", "Artist"),
@@ -66,7 +69,9 @@ class SortPopup(ModalScreen[str]):
         ("p", "dismiss_msg('plays')", "Plays"),
         ("d", "dismiss_msg('dateadded')", "Dateadded"),
         ("g", "dismiss_msg('genre')", "Genre"),
-        ("d", "dismiss_msg('date')", "Date"),
+        ("s", "dismiss_msg('shuffle')", "Genre"),
+        ("D", "dismiss_msg('date')", "Date"),
+        ("r", "dismiss_msg('reset')", "Reset"),
     ]
 
     def __init__(self, *args, **kwargs) -> None:
@@ -91,14 +96,10 @@ class SortPopup(ModalScreen[str]):
     def action_option_selected(self, event: DataTable.RowSelected):
         row = event.cursor_row
         value = self.sort_options_data_table.get_cell_at(Coordinate(row, 1))
-        print(value)
         if value and "Sort by" in value:
-            self.dismiss(value[7:].lower())
+            self.dismiss(value[7:].lower().replace(" ", ""))
         else:
             self.dismiss("cancel")
-
-    def action_cancel_popup(self):
-        self.dismiss("cancel")
 
 
 class TracksDataTable(Static):
@@ -121,6 +122,25 @@ class TracksDataTable(Static):
     }
     """
 
+    PREFIXES = {
+        "id": 0,
+        "favorite": 1,
+        "title": 2,
+        "artist": 3,
+        "album": 4,
+        "plays": 5,
+        "time": 6,
+        "dateadded": 7,
+        "tracknumber": 8,
+        "albumartist": 9,
+        "discnumber": 10,
+        "genre": 11,
+        "date": 12,
+        "filepath": 13,
+        "filename": 14,
+        "albumart": 15,
+    }
+
     def __init__(self, tracks: dict[int, Track], search_id: str, main_table_id: str):
         super().__init__()
         self.tracks = tracks
@@ -141,15 +161,26 @@ class TracksDataTable(Static):
     # 2. Listen for the click event on that specific button
     @on(Button.Pressed, "#sort-button")
     def action_open_sort(self) -> None:
-        # 3. Trigger the popup event here
-        self.app.push_screen(SortPopup(), self.handle_popup_result)
+        self.app.push_screen(SortPopup(), callback=self.handle_popup_result)  # type:ignore
 
-    def handle_popup_result(self, result: str | None) -> None:
-        # 4. Handle whatever the user picked in the popup
-        if result:
-            self.notify(result)
+    def handle_popup_result(
+        self,
+        result: Literal[
+            "artist",
+            "album",
+            "date",
+            "dateadded",
+            "id",
+            "plays",
+            "genre",
+            "title",
+            "cancel",
+            "shuffle",
+        ] = "cancel",
+    ) -> None:
+        if result and result != "cancel":
+            self.sort(result)  # Focuses search with "/" key
 
-    # Focuses search with "/" key
     def action_focus_search(self) -> None:
         self.search.focus()
 
@@ -250,6 +281,67 @@ class TracksDataTable(Static):
 
         for row in filtered_rows:
             table.add_row(*row, key=str(row[0]))
+
+    def sort(
+        self,
+        method: Literal[
+            "artist",
+            "album",
+            "date",
+            "dateadded",
+            "id",
+            "plays",
+            "genre",
+            "title",
+            "cancel",
+            "shuffle",
+            "reset",
+        ],
+    ):
+        print(method)
+
+        if method == "reset":
+            print("cancel")
+            self.full_rows = []
+            self.generate_full_rows()
+        elif method == "shuffle":
+            import random
+
+            random.shuffle(self.full_rows)
+        else:
+            numeric_cols = {"id", "plays", "tracknumber", "discnumber"}
+
+            col_index = self.PREFIXES[method]
+            reverse = getattr(self, "_sort_reverse", False)
+
+            if getattr(self, "_last_sort", None) == method:
+                reverse = not reverse
+            else:
+                reverse = False
+
+            self._last_sort = method
+            self._sort_reverse = reverse
+
+            def sort_key(row):
+                val = row[col_index]
+                if val is None:
+                    return (1, 0 if method in numeric_cols else "")
+                if method in numeric_cols:
+                    try:
+                        return (0, int(val))
+                    except (ValueError, TypeError):
+                        return (1, 0)
+                return (0, str(val).lower())
+
+            self.full_rows.sort(key=sort_key, reverse=reverse)
+
+        search_term = self.search.value
+        if search_term:
+            self.filter_table(search_term)
+        else:
+            self.main_table.clear()
+            for row in self.full_rows:
+                self.main_table.add_row(*row, key=str(row[0]))
 
     def generate_full_rows(self):
         self.full_rows = []
