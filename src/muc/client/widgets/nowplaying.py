@@ -219,7 +219,7 @@ class NowPlaying(Static):
 
     def __init__(self):
         super().__init__()
-        self.cover_art = Image("") if IS_UNIX else None
+        self.cover_art = Image("")
         self.track_info = NowPlayingTrackInfo(id="now-playing-track-info")
         self.controls = NowPlayingControls(id="now-playing-controls")
         self.progress = NowPlayingProgress(id="now-playing-progress")
