@@ -99,7 +99,7 @@ class SortTracksPopup(ModalScreen[str]):
         if value and "Sort by" in value:
             self.dismiss(value[7:].lower().replace(" ", ""))
         else:
-            self.dismiss("cancel")
+            self.dismiss(value.lower())
 
 
 class TracksDataTable(Static):
@@ -260,12 +260,14 @@ class TracksDataTable(Static):
             "reset",
         ],
     ):
-        print(method)
+        if method in (None, "cancel"):
+            return
 
         if method == "reset":
-            print("cancel")
-            self.full_rows = []
-            self.generate_full_rows()
+            if method == "reset":
+                self._last_sort = None
+                self._sort_reverse = False
+                self.generate_full_rows()
         elif method == "shuffle":
             import random
 
