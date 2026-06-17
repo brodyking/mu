@@ -20,9 +20,9 @@ from mu.track import Track
 from muc.client.widgets.vimdatatable import VimDataTable
 
 
-class SortPopup(ModalScreen[str]):
+class SortTracksPopup(ModalScreen[str]):
     DEFAULT_CSS = """
-    SortPopup {
+    SortTracksPopup {
         /* Forces everything inside the modal screen to center perfectly */
         align: center middle;
 
@@ -33,7 +33,7 @@ class SortPopup(ModalScreen[str]):
 
     VimDataTable {
         /* CRITICAL: Explicit dimensions isolate the popup geometry */
-        width: 50;
+        width: 35;
         height: auto;
 
         /* Internal formatting */
@@ -149,7 +149,6 @@ class TracksDataTable(Static):
         self.search = Input(placeholder="Filter tracks (/)", id=search_id)
         self.main_table = VimDataTable(cursor_type="row", id=main_table_id)
         self.sort_button = Button("󰒼", compact=True, id="sort-button")
-        self.sort_popup = SortPopup()
 
     def compose(self) -> ComposeResult:
         with Vertical():
@@ -158,28 +157,9 @@ class TracksDataTable(Static):
                 yield self.sort_button
             yield self.main_table
 
-    # 2. Listen for the click event on that specific button
     @on(Button.Pressed, "#sort-button")
     def action_open_sort(self) -> None:
-        self.app.push_screen(SortPopup(), callback=self.handle_popup_result)  # type:ignore
-
-    def handle_popup_result(
-        self,
-        result: Literal[
-            "artist",
-            "album",
-            "date",
-            "dateadded",
-            "id",
-            "plays",
-            "genre",
-            "title",
-            "cancel",
-            "shuffle",
-        ] = "cancel",
-    ) -> None:
-        if result and result != "cancel":
-            self.sort(result)  # Focuses search with "/" key
+        self.app.push_screen(SortTracksPopup(), callback=self.sort)  # type:ignore
 
     def action_focus_search(self) -> None:
         self.search.focus()
@@ -223,24 +203,6 @@ class TracksDataTable(Static):
         """Filters a table with the same prefix/query support as the database"""
         table = self.main_table
         queries = search_term.split("+")
-        prefixes = {
-            "id": 0,
-            "favorite": 1,
-            "title": 2,
-            "artist": 3,
-            "album": 4,
-            "plays": 5,
-            "time": 6,
-            "dateadded": 7,
-            "tracknumber": 8,
-            "albumartist": 9,
-            "discnumber": 10,
-            "genre": 11,
-            "date": 12,
-            "filepath": 13,
-            "filename": 14,
-            "albumart": 15,
-        }
 
         if not search_term:
             filtered_rows = self.full_rows
@@ -265,8 +227,8 @@ class TracksDataTable(Static):
                     else:
                         prefix, sep, value = filter.partition(":")
                         prefix, value = prefix.strip(), value.strip().lower()
-                        if sep and prefix in prefixes and value:
-                            row_index = prefixes[prefix]
+                        if sep and prefix in self.PREFIXES and value:
+                            row_index = self.PREFIXES[prefix]
                             query_rows &= {
                                 tuple(row)
                                 for row in self.full_rows
