@@ -38,7 +38,11 @@ class Client(App):
         TabbedContent {
             height: 1fr;
         }
-        TracksDataTable,QueueDataTable,AlbumsDataTable,ArtistsDataTable,PlaylistPlaylistsDataTable {
+        TracksDataTable,
+        QueueDataTable,
+        AlbumsDataTable,
+        ArtistsDataTable,
+        PlaylistPlaylistsDataTable {
             height: 1fr;
             max_height: 1fr;
             overflow-y: auto;
