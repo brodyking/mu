@@ -14,7 +14,7 @@ from textual.widgets import DataTable
 from textual.widgets._data_table import CellDoesNotExist
 
 
-class InspectRow(ModalScreen[str]):
+class InspectRowPopup(ModalScreen[str]):
     DEFAULT_CSS = """
     InspectRow {
         align: center middle;
@@ -93,5 +93,5 @@ class VimDataTable(DataTable):
             return
 
         row_dict = self.export_cell_as_dict(self.cursor_row)
-        popup = InspectRow(row_dict)
+        popup = InspectRowPopup(row_dict)
         self.app.push_screen(popup)  # type:ignore
