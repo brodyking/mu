@@ -7,11 +7,11 @@
 
 """
 
-from textual import on
 from textual.app import ComposeResult
 from textual.coordinate import Coordinate
 from textual.screen import ModalScreen
 from textual.widgets import DataTable
+from textual.widgets._data_table import CellDoesNotExist
 
 
 class InspectRow(ModalScreen[str]):
@@ -26,7 +26,7 @@ class InspectRow(ModalScreen[str]):
     }
 
     VimDataTable {
-        width: 45;
+        width: 60;
         height: auto;
         border: heavy $primary;
         padding: 0 0;
@@ -42,7 +42,7 @@ class InspectRow(ModalScreen[str]):
 
     def __init__(self, row_dict, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
-        self.main_table = VimDataTable(cursor_type="row")
+        self.main_table = VimDataTable(show_inspect=False, cursor_type="row")
         self.row_dict = row_dict
 
     def compose(self) -> ComposeResult:
@@ -54,7 +54,7 @@ class InspectRow(ModalScreen[str]):
         self.main_table.add_column("Value", key=1, width=100)
 
         for label in self.row_dict.keys():
-            self.main_table.add_row(label, self.row_dict[label])
+            self.main_table.add_row(label, self.row_dict[label], key=label)
 
     def action_dismiss_msg(self, message: str):
         self.dismiss(message)
@@ -76,15 +76,25 @@ class VimDataTable(DataTable):
     }
     """
 
+    def __init__(self, show_inspect: bool = True, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.show_inspect = show_inspect
+
     def action_inspect(self):
 
-        col_labels = []
-        for col in self.columns:
-            col_labels.append(col.value)
+        if not self.show_inspect:
+            return
 
-        row_dict = {}
-        for i, col_label in enumerate(col_labels):
-            row_dict[col_label] = self.get_cell_at(Coordinate(self.cursor_row, i))
+        try:
+            col_labels = []
+            for col in self.columns:
+                col_labels.append(col.value)
 
-        popup = InspectRow(row_dict)
-        self.app.push_screen(popup)  # type:ignore
+            row_dict = {}
+            for i, col_label in enumerate(col_labels):
+                row_dict[col_label] = self.get_cell_at(Coordinate(self.cursor_row, i))
+
+            popup = InspectRow(row_dict)
+            self.app.push_screen(popup)  # type:ignore
+        except CellDoesNotExist:
+            self.notify("No row is selected", severity="error")
