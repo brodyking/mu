@@ -117,8 +117,8 @@ class TracksDataTable(Static):
         width: 1fr;
     }
     #sort-button {
-        width: 4;
-        max-width:4;
+        width: 8;
+        max-width: 8;
     }
     """
 
@@ -141,25 +141,34 @@ class TracksDataTable(Static):
         "albumart": 15,
     }
 
-    def __init__(self, tracks: dict[int, Track], search_id: str, main_table_id: str):
+    def __init__(
+        self,
+        tracks: dict[int, Track],
+        search_id: str,
+        main_table_id: str,
+        show_filter: bool = True,
+    ):
         super().__init__()
         self.tracks = tracks
         self.full_rows: list = []
+        self.show_filter = show_filter
 
         self.search = Input(placeholder="Filter tracks (/)", id=search_id)
         self.main_table = VimDataTable(cursor_type="row", id=main_table_id)
-        self.sort_button = Button("󰒼", compact=True, id="sort-button")
+        self.sort_button = Button("󰒼 Sort", compact=True, id="sort-button")
 
     def compose(self) -> ComposeResult:
         with Vertical():
             with Horizontal():
                 yield self.search
-                yield self.sort_button
+                if self.show_filter:
+                    yield self.sort_button
             yield self.main_table
 
     @on(Button.Pressed, "#sort-button")
     def action_open_sort(self) -> None:
-        self.app.push_screen(SortTracksPopup(), callback=self.sort)  # type:ignore
+        if self.show_filter:
+            self.app.push_screen(SortTracksPopup(), callback=self.sort)  # type:ignore
 
     def action_focus_search(self) -> None:
         self.search.focus()
