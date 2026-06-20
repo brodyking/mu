@@ -18,11 +18,10 @@ class QueueList:
 
     def get_current_track(self) -> Track | None:
         """Returns the currently selected track"""
-        return (
-            self.tracks[self.queue[self.pos]]
-            if self.tracks[self.queue[self.pos]]
-            else None
-        )
+        if self.pos <= len(self.queue) - 1:
+            return self.tracks[self.queue[self.pos]]
+        else:
+            return None
 
     def start_queue(self, track_ids) -> Track | None:
         """Initializes the list of tracks, and returns the first one"""

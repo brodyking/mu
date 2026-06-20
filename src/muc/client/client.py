@@ -363,10 +363,9 @@ class Client(App):
         else:
             # If track is favorited using the buttons on controls while playing
             current_track = self.queue_list.get_current_track()
-            if current_track is Track:
+            if current_track is not None:
                 track_id = current_track.id
-
-        result = self.db.favorite(f"id:{track_id}")[0] if track_id else None
+                result = self.db.favorite(f"id:{track_id}")[0] if track_id else None
 
         if result:
             self.tracks[track_id] = result
