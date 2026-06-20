@@ -76,7 +76,9 @@ class SortTracksPopup(ModalScreen[str]):
 
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
-        self.sort_options_data_table = VimDataTable(cursor_type="row")
+        self.sort_options_data_table = VimDataTable(
+            show_inspect=False, cursor_type="row"
+        )
 
     def compose(self) -> ComposeResult:
         yield self.sort_options_data_table

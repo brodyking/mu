@@ -193,9 +193,10 @@ class NowPlaying(Static):
     DEFAULT_CSS = """
 
         Image {
-            max-width: 8;
+            max-width: 6;
             max-height: 3;
-            padding-right: 2;
+            margin-right: 2;
+            background: $panel;
         }
 
         NowPlaying > Vertical {
