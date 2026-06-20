@@ -7,37 +7,169 @@
 
 """
 
+from typing import Literal
+
 from textual import on
 from textual.app import ComposeResult
-from textual.widgets import Input, Static
+from textual.containers import Horizontal, Vertical
+from textual.coordinate import Coordinate
+from textual.screen import ModalScreen
+from textual.widgets import Button, DataTable, Input, Static
 
 from mu.track import Track
 from muc.client.widgets.vimdatatable import VimDataTable
 
 
-class TracksDataTable(Static):
-    BINDINGS = [("/", "focus_search", "Search")]
+class SortTracksPopup(ModalScreen[str]):
+    DEFAULT_CSS = """
+    SortTracksPopup {
+        /* Forces everything inside the modal screen to center perfectly */
+        align: center middle;
 
-    CSS = """
+        /* The alpha percentage allows the underlying app screen to show through */
+        /*background: black 40%;*/
+        background: transparent;
+    }
+
+    VimDataTable {
+        /* CRITICAL: Explicit dimensions isolate the popup geometry */
+        width: 35;
+        height: auto;
+
+        /* Internal formatting */
+        border: heavy $primary;
+        padding: 0 0;
+        align: center middle;
+        overflow:hidden;
+    }
+
+    """
+
+    TABLE = [
+        ("A", "Sort by Artist"),
+        ("a", "Sort by Album"),
+        ("D", "Sort by Date"),
+        ("d", "Sort by Date Added"),
+        ("g", "Sort by Genre"),
+        ("i", "Sort by Id"),
+        ("p", "Sort by Plays"),
+        ("s", "Sort by Shuffle"),
+        ("t", "Sort by Title"),
+        ("r", "Reset"),
+        ("esc", "Cancel"),
+    ]
+
+    BINDINGS = [
+        ("enter", "option_selected", "Select Option"),
+        ("escape", "dismiss_msg('cancel')", "Close"),
+        ("i", "dismiss_msg('id')", "Id"),
+        ("t", "dismiss_msg('title')", "Title"),
+        ("A", "dismiss_msg('artist')", "Artist"),
+        ("a", "dismiss_msg('album')", "Album"),
+        ("p", "dismiss_msg('plays')", "Plays"),
+        ("d", "dismiss_msg('dateadded')", "Dateadded"),
+        ("g", "dismiss_msg('genre')", "Genre"),
+        ("s", "dismiss_msg('shuffle')", "Genre"),
+        ("D", "dismiss_msg('date')", "Date"),
+        ("r", "dismiss_msg('reset')", "Reset"),
+    ]
+
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self.sort_options_data_table = VimDataTable(cursor_type="row")
+
+    def compose(self) -> ComposeResult:
+        yield self.sort_options_data_table
+
+    def on_mount(self) -> None:
+
+        self.sort_options_data_table.add_column("Bind", key=0, width=4)
+        self.sort_options_data_table.add_column("Sorting Options", key=1, width=100)
+
+        for row in self.TABLE:
+            self.sort_options_data_table.add_row(row[0], row[1])
+
+    def action_dismiss_msg(self, message: str):
+        self.dismiss(message)
+
+    @on(DataTable.RowSelected)
+    def action_option_selected(self, event: DataTable.RowSelected):
+        row = event.cursor_row
+        value = self.sort_options_data_table.get_cell_at(Coordinate(row, 1))
+        if value and "Sort by" in value:
+            self.dismiss(value[7:].lower().replace(" ", ""))
+        else:
+            self.dismiss(value.lower())
+
+
+class TracksDataTable(Static):
+    BINDINGS = [("/", "focus_search", "Search"), ("comma", "open_sort", "Sort")]
+
+    DEFAULT_CSS = """
     TracksDataTable {
-        width: auto;
+        width: 1fr;
         height: 1fr;
+    }
+    TracksDataTable > Vertical > Horizontal {
+        height: 1;
+    }
+    TracksDataTable > Vertical > Horizontal > Input {
+        width: 1fr;
+    }
+    #sort-button {
+        width: 8;
+        max-width: 8;
     }
     """
 
-    def __init__(self, tracks: dict[Track], search_id: str, main_table_id: str):
+    PREFIXES = {
+        "id": 0,
+        "favorite": 1,
+        "title": 2,
+        "artist": 3,
+        "album": 4,
+        "plays": 5,
+        "time": 6,
+        "dateadded": 7,
+        "tracknumber": 8,
+        "albumartist": 9,
+        "discnumber": 10,
+        "genre": 11,
+        "date": 12,
+        "filepath": 13,
+        "filename": 14,
+        "albumart": 15,
+    }
+
+    def __init__(
+        self,
+        tracks: dict[int, Track],
+        search_id: str,
+        main_table_id: str,
+        show_filter: bool = True,
+    ):
         super().__init__()
         self.tracks = tracks
         self.full_rows: list = []
+        self.show_filter = show_filter
 
         self.search = Input(placeholder="Filter tracks (/)", id=search_id)
         self.main_table = VimDataTable(cursor_type="row", id=main_table_id)
+        self.sort_button = Button("󰒼 Sort", compact=True, id="sort-button")
 
     def compose(self) -> ComposeResult:
-        yield self.search
-        yield self.main_table
+        with Vertical():
+            with Horizontal():
+                yield self.search
+                if self.show_filter:
+                    yield self.sort_button
+            yield self.main_table
 
-    # Focuses search with "/" key
+    @on(Button.Pressed, "#sort-button")
+    def action_open_sort(self) -> None:
+        if self.show_filter:
+            self.app.push_screen(SortTracksPopup(), callback=self.sort)  # type:ignore
+
     def action_focus_search(self) -> None:
         self.search.focus()
 
@@ -80,24 +212,6 @@ class TracksDataTable(Static):
         """Filters a table with the same prefix/query support as the database"""
         table = self.main_table
         queries = search_term.split("+")
-        prefixes = {
-            "id": 0,
-            "favorite": 1,
-            "title": 2,
-            "artist": 3,
-            "album": 4,
-            "plays": 5,
-            "time": 6,
-            "dateadded": 7,
-            "tracknumber": 8,
-            "albumartist": 9,
-            "discnumber": 10,
-            "genre": 11,
-            "date": 12,
-            "filepath": 13,
-            "filename": 14,
-            "albumart": 15,
-        }
 
         if not search_term:
             filtered_rows = self.full_rows
@@ -122,8 +236,8 @@ class TracksDataTable(Static):
                     else:
                         prefix, sep, value = filter.partition(":")
                         prefix, value = prefix.strip(), value.strip().lower()
-                        if sep and prefix in prefixes and value:
-                            row_index = prefixes[prefix]
+                        if sep and prefix in self.PREFIXES and value:
+                            row_index = self.PREFIXES[prefix]
                             query_rows &= {
                                 tuple(row)
                                 for row in self.full_rows
@@ -138,6 +252,69 @@ class TracksDataTable(Static):
 
         for row in filtered_rows:
             table.add_row(*row, key=str(row[0]))
+
+    def sort(
+        self,
+        method: Literal[
+            "artist",
+            "album",
+            "date",
+            "dateadded",
+            "id",
+            "plays",
+            "genre",
+            "title",
+            "cancel",
+            "shuffle",
+            "reset",
+        ],
+    ):
+        if method in (None, "cancel"):
+            return
+
+        if method == "reset":
+            if method == "reset":
+                self._last_sort = None
+                self._sort_reverse = False
+                self.generate_full_rows()
+        elif method == "shuffle":
+            import random
+
+            random.shuffle(self.full_rows)
+        else:
+            numeric_cols = {"id", "plays", "tracknumber", "discnumber"}
+
+            col_index = self.PREFIXES[method]
+            reverse = getattr(self, "_sort_reverse", False)
+
+            if getattr(self, "_last_sort", None) == method:
+                reverse = not reverse
+            else:
+                reverse = False
+
+            self._last_sort = method
+            self._sort_reverse = reverse
+
+            def sort_key(row):
+                val = row[col_index]
+                if val is None:
+                    return (1, 0 if method in numeric_cols else "")
+                if method in numeric_cols:
+                    try:
+                        return (0, int(val))
+                    except (ValueError, TypeError):
+                        return (1, 0)
+                return (0, str(val).lower())
+
+            self.full_rows.sort(key=sort_key, reverse=reverse)
+
+        search_term = self.search.value
+        if search_term:
+            self.filter_table(search_term)
+        else:
+            self.main_table.clear()
+            for row in self.full_rows:
+                self.main_table.add_row(*row, key=str(row[0]))
 
     def generate_full_rows(self):
         self.full_rows = []

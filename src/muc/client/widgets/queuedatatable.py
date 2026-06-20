@@ -12,7 +12,7 @@ from muc.client.widgets.tracksdatatable import TracksDataTable
 
 class QueueDataTable(TracksDataTable):
     def __init__(self, *args, **kwargs):
-        super().__init__(dict(), *args, **kwargs)
+        super().__init__(dict(), show_filter=False, *args, **kwargs)
 
     def update_queue(self, tracks):
         self.tracks = tracks
