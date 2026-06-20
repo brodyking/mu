@@ -23,20 +23,13 @@ from muc.client.widgets.vimdatatable import VimDataTable
 class SortTracksPopup(ModalScreen[str]):
     DEFAULT_CSS = """
     SortTracksPopup {
-        /* Forces everything inside the modal screen to center perfectly */
         align: center middle;
-
-        /* The alpha percentage allows the underlying app screen to show through */
-        /*background: black 40%;*/
         background: transparent;
     }
 
     VimDataTable {
-        /* CRITICAL: Explicit dimensions isolate the popup geometry */
         width: 35;
         height: auto;
-
-        /* Internal formatting */
         border: heavy $primary;
         padding: 0 0;
         align: center middle;

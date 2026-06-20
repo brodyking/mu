@@ -17,11 +17,7 @@ from textual.widgets._data_table import CellDoesNotExist
 class InspectRow(ModalScreen[str]):
     DEFAULT_CSS = """
     InspectRow {
-        /* Forces everything inside the modal screen to center perfectly */
         align: center middle;
-
-        /* The alpha percentage allows the underlying app screen to show through */
-        /*background: black 40%;*/
         background: transparent;
     }
 
@@ -80,21 +76,22 @@ class VimDataTable(DataTable):
         super().__init__(*args, **kwargs)
         self.show_inspect = show_inspect
 
+    def export_cell_as_dict(self, row: int):
+        try:
+            row_dict = {}
+            col_labels = [col.value for col in self.columns]
+            for i, col_label in enumerate(col_labels):
+                row_dict[col_label] = self.get_cell_at(Coordinate(row, i))
+            return row_dict
+        except CellDoesNotExist:
+            self.notify("No row is selected", severity="error")
+            return {}
+
     def action_inspect(self):
 
         if not self.show_inspect:
             return
 
-        try:
-            col_labels = []
-            for col in self.columns:
-                col_labels.append(col.value)
-
-            row_dict = {}
-            for i, col_label in enumerate(col_labels):
-                row_dict[col_label] = self.get_cell_at(Coordinate(self.cursor_row, i))
-
-            popup = InspectRow(row_dict)
-            self.app.push_screen(popup)  # type:ignore
-        except CellDoesNotExist:
-            self.notify("No row is selected", severity="error")
+        row_dict = self.export_cell_as_dict(self.cursor_row)
+        popup = InspectRow(row_dict)
+        self.app.push_screen(popup)  # type:ignore
