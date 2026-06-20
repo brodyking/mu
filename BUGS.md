@@ -23,7 +23,7 @@ To report bugs, feel free to open a issue or add directly to this list via a pul
 N/A
 
 ## Bugs (mµc) 🪳
-
+- [ ] Favoriting does not update now-playing favorite icon
 - [x] Favoriting a track does not update in playlist list
   - Occours only if a playlist is not yet loaded, or reloaded.
   - This is due to the fact that tracks are stored as objects, not ids, inside of playlists.
