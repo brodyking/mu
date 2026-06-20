@@ -78,8 +78,10 @@ class SortTracksPopup(ModalScreen[str]):
 
     def on_mount(self) -> None:
 
-        self.sort_options_data_table.add_column("Bind", key=0, width=4)
-        self.sort_options_data_table.add_column("Sorting Options", key=1, width=100)
+        self.sort_options_data_table.add_column("Bind", key="bind", width=4)
+        self.sort_options_data_table.add_column(
+            "Sorting Options", key="sorting-options", width=100
+        )
 
         for row in self.TABLE:
             self.sort_options_data_table.add_row(row[0], row[1])
