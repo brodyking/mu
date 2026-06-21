@@ -69,22 +69,18 @@ class SortTracksPopup(ModalScreen[str]):
 
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
-        self.sort_options_data_table = VimDataTable(
-            show_inspect=False, cursor_type="row"
-        )
+        self.main_table = VimDataTable(show_inspect=False, cursor_type="row")
 
     def compose(self) -> ComposeResult:
-        yield self.sort_options_data_table
+        yield self.main_table
 
     def on_mount(self) -> None:
 
-        self.sort_options_data_table.add_column("Bind", key="bind", width=4)
-        self.sort_options_data_table.add_column(
-            "Sorting Options", key="sorting-options", width=100
-        )
+        self.main_table.add_column("Bind", key="bind", width=4)
+        self.main_table.add_column("Sorting Options", key="sorting-options", width=100)
 
         for row in self.TABLE:
-            self.sort_options_data_table.add_row(row[0], row[1])
+            self.main_table.add_row(row[0], row[1])
 
     def action_dismiss_msg(self, message: str):
         self.dismiss(message)
@@ -92,15 +88,73 @@ class SortTracksPopup(ModalScreen[str]):
     @on(DataTable.RowSelected)
     def action_option_selected(self, event: DataTable.RowSelected):
         row = event.cursor_row
-        value = self.sort_options_data_table.get_cell_at(Coordinate(row, 1))
+        value = self.main_table.get_cell_at(Coordinate(row, 1))
         if value and "Sort by" in value:
             self.dismiss(value[7:].lower().replace(" ", ""))
         else:
             self.dismiss(value.lower())
 
 
+class AddToPopup(ModalScreen[str]):
+    DEFAULT_CSS = """
+    AddToPopup {
+        align: center middle;
+        background: transparent;
+    }
+
+    VimDataTable {
+        width: 30;
+        height: auto;
+        border: heavy $primary;
+        padding: 0 0;
+        align: center middle;
+        overflow:hidden;
+    }
+
+    """
+
+    TABLE = [
+        ("n", "Play Next"),
+        ("p", "Add to Playlist"),
+        ("q", "Add to Queue"),
+        ("esc", "Cancel"),
+    ]
+
+    BINDINGS = [
+        ("enter", "option_selected", "Select Option"),
+        ("escape", "dismiss_msg('cancel')", "Close"),
+        ("n", "dismiss_msg('next')", "Play Next"),
+        ("p", "dismiss_msg('playlist')", "Add to Playlist"),
+        ("q", "dismiss_msg('append')", "Add to Queue"),
+    ]
+
+    def __init__(self, row_dict, tracks, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self.main_table = VimDataTable(show_inspect=False, cursor_type="row")
+
+        self.track = tracks[row_dict["id"]]
+
+    def compose(self) -> ComposeResult:
+        yield self.main_table
+
+    def on_mount(self) -> None:
+
+        self.main_table.add_column("Bind", key="bind", width=4)
+        self.main_table.add_column("Sorting Options", key="sorting-options", width=100)
+
+        for row in self.TABLE:
+            self.main_table.add_row(row[0], row[1])
+
+    def action_dismiss_msg(self, message: str):
+        self.dismiss(message)
+
+
 class TracksDataTable(Static):
-    BINDINGS = [("/", "focus_search", "Search"), ("comma", "open_sort", "Sort")]
+    BINDINGS = [
+        ("/", "focus_search", "Search"),
+        ("comma", "open_sort", "Sort"),
+        (".", "open_addto", "Add to"),
+    ]
 
     DEFAULT_CSS = """
     TracksDataTable {
@@ -166,6 +220,11 @@ class TracksDataTable(Static):
     def action_open_sort(self) -> None:
         if self.show_filter:
             self.app.push_screen(SortTracksPopup(), callback=self.sort)  # type:ignore
+
+    def action_open_addto(self) -> None:
+        row_dict = self.main_table.export_cell_as_dict(self.main_table.cursor_row)
+        popup = AddToPopup(row_dict, self.tracks)
+        self.app.push_screen(popup)  # type:ignore
 
     def action_focus_search(self) -> None:
         self.search.focus()
