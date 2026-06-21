@@ -16,20 +16,19 @@ from textual.widgets._data_table import CellDoesNotExist
 
 class InspectRowPopup(ModalScreen[str]):
     DEFAULT_CSS = """
-    InspectRow {
-        align: center middle;
-        background: transparent;
-    }
+        InspectRowPopup {
+            align: center middle;
+            background: transparent;
+        }
 
-    VimDataTable {
-        width: 60;
-        height: auto;
-        border: heavy $primary;
-        padding: 0 0;
-        align: center middle;
-        overflow:hidden;
-    }
-
+        VimDataTable {
+            width: 60;
+            height: auto;
+            border: heavy $primary;
+            padding: 0 0;
+            align: center middle;
+            overflow:hidden;
+        }
     """
 
     BINDINGS = [
@@ -65,11 +64,11 @@ class VimDataTable(DataTable):
     ]
 
     CSS = """
-    VimDataTable {
-        width: auto;
-        padding: 0;
-        margin: 0;
-    }
+        VimDataTable {
+            width: auto;
+            padding: 0;
+            margin: 0;
+        }
     """
 
     def __init__(self, show_inspect: bool = True, *args, **kwargs):
