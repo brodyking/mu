@@ -16,6 +16,13 @@ class QueueList:
         self.queue = []  # List of track Ids in the queue (full of ints)
         self.pos = 0  # Position in the queue
 
+    def append_track(self, track_ids: list) -> list:
+        """
+        Adds a track to the end of the queue, returns the queue.
+        """
+        self.queue.extend(track_ids)
+        return self.queue
+
     def get_current_track(self) -> Track | None:
         """Returns the currently selected track"""
         if self.pos <= len(self.queue) - 1:
@@ -23,7 +30,7 @@ class QueueList:
         else:
             return None
 
-    def start_queue(self, track_ids) -> Track | None:
+    def start_queue(self, track_ids: list) -> Track | None:
         """Initializes the list of tracks, and returns the first one"""
         self.queue = [int(id) for id in track_ids]
         self.pos = 0
