@@ -13,8 +13,9 @@ from textual import on
 from textual.app import ComposeResult
 from textual.containers import Horizontal, Vertical
 from textual.coordinate import Coordinate
+from textual.message import Message
 from textual.screen import ModalScreen
-from textual.widgets import Button, DataTable, Input, Static
+from textual.widgets import Button, DataTable, Input, Label, Static
 
 from mu.track import Track
 from muc.client.widgets.vimdatatable import VimDataTable
@@ -90,9 +91,9 @@ class SortTracksPopup(ModalScreen[str]):
         row = event.cursor_row
         value = self.main_table.get_cell_at(Coordinate(row, 1))
         if value and "Sort by" in value:
-            self.dismiss(value[7:].lower().replace(" ", ""))
+            self.action_dismiss_msg(value[7:].lower().replace(" ", ""))
         else:
-            self.dismiss(value.lower())
+            self.action_dismiss_msg(value.lower())
 
 
 class AddToPopup(ModalScreen[str]):
@@ -112,27 +113,31 @@ class AddToPopup(ModalScreen[str]):
     }
 
     """
-
     TABLE = [
-        ("n", "Play Next"),
+        ("l", "Queue Last"),
+        ("n", "Queue Next"),
         ("p", "Add to Playlist"),
-        ("q", "Add to Queue"),
         ("esc", "Cancel"),
     ]
 
     BINDINGS = [
         ("enter", "option_selected", "Select Option"),
         ("escape", "dismiss_msg('cancel')", "Close"),
-        ("n", "dismiss_msg('next')", "Play Next"),
+        ("l", "dismiss_msg('last')", "Queue Last"),
+        ("n", "dismiss_msg('next')", "Queue Next"),
         ("p", "dismiss_msg('playlist')", "Add to Playlist"),
-        ("q", "dismiss_msg('append')", "Add to Queue"),
     ]
+
+    class AddToQueueLast(Message):
+        def __init__(self, track: Track, *args, **kwargs):
+            self.track = track
+            super().__init__(*args, **kwargs)
 
     def __init__(self, row_dict, tracks, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.main_table = VimDataTable(show_inspect=False, cursor_type="row")
 
-        self.track = tracks[row_dict["id"]]
+        self.track = tracks[row_dict["id"]] if row_dict else None
 
     def compose(self) -> ComposeResult:
         yield self.main_table
@@ -145,7 +150,24 @@ class AddToPopup(ModalScreen[str]):
         for row in self.TABLE:
             self.main_table.add_row(row[0], row[1])
 
+    @on(DataTable.RowSelected)
+    def action_option_selected(self, event: DataTable.RowSelected):
+        row = event.cursor_row
+        value = self.main_table.get_cell_at(Coordinate(row, 1))
+        match value:
+            case "Queue Last":
+                self.action_dismiss_msg("last")
+            case "Queue Next":
+                self.action_dismiss_msg("next")
+            case "Add to Playlist":
+                self.action_dismiss_msg("playlist")
+            case _:
+                self.action_dismiss_msg("Cancel")
+
     def action_dismiss_msg(self, message: str):
+        match message:
+            case "last":
+                self.post_message(self.AddToQueueLast(self.track))
         self.dismiss(message)
 
 
@@ -157,20 +179,20 @@ class TracksDataTable(Static):
     ]
 
     DEFAULT_CSS = """
-    TracksDataTable {
-        width: 1fr;
-        height: 1fr;
-    }
-    TracksDataTable > Vertical > Horizontal {
-        height: 1;
-    }
-    TracksDataTable > Vertical > Horizontal > Input {
-        width: 1fr;
-    }
-    #sort-button {
-        width: 8;
-        max-width: 8;
-    }
+        TracksDataTable {
+            width: 1fr;
+            height: 1fr;
+        }
+        TracksDataTable > Vertical > Horizontal {
+            height: 1;
+        }
+        TracksDataTable > Vertical > Horizontal > Input {
+            width: 1fr;
+        }
+        #sort-button, #addto-button {
+            width: 8;
+            max-width: 8;
+        }
     """
 
     PREFIXES = {
@@ -207,6 +229,7 @@ class TracksDataTable(Static):
         self.search = Input(placeholder="Filter tracks (/)", id=search_id)
         self.main_table = VimDataTable(cursor_type="row", id=main_table_id)
         self.sort_button = Button("󰒼 Sort", compact=True, id="sort-button")
+        self.addto_button = Button(" Add to", compact=True, id="addto-button")
 
     def compose(self) -> ComposeResult:
         with Vertical():
@@ -214,6 +237,7 @@ class TracksDataTable(Static):
                 yield self.search
                 if self.show_filter:
                     yield self.sort_button
+                yield self.addto_button
             yield self.main_table
 
     @on(Button.Pressed, "#sort-button")
@@ -221,10 +245,12 @@ class TracksDataTable(Static):
         if self.show_filter:
             self.app.push_screen(SortTracksPopup(), callback=self.sort)  # type:ignore
 
+    @on(Button.Pressed, "#addto-button")
     def action_open_addto(self) -> None:
         row_dict = self.main_table.export_cell_as_dict(self.main_table.cursor_row)
-        popup = AddToPopup(row_dict, self.tracks)
-        self.app.push_screen(popup)  # type:ignore
+        if row_dict:
+            popup = AddToPopup(row_dict, self.tracks)
+            self.app.push_screen(popup)  # type:ignore
 
     def action_focus_search(self) -> None:
         self.search.focus()
@@ -306,8 +332,8 @@ class TracksDataTable(Static):
                         filtered_rows.append(row)
         table.clear()
 
-        for row in filtered_rows:
-            table.add_row(*row, key=str(row[0]))
+        for i, row in enumerate(filtered_rows):
+            table.add_row(*row, key=str(i))
 
     def sort(
         self,
@@ -325,6 +351,7 @@ class TracksDataTable(Static):
             "reset",
         ],
     ):
+        """This is the callback function for the sort popup"""
         if method in (None, "cancel"):
             return
 
@@ -369,8 +396,8 @@ class TracksDataTable(Static):
             self.filter_table(search_term)
         else:
             self.main_table.clear()
-            for row in self.full_rows:
-                self.main_table.add_row(*row, key=str(row[0]))
+            for i, row in enumerate(self.full_rows):
+                self.main_table.add_row(*row, key=str(i))
 
     def generate_full_rows(self):
         self.full_rows = []

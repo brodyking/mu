@@ -23,7 +23,7 @@ from muc.client.widgets.mufooter import MuFooter
 from muc.client.widgets.nowplaying import NowPlaying, NowPlayingProgressBar
 from muc.client.widgets.playlistsdatatable import PlaylistDataTable
 from muc.client.widgets.queuedatatable import QueueDataTable
-from muc.client.widgets.tracksdatatable import TracksDataTable
+from muc.client.widgets.tracksdatatable import AddToPopup, TracksDataTable
 from muc.player.player import Player
 
 
@@ -379,3 +379,9 @@ class Client(App):
             self.playlists_data_table.playlist_tracks_data_table.set_track_favorite(
                 track_id, result.favorite
             )
+
+    @on(AddToPopup.AddToQueueLast)
+    def append_to_queue(self, event: AddToPopup.AddToQueueLast) -> None:
+        self.queue_list.append_track([event.track.id])
+        self.queue_data_table
+        self.queue_data_table.update_queue(self.queue_list.get_queue())
