@@ -372,11 +372,11 @@ class Client(App):
             )
 
     @on(AddToPopup.AddToQueueLast)
-    def append_to_queue(self, event: AddToPopup.AddToQueueLast) -> None:
-        self.queue_list.append_track([event.track.id])
+    def queue_track_last(self, event: AddToPopup.AddToQueueLast) -> None:
+        self.queue_list.queue_tracks_last([event.track.id])
         self.queue_data_table.update_queue(self.queue_list.get_queue())
 
-    # @on(AddToPopup.AddToQueueNext)
-    # def prepend_to_queue(self, event: AddToPopup.AddToQueueNext) -> None:
-    #     self.queue_list.prepend_track([event.track.id])
-    #     self.queue_data_table.update_queue(self.queue_list.get_queue())
+    @on(AddToPopup.AddToQueueNext)
+    def queue_track_next(self, event: AddToPopup.AddToQueueNext) -> None:
+        self.queue_list.queue_tracks_next([event.track.id])
+        self.queue_data_table.update_queue(self.queue_list.get_queue())

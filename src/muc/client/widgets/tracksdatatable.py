@@ -129,7 +129,12 @@ class AddToPopup(ModalScreen[str]):
     ]
 
     class AddToQueueLast(Message):
-        def __init__(self, track: Track, *args, **kwargs):
+        def __init__(self, track: Track | None, *args, **kwargs):
+            self.track = track
+            super().__init__(*args, **kwargs)
+
+    class AddToQueueNext(Message):
+        def __init__(self, track: Track | None, *args, **kwargs):
             self.track = track
             super().__init__(*args, **kwargs)
 
@@ -168,6 +173,8 @@ class AddToPopup(ModalScreen[str]):
         match message:
             case "last":
                 self.post_message(self.AddToQueueLast(self.track))
+            case "next":
+                self.post_message(self.AddToQueueNext(self.track))
         self.dismiss(message)
 
 
