@@ -13,14 +13,21 @@ from mu.track import Track
 class QueueList:
     def __init__(self, tracks: dict) -> None:
         self.tracks = tracks  # Dict of all tracks
-        self.queue = []  # List of track Ids in the queue (full of ints)
+        self.queue: list[int] = []  # List of track Ids in the queue (full of ints)
         self.pos = 0  # Position in the queue
 
-    def append_track(self, track_ids: list) -> list:
+    def prepend_track(self, track_ids: list[int]) -> list:
+        """
+        Inserts a track object to the start of the queue, returns the queue.
+        """
+        self.queue = [*track_ids, *self.queue]
+        return self.queue
+
+    def append_track(self, track_ids: list[int]) -> list:
         """
         Adds a track to the end of the queue, returns the queue.
         """
-        self.queue.extend(track_ids)
+        self.queue = [*self.queue, *track_ids]
         return self.queue
 
     def get_current_track(self) -> Track | None:

@@ -18,7 +18,7 @@ class QueueDataTable(TracksDataTable):
         self.tracks = tracks
         self.full_rows = []
         self.main_table.clear()
-        for i, track in enumerate(self.tracks):
+        for track in self.tracks:
             favorite = "❤" if track.favorite else " "
 
             row_tuple = (
@@ -40,4 +40,4 @@ class QueueDataTable(TracksDataTable):
                 track.albumart,
             )
             self.full_rows.append(row_tuple)
-            self.main_table.add_row(*row_tuple, key=str(i))
+            self.main_table.add_row(*row_tuple, key=str(track.id))

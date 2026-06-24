@@ -332,8 +332,8 @@ class TracksDataTable(Static):
                         filtered_rows.append(row)
         table.clear()
 
-        for i, row in enumerate(filtered_rows):
-            table.add_row(*row, key=str(i))
+        for row in filtered_rows:
+            table.add_row(*row, key=row[0])
 
     def sort(
         self,
@@ -396,8 +396,8 @@ class TracksDataTable(Static):
             self.filter_table(search_term)
         else:
             self.main_table.clear()
-            for i, row in enumerate(self.full_rows):
-                self.main_table.add_row(*row, key=str(i))
+            for row in self.full_rows:
+                self.main_table.add_row(*row, key=str(row[0]))
 
     def generate_full_rows(self):
         self.full_rows = []

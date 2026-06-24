@@ -334,38 +334,29 @@ class Client(App):
         track_id = None
         table = None
         result = None
-        if self.focused == self.tracks_data_table.main_table:
-            table = self.tracks_data_table
-        elif self.focused == self.queue_data_table.main_table:
-            table = self.queue_data_table
-        elif self.focused == self.favorites_data_table.main_table:
-            table = self.favorites_data_table
-        elif (
-            self.focused
-            == self.playlists_data_table.playlist_tracks_data_table.main_table
-        ):
-            table = self.playlists_data_table.playlist_tracks_data_table
-        elif len(self.queue_list.queue) > 0:
-            track = self.queue_list.get_current_track()
-            if track:
-                track_id = track.id
+        tables = [
+            self.tracks_data_table.main_table,
+            self.queue_data_table.main_table,
+            self.favorites_data_table.main_table,
+            self.playlists_data_table.playlist_tracks_data_table.main_table,
+        ]
 
-        # Favorite track
+        for i in tables:
+            if i == self.focused:
+                table = i
+
         if table:
             # If track favorited with f key while browsing
-            if (
-                table.main_table.cursor_row is not None
-                and table.main_table.row_count > 0
-            ):
-                track_id = table.main_table.get_cell_at(
-                    Coordinate(table.main_table.cursor_row, 0)
-                )
+            if table.cursor_row is not None and table.row_count > 0:
+                track_id = table.get_cell_at(Coordinate(table.cursor_row, 0))
         else:
             # If track is favorited using the buttons on controls while playing
             current_track = self.queue_list.get_current_track()
             if current_track is not None:
                 track_id = current_track.id
-                result = self.db.favorite(f"id:{track_id}")[0] if track_id else None
+
+        if track_id:
+            result = self.db.favorite(f"id:{track_id}")[0] if track_id else None
 
         if result:
             self.tracks[track_id] = result
@@ -383,5 +374,9 @@ class Client(App):
     @on(AddToPopup.AddToQueueLast)
     def append_to_queue(self, event: AddToPopup.AddToQueueLast) -> None:
         self.queue_list.append_track([event.track.id])
-        self.queue_data_table
         self.queue_data_table.update_queue(self.queue_list.get_queue())
+
+    # @on(AddToPopup.AddToQueueNext)
+    # def prepend_to_queue(self, event: AddToPopup.AddToQueueNext) -> None:
+    #     self.queue_list.prepend_track([event.track.id])
+    #     self.queue_data_table.update_queue(self.queue_list.get_queue())
