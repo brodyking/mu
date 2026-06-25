@@ -13,8 +13,33 @@ from mu.track import Track
 class QueueList:
     def __init__(self, tracks: dict) -> None:
         self.tracks = tracks  # Dict of all tracks
-        self.queue = []  # List of track Ids in the queue (full of ints)
+        self.queue: list[int] = []  # List of track Ids in the queue (full of ints)
         self.pos = 0  # Position in the queue
+
+    def queue_tracks_next(self, track_ids: list[int]) -> list:
+        """
+        Inserts tracks at the current position (right after pos), removing
+        any existing occurrences of those track_ids first. Returns the queue.
+        """
+        # Remove track_ids that already exist in the queue
+        existing = set(track_ids)
+        before = self.queue[: self.pos + 1]
+        after = self.queue[self.pos + 1 :]
+
+        before = [t for t in before if t not in existing]
+        after = [t for t in after if t not in existing]
+
+        self.queue = [*before, *track_ids, *after]
+        return self.queue
+
+    def queue_tracks_last(self, track_ids: list[int]) -> list:
+        """
+        Adds tracks to the end of the queue, removing any existing
+        occurrences of those track_ids first. Returns the queue.
+        """
+        existing = set(track_ids)
+        self.queue = [t for t in self.queue if t not in existing] + track_ids
+        return self.queue
 
     def get_current_track(self) -> Track | None:
         """Returns the currently selected track"""
@@ -23,7 +48,7 @@ class QueueList:
         else:
             return None
 
-    def start_queue(self, track_ids) -> Track | None:
+    def start_queue(self, track_ids: list) -> Track | None:
         """Initializes the list of tracks, and returns the first one"""
         self.queue = [int(id) for id in track_ids]
         self.pos = 0

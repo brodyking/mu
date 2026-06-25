@@ -13,8 +13,9 @@ from textual import on
 from textual.app import ComposeResult
 from textual.containers import Horizontal, Vertical
 from textual.coordinate import Coordinate
+from textual.message import Message
 from textual.screen import ModalScreen
-from textual.widgets import Button, DataTable, Input, Static
+from textual.widgets import Button, DataTable, Input, Label, Static
 
 from mu.track import Track
 from muc.client.widgets.vimdatatable import VimDataTable
@@ -23,20 +24,13 @@ from muc.client.widgets.vimdatatable import VimDataTable
 class SortTracksPopup(ModalScreen[str]):
     DEFAULT_CSS = """
     SortTracksPopup {
-        /* Forces everything inside the modal screen to center perfectly */
         align: center middle;
-
-        /* The alpha percentage allows the underlying app screen to show through */
-        /*background: black 40%;*/
         background: transparent;
     }
 
     VimDataTable {
-        /* CRITICAL: Explicit dimensions isolate the popup geometry */
         width: 35;
         height: auto;
-
-        /* Internal formatting */
         border: heavy $primary;
         padding: 0 0;
         align: center middle;
@@ -76,20 +70,18 @@ class SortTracksPopup(ModalScreen[str]):
 
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
-        self.sort_options_data_table = VimDataTable(
-            show_inspect=False, cursor_type="row"
-        )
+        self.main_table = VimDataTable(show_inspect=False, cursor_type="row")
 
     def compose(self) -> ComposeResult:
-        yield self.sort_options_data_table
+        yield self.main_table
 
     def on_mount(self) -> None:
 
-        self.sort_options_data_table.add_column("Bind", key=0, width=4)
-        self.sort_options_data_table.add_column("Sorting Options", key=1, width=100)
+        self.main_table.add_column("Bind", key="bind", width=4)
+        self.main_table.add_column("Sorting Options", key="sorting-options", width=100)
 
         for row in self.TABLE:
-            self.sort_options_data_table.add_row(row[0], row[1])
+            self.main_table.add_row(row[0], row[1])
 
     def action_dismiss_msg(self, message: str):
         self.dismiss(message)
@@ -97,31 +89,113 @@ class SortTracksPopup(ModalScreen[str]):
     @on(DataTable.RowSelected)
     def action_option_selected(self, event: DataTable.RowSelected):
         row = event.cursor_row
-        value = self.sort_options_data_table.get_cell_at(Coordinate(row, 1))
+        value = self.main_table.get_cell_at(Coordinate(row, 1))
         if value and "Sort by" in value:
-            self.dismiss(value[7:].lower().replace(" ", ""))
+            self.action_dismiss_msg(value[7:].lower().replace(" ", ""))
         else:
-            self.dismiss(value.lower())
+            self.action_dismiss_msg(value.lower())
+
+
+class AddToPopup(ModalScreen[str]):
+    DEFAULT_CSS = """
+    AddToPopup {
+        align: center middle;
+        background: transparent;
+    }
+
+    VimDataTable {
+        width: 30;
+        height: auto;
+        border: heavy $primary;
+        padding: 0 0;
+        align: center middle;
+        overflow:hidden;
+    }
+
+    """
+    TABLE = [
+        ("l", "Queue Last"),
+        ("n", "Queue Next"),
+        ("esc", "Cancel"),
+    ]
+
+    BINDINGS = [
+        ("enter", "option_selected", "Select Option"),
+        ("escape", "dismiss_msg('cancel')", "Close"),
+        ("l", "dismiss_msg('last')", "Queue Last"),
+        ("n", "dismiss_msg('next')", "Queue Next"),
+    ]
+
+    class AddToQueueLast(Message):
+        def __init__(self, track: Track | None, *args, **kwargs):
+            self.track = track
+            super().__init__(*args, **kwargs)
+
+    class AddToQueueNext(Message):
+        def __init__(self, track: Track | None, *args, **kwargs):
+            self.track = track
+            super().__init__(*args, **kwargs)
+
+    def __init__(self, row_dict, tracks, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self.main_table = VimDataTable(show_inspect=False, cursor_type="row")
+
+        self.track = tracks[row_dict["id"]] if row_dict else None
+
+    def compose(self) -> ComposeResult:
+        yield self.main_table
+
+    def on_mount(self) -> None:
+
+        self.main_table.add_column("Bind", key="bind", width=4)
+        self.main_table.add_column("Sorting Options", key="sorting-options", width=100)
+
+        for row in self.TABLE:
+            self.main_table.add_row(row[0], row[1])
+
+    @on(DataTable.RowSelected)
+    def action_option_selected(self, event: DataTable.RowSelected):
+        row = event.cursor_row
+        value = self.main_table.get_cell_at(Coordinate(row, 1))
+        match value:
+            case "Queue Last":
+                self.action_dismiss_msg("last")
+            case "Queue Next":
+                self.action_dismiss_msg("next")
+            case _:
+                self.action_dismiss_msg("Cancel")
+
+    def action_dismiss_msg(self, message: str):
+        match message:
+            case "last":
+                self.post_message(self.AddToQueueLast(self.track))
+            case "next":
+                self.post_message(self.AddToQueueNext(self.track))
+        self.dismiss(message)
 
 
 class TracksDataTable(Static):
-    BINDINGS = [("/", "focus_search", "Search"), ("comma", "open_sort", "Sort")]
+    BINDINGS = [
+        ("/", "focus_search", "Search"),
+        ("comma", "open_sort", "Sort"),
+        (".", "open_addto", "Add to"),
+    ]
 
     DEFAULT_CSS = """
-    TracksDataTable {
-        width: 1fr;
-        height: 1fr;
-    }
-    TracksDataTable > Vertical > Horizontal {
-        height: 1;
-    }
-    TracksDataTable > Vertical > Horizontal > Input {
-        width: 1fr;
-    }
-    #sort-button {
-        width: 8;
-        max-width: 8;
-    }
+        TracksDataTable {
+            width: 1fr;
+            height: 1fr;
+        }
+        TracksDataTable > Vertical > Horizontal {
+            height: 1;
+        }
+        TracksDataTable > Vertical > Horizontal > Input {
+            width: 1fr;
+        }
+        #sort-button, #addto-button {
+            width: 8;
+            max-width: 8;
+        }
     """
 
     PREFIXES = {
@@ -158,6 +232,7 @@ class TracksDataTable(Static):
         self.search = Input(placeholder="Filter tracks (/)", id=search_id)
         self.main_table = VimDataTable(cursor_type="row", id=main_table_id)
         self.sort_button = Button("󰒼 Sort", compact=True, id="sort-button")
+        self.addto_button = Button(" Add to", compact=True, id="addto-button")
 
     def compose(self) -> ComposeResult:
         with Vertical():
@@ -165,12 +240,20 @@ class TracksDataTable(Static):
                 yield self.search
                 if self.show_filter:
                     yield self.sort_button
+                yield self.addto_button
             yield self.main_table
 
     @on(Button.Pressed, "#sort-button")
     def action_open_sort(self) -> None:
         if self.show_filter:
             self.app.push_screen(SortTracksPopup(), callback=self.sort)  # type:ignore
+
+    @on(Button.Pressed, "#addto-button")
+    def action_open_addto(self) -> None:
+        row_dict = self.main_table.export_cell_as_dict(self.main_table.cursor_row)
+        if row_dict:
+            popup = AddToPopup(row_dict, self.tracks)
+            self.app.push_screen(popup)  # type:ignore
 
     def action_focus_search(self) -> None:
         self.search.focus()
@@ -253,7 +336,7 @@ class TracksDataTable(Static):
         table.clear()
 
         for row in filtered_rows:
-            table.add_row(*row, key=str(row[0]))
+            table.add_row(*row, key=row[0])
 
     def sort(
         self,
@@ -271,6 +354,7 @@ class TracksDataTable(Static):
             "reset",
         ],
     ):
+        """This is the callback function for the sort popup"""
         if method in (None, "cancel"):
             return
 
