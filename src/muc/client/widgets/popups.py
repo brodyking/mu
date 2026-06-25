@@ -7,15 +7,12 @@
 
 """
 
-from typing import Literal
-
 from textual import on
 from textual.app import ComposeResult
-from textual.containers import Horizontal, Vertical
 from textual.coordinate import Coordinate
 from textual.message import Message
 from textual.screen import ModalScreen
-from textual.widgets import Button, DataTable, Input, Label, Static
+from textual.widgets import DataTable
 
 from mu.track import Track
 from muc.client.widgets.vimdatatable import VimDataTable
