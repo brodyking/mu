@@ -361,8 +361,10 @@ class Client(App):
     def queue_track_last(self, event: AddToPopup.AddToQueueLast) -> None:
         self.queue_list.queue_tracks_last([event.track.id])
         self.queue_data_table.update_queue(self.queue_list.get_queue())
+        self.player.set_queue(self.queue_list.get_queue_filepaths(offset=1))
 
     @on(AddToPopup.AddToQueueNext)
     def queue_track_next(self, event: AddToPopup.AddToQueueNext) -> None:
         self.queue_list.queue_tracks_next([event.track.id])
         self.queue_data_table.update_queue(self.queue_list.get_queue())
+        self.player.set_queue(self.queue_list.get_queue_filepaths(offset=1))
