@@ -34,13 +34,9 @@ class PlaylistsDataTable(Static):
     def action_focus_search(self) -> None:
         self.search.focus()
 
-    # When search bar's input is changed
-    @on(Input.Changed)
-    def input_changed(self, event: Input.Changed) -> None:
+    @on(Input.Submitted)
+    def on_input_submitted(self, event: Input.Submitted) -> None:
         self.filter_table(event.value)
-
-    # When the input is submitted, focus the main table of tracks
-    def on_input_submitted(self) -> None:
         self.main_table.focus()
 
     def filter_table(self, search_term: str) -> None:

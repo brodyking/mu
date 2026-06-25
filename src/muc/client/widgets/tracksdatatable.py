@@ -101,13 +101,9 @@ class TracksDataTable(Static):
     def action_focus_search(self) -> None:
         self.search.focus()
 
-    @on(Input.Changed)
-    def input_changed(self, event: Input.Changed) -> None:
-        self.filter_table(event.value)
-
-    # When the input is submitted, focus the main table of tracks
     @on(Input.Submitted)
-    def input_submitted(self) -> None:
+    def input_submitted(self, event: Input.Submitted) -> None:
+        self.filter_table(event.value)
         self.main_table.focus()
 
     def set_track_favorite(self, track_id, is_favorite) -> None:
