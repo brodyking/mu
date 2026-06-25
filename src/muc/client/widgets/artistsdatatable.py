@@ -24,13 +24,13 @@ class ArtistsDataTable(Static):
     }
     """
 
-    def __init__(self, artists: list[str], search_id: str, main_table_id: str):
+    def __init__(self, artists: list[str]):
         super().__init__()
         self.artists = artists
         self.full_rows: list = []
 
-        self.search = Input(placeholder="Filter artists (/)", id=search_id)
-        self.main_table = VimDataTable(cursor_type="row", id=main_table_id)
+        self.search = Input(placeholder="Filter artists (/)", id="artists-search")
+        self.main_table = VimDataTable(cursor_type="row", id="artists-main-table")
 
     def compose(self) -> ComposeResult:
         yield self.search

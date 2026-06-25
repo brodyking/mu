@@ -21,7 +21,7 @@ from muc.client.widgets.artistsdatatable import ArtistsDataTable
 from muc.client.widgets.favoritesdatatable import FavoritesDataTable
 from muc.client.widgets.mufooter import MuFooter
 from muc.client.widgets.nowplaying import NowPlaying, NowPlayingProgressBar
-from muc.client.widgets.playlistsdatatable import PlaylistDataTable
+from muc.client.widgets.playlistsplit import PlaylistSplit
 from muc.client.widgets.queuedatatable import QueueDataTable
 from muc.client.widgets.tracksdatatable import AddToPopup, TracksDataTable
 from muc.player.player import Player
@@ -106,29 +106,13 @@ class Client(App):
         self.animation_level = "none"
 
         self.now_playing = NowPlaying()
-        self.queue_data_table = QueueDataTable(
-            "queue-data-table-search", "queue-data-table-main-table"
-        )
 
-        self.favorites_data_table = FavoritesDataTable(
-            self.tracks,
-            "favorites-data-table-search",
-            "favorites-data-table-main-table",
-        )
-
-        self.tracks_data_table = TracksDataTable(
-            self.tracks, "tracks-data-table-search", "tracks-data-table-main-table"
-        )
-
-        self.albums_data_table = AlbumsDataTable(
-            self.albums, "album-data-table-search", "album-data-table-main-table"
-        )
-
-        self.artists_data_table = ArtistsDataTable(
-            self.artists, "artist-data-table-search", "artist-data-table-main-table"
-        )
-
-        self.playlists_data_table = PlaylistDataTable(self.playlists, self.tracks)
+        self.queue_data_table = QueueDataTable()
+        self.favorites_data_table = FavoritesDataTable(self.tracks)
+        self.tracks_data_table = TracksDataTable(self.tracks)
+        self.albums_data_table = AlbumsDataTable(self.albums)
+        self.artists_data_table = ArtistsDataTable(self.artists)
+        self.playlist_split = PlaylistSplit(self.playlists, self.tracks)
 
         self.tabs = TabbedContent(id="tabs")
         self.tabs.can_focus_children = False
@@ -153,12 +137,12 @@ class Client(App):
                 with TabPane("󰠃 Artists (A)", id="artists-tab"):
                     yield self.artists_data_table
                 with TabPane("󱝟 Playlists (p)", id="playlists-tab"):
-                    yield self.playlists_data_table
+                    yield self.playlist_split
         yield MuFooter()
 
     def on_mount(self) -> None:
         """Focuses playlists playlist list upon starting"""
-        self.playlists_data_table.playlist_playlists_data_table.main_table.focus()
+        self.playlist_split.playlists_data_table.main_table.focus()
 
     def action_goto_tab(self, tabid: int) -> None:
         """Switches to a dedicated tab."""
@@ -170,7 +154,7 @@ class Client(App):
             ("artists-tab", self.artists_data_table.main_table),
             (
                 "playlists-tab",
-                self.playlists_data_table.playlist_playlists_data_table.main_table,
+                self.playlist_split.playlists_data_table.main_table,
             ),
         ]
         try:
@@ -211,11 +195,11 @@ class Client(App):
     @on(
         DataTable.RowSelected,
         """
-        #queue-data-table-main-table,
-        #favorites-data-table-main-table,
-        #queue-data-table-main-table,
-        #tracks-data-table-main-table,
-        #playlist-tracks-data-table-main-table
+        #queue-main-table,
+        #favorites-main-table,
+        #queue-main-table,
+        #tracks-main-table,
+        #playlists-tracks-main-table
         """,
     )
     def tracks_row_selected(self, event: DataTable.RowSelected) -> None:
@@ -225,7 +209,7 @@ class Client(App):
             "tracks-tab": self.tracks_data_table.main_table,
             "favorites-tab": self.favorites_data_table.main_table,
             "queue-tab": self.queue_data_table.main_table,
-            "playlists-tab": self.playlists_data_table.playlist_tracks_data_table.main_table,
+            "playlists-tab": self.playlist_split.tracks_data_table.main_table,
         }
         table = tab_to_table.get(self.tabs.active)
         if table is None:
@@ -245,7 +229,7 @@ class Client(App):
         except Exception as e:
             self.notify(f"Error fetching cell data: {e}", severity="error")
 
-    @on(DataTable.RowSelected, "#album-data-table-main-table")
+    @on(DataTable.RowSelected, "#albums-main-table")
     def albums_row_selected(self, event: DataTable.RowSelected):
         """If a album is selected"""
         table = self.albums_data_table.main_table
@@ -256,7 +240,7 @@ class Client(App):
         )
         self.tracks_data_table.main_table.focus()
 
-    @on(DataTable.RowSelected, "#artist-data-table-main-table")
+    @on(DataTable.RowSelected, "#artist-main-table")
     def artist_row_selected(self, event: DataTable.RowSelected):
         """If a artist is selected"""
         table = self.artists_data_table.main_table
@@ -338,7 +322,7 @@ class Client(App):
             self.tracks_data_table.main_table,
             self.queue_data_table.main_table,
             self.favorites_data_table.main_table,
-            self.playlists_data_table.playlist_tracks_data_table.main_table,
+            self.playlist_split.tracks_data_table.main_table,
         ]
 
         for i in tables:
@@ -367,7 +351,7 @@ class Client(App):
             self.tracks_data_table.set_track_favorite(track_id, result.favorite)
             self.queue_data_table.set_track_favorite(track_id, result.favorite)
             self.favorites_data_table.set_track_favorite(track_id, result.favorite)
-            self.playlists_data_table.playlist_tracks_data_table.set_track_favorite(
+            self.playlist_split.tracks_data_table.set_track_favorite(
                 track_id, result.favorite
             )
 
