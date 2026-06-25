@@ -77,7 +77,8 @@ class Client(App):
         /* Also hide it when the Tabs widget is focused */
         Tabs:focus .underline--bar {
             background: transparent;
-        }    """
+        }
+    """
 
     BINDINGS = [
         ("q", "goto_tab(0)", "Queue"),
@@ -171,7 +172,8 @@ class Client(App):
         self.queue_list.start_queue(queue_ids)
 
         # Set queue in player and start playback
-        self.player.set_queue(self.queue_list.get_queue_filepaths())
+        self.player.stop_playback()
+        self.player.set_queue(self.queue_list.get_queue_filepaths(offset=0))
         self.player.start_playback()
 
         # Update UI

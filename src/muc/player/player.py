@@ -46,6 +46,10 @@ class Player:
             self.media_list.add_media(self.instance.media_new(str(filepath)))  # type: ignore
         self.player.set_media_list(self.media_list)  # type: ignore
 
+    def stop_playback(self) -> None:
+        """Stops playback"""
+        self.player.stop()  # type:ignore
+
     def start_playback(self) -> None:
         """Starts playback"""
         self.player.play()  # type: ignore
