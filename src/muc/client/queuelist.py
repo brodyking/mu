@@ -55,7 +55,14 @@ class QueueList:
 
         return self.get_current_track()
 
-    def get_queue(self, offset=1) -> list:
+    def get_queue_filepaths(self, offset=1) -> list[str]:
+        tracks = self.get_queue(offset=offset)
+        output = []
+        for track in tracks:
+            output.append(track.filepath)
+        return output
+
+    def get_queue(self, offset=1) -> list[Track]:
         """
         Returns the queue of tracks remaining in the queue.
         By default, it will return all tracks after the currently playing one.

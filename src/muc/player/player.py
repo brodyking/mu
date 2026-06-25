@@ -39,7 +39,6 @@ class Player:
 
     def set_queue(self, filepaths: list[str]) -> None:
         """Creates the queue from a list of file paths"""
-        self.player.stop()  # type: ignore
 
         self.media_list = vlc.MediaList()
         for filepath in filepaths:
