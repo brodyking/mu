@@ -240,7 +240,7 @@ class Client(App):
         )
         self.tracks_data_table.main_table.focus()
 
-    @on(DataTable.RowSelected, "#artist-main-table")
+    @on(DataTable.RowSelected, "#artists-main-table")
     def artist_row_selected(self, event: DataTable.RowSelected):
         """If a artist is selected"""
         table = self.artists_data_table.main_table
