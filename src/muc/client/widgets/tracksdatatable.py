@@ -37,7 +37,7 @@ class TracksDataTable(Static):
         TracksDataTable > Vertical > Horizontal > Input {
             width: 1fr;
         }
-        #sort-button, #addto-button {
+        #tracks-sort-button, #tracks-addto-button {
             width: 8;
             max-width: 8;
         }
@@ -75,7 +75,7 @@ class TracksDataTable(Static):
         self.search = Input(placeholder="Filter tracks (/)", id="search")
         self.main_table = VimDataTable(cursor_type="row", id="tracks-main-table")
         self.sort_button = Button("󰒼 Sort", compact=True, id="tracks-sort-button")
-        self.addto_button = Button(" Add to", compact=True, id="addto-button")
+        self.addto_button = Button(" Add to", compact=True, id="tracks-addto-button")
 
     def compose(self) -> ComposeResult:
         with Vertical():
@@ -86,12 +86,12 @@ class TracksDataTable(Static):
                 yield self.addto_button
             yield self.main_table
 
-    @on(Button.Pressed, "#sort-button")
+    @on(Button.Pressed, "#tracks-sort-button")
     def action_open_sort(self) -> None:
         if self.show_filter:
             self.app.push_screen(SortTracksPopup(), callback=self.sort)  # type:ignore
 
-    @on(Button.Pressed, "#addto-button")
+    @on(Button.Pressed, "#tracks-addto-button")
     def action_open_addto(self) -> None:
         row_dict = self.main_table.export_cell_as_dict(self.main_table.cursor_row)
         if row_dict:
