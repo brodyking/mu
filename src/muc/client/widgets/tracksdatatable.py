@@ -116,7 +116,6 @@ class AddToPopup(ModalScreen[str]):
     TABLE = [
         ("l", "Queue Last"),
         ("n", "Queue Next"),
-        ("p", "Add to Playlist"),
         ("esc", "Cancel"),
     ]
 
@@ -125,7 +124,6 @@ class AddToPopup(ModalScreen[str]):
         ("escape", "dismiss_msg('cancel')", "Close"),
         ("l", "dismiss_msg('last')", "Queue Last"),
         ("n", "dismiss_msg('next')", "Queue Next"),
-        ("p", "dismiss_msg('playlist')", "Add to Playlist"),
     ]
 
     class AddToQueueLast(Message):
@@ -164,8 +162,6 @@ class AddToPopup(ModalScreen[str]):
                 self.action_dismiss_msg("last")
             case "Queue Next":
                 self.action_dismiss_msg("next")
-            case "Add to Playlist":
-                self.action_dismiss_msg("playlist")
             case _:
                 self.action_dismiss_msg("Cancel")
 
