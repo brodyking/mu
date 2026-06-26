@@ -7,21 +7,6 @@
 
 """
 
-import subprocess
-
-
-class Mpv:
-    @staticmethod
-    def play(tracks: list) -> None:
-        """
-        Plays a list of files in mpv
-        """
-        track_paths = []
-        for track in tracks:
-            track_paths.append(track.filepath)
-        Interface.print(f"Starting mpv playback for {track_paths}")
-        subprocess.run(["mpv"] + track_paths)
-
 
 class Color:
     # Standard Colors (Lower Intensity)

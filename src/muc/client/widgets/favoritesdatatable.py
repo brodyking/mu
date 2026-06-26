@@ -7,10 +7,14 @@
 
 """
 
+from mu.track import Track
 from muc.client.widgets.tracksdatatable import TracksDataTable
 
 
 class FavoritesDataTable(TracksDataTable):
+    def __init__(self, tracks: dict[int, Track], show_filter: bool = True):
+        super().__init__(tracks, show_filter)
+
     def generate_full_rows(self):
         super().generate_full_rows()
         self.full_rows = [row for row in self.full_rows if row[1] == "❤"]

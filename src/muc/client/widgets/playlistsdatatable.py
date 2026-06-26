@@ -9,25 +9,22 @@
 
 from textual import on
 from textual.app import ComposeResult
-from textual.widgets import DataTable, Input, Static
+from textual.widgets import Input, Static
 
 from mu.playlist import Playlist
-from mu.track import Track
-from muc.client.widgets.nowplaying import Horizontal
-from muc.client.widgets.tracksdatatable import TracksDataTable
 from muc.client.widgets.vimdatatable import VimDataTable
 
 
-class PlaylistPlaylistsDataTable(Static):
+class PlaylistsDataTable(Static):
     BINDINGS = [("/", "focus_search", "Search")]
 
-    def __init__(self, playlists: list, search_id: str, main_table_id: str):
+    def __init__(self, playlists: list[Playlist]):
         super().__init__()
         self.playlists = playlists
         self.full_rows: list = []
 
-        self.search = Input(placeholder="Filter playlists (/)", id=search_id)
-        self.main_table = VimDataTable(cursor_type="row", id=main_table_id)
+        self.search = Input(placeholder="Filter playlists (/)", id="playlists-search")
+        self.main_table = VimDataTable(cursor_type="row", id="playlists-main-table")
 
     def compose(self) -> ComposeResult:
         yield self.search
@@ -37,13 +34,9 @@ class PlaylistPlaylistsDataTable(Static):
     def action_focus_search(self) -> None:
         self.search.focus()
 
-    # When search bar's input is changed
-    @on(Input.Changed)
-    def input_changed(self, event: Input.Changed) -> None:
+    @on(Input.Submitted)
+    def on_input_submitted(self, event: Input.Submitted) -> None:
         self.filter_table(event.value)
-
-    # When the input is submitted, focus the main table of tracks
-    def on_input_submitted(self) -> None:
         self.main_table.focus()
 
     def filter_table(self, search_term: str) -> None:
@@ -111,65 +104,3 @@ class PlaylistPlaylistsDataTable(Static):
             table.add_row(*row_tuple, key=str(playlist.id))
 
         table.focus()
-
-
-class PlaylistDataTable(Static):
-    DEFAULT_CSS = """
-    PlaylistPlaylistsDataTable {
-        width: 30;
-    }
-    TracksDataTable {
-        width: 1fr;
-    }
-    """
-
-    BINDINGS = [
-        ("H", "focus_table(0)", "Focus Playlists"),
-        ("L", "focus_table(1)", "Focus Tracks"),
-    ]
-
-    def __init__(self, playlists: list[Playlist], tracks: dict[Track], *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.playlists = playlists
-        self.tracks = tracks
-        self.playlist_playlists_data_table = PlaylistPlaylistsDataTable(
-            self.playlists,
-            "playlist-playlists-data-table-search",
-            "playlist-playlists-data-table-main-table",
-        )
-        self.playlist_tracks_data_table = TracksDataTable(
-            dict(),
-            "playlist-tracks-data-table-search",
-            "playlist-tracks-data-table-main-table",
-        )
-
-    def compose(self) -> ComposeResult:
-        with Horizontal():
-            yield self.playlist_playlists_data_table
-            yield self.playlist_tracks_data_table
-
-    def action_focus_table(self, table: int):
-        """Focuses different tables. 0: Playlists, 1: Playlist Tracks"""
-        if table == 0:
-            self.playlist_playlists_data_table.main_table.focus()
-        else:
-            self.playlist_tracks_data_table.main_table.focus()
-
-    @on(DataTable.RowSelected, "#playlist-playlists-data-table-main-table")
-    def row_selected(self, event: DataTable.RowSelected) -> None:
-        """
-        Populates seperate table with tracks from the playlist
-        Then changes focus
-        """
-        row_pos = event.cursor_row
-        playlist = self.playlists[row_pos]
-        tracks_sorted: dict = dict()
-        for track in playlist.tracks:
-            tracks_sorted[track.id] = self.tracks[track.id]
-        self.playlist_tracks_data_table.tracks = tracks_sorted
-        self.playlist_tracks_data_table.generate_full_rows()
-        # TODO: Make this table refresh by generate,
-        #       not working for some reason so im just filtering an empty string
-        self.playlist_tracks_data_table.filter_table("")
-
-        self.playlist_tracks_data_table.main_table.focus()

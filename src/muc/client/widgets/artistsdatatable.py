@@ -24,13 +24,13 @@ class ArtistsDataTable(Static):
     }
     """
 
-    def __init__(self, artists: list[str], search_id: str, main_table_id: str):
+    def __init__(self, artists: list[str]):
         super().__init__()
         self.artists = artists
         self.full_rows: list = []
 
-        self.search = Input(placeholder="Filter artists (/)", id=search_id)
-        self.main_table = VimDataTable(cursor_type="row", id=main_table_id)
+        self.search = Input(placeholder="Filter artists (/)", id="artists-search")
+        self.main_table = VimDataTable(cursor_type="row", id="artists-main-table")
 
     def compose(self) -> ComposeResult:
         yield self.search
@@ -40,13 +40,10 @@ class ArtistsDataTable(Static):
     def action_focus_search(self) -> None:
         self.search.focus()
 
-    # When search bar's input is changed
-    @on(Input.Changed)
-    def input_changed(self, event: Input.Changed) -> None:
-        self.filter_table(event.value)
-
     # When the input is submitted, focus the main table of tracks
-    def on_input_submitted(self) -> None:
+    @on(Input.Submitted)
+    def on_input_submitted(self, event: Input.Submitted) -> None:
+        self.filter_table(event.value)
         self.main_table.focus()
 
     def filter_table(self, search_term: str) -> None:

@@ -21,7 +21,7 @@ from muc.client.widgets.artistsdatatable import ArtistsDataTable
 from muc.client.widgets.favoritesdatatable import FavoritesDataTable
 from muc.client.widgets.mufooter import MuFooter
 from muc.client.widgets.nowplaying import NowPlaying, NowPlayingProgressBar
-from muc.client.widgets.playlistsdatatable import PlaylistDataTable
+from muc.client.widgets.playlistsplit import PlaylistSplit
 from muc.client.widgets.queuedatatable import QueueDataTable
 from muc.client.widgets.tracksdatatable import AddToPopup, TracksDataTable
 from muc.player.player import Player
@@ -42,12 +42,12 @@ class Client(App):
         QueueDataTable,
         AlbumsDataTable,
         ArtistsDataTable,
-        PlaylistPlaylistsDataTable {
+        PlaylistsDataTable {
             height: 1fr;
             max_height: 1fr;
             overflow-y: auto;
         }
-        PlaylistPlaylistsDataTable,PlaylistDataTable {
+        PlaylistsDataTable{
             scrollbar-size: 0 0;
             scrollbar-visibility: hidden;
         }
@@ -77,7 +77,8 @@ class Client(App):
         /* Also hide it when the Tabs widget is focused */
         Tabs:focus .underline--bar {
             background: transparent;
-        }    """
+        }
+    """
 
     BINDINGS = [
         ("q", "goto_tab(0)", "Queue"),
@@ -106,36 +107,24 @@ class Client(App):
         self.animation_level = "none"
 
         self.now_playing = NowPlaying()
-        self.queue_data_table = QueueDataTable(
-            "queue-data-table-search", "queue-data-table-main-table"
-        )
 
-        self.favorites_data_table = FavoritesDataTable(
-            self.tracks,
-            "favorites-data-table-search",
-            "favorites-data-table-main-table",
-        )
-
-        self.tracks_data_table = TracksDataTable(
-            self.tracks, "tracks-data-table-search", "tracks-data-table-main-table"
-        )
-
-        self.albums_data_table = AlbumsDataTable(
-            self.albums, "album-data-table-search", "album-data-table-main-table"
-        )
-
-        self.artists_data_table = ArtistsDataTable(
-            self.artists, "artist-data-table-search", "artist-data-table-main-table"
-        )
-
-        self.playlists_data_table = PlaylistDataTable(self.playlists, self.tracks)
+        self.queue_data_table = QueueDataTable()
+        self.favorites_data_table = FavoritesDataTable(self.tracks)
+        self.tracks_data_table = TracksDataTable(self.tracks)
+        self.albums_data_table = AlbumsDataTable(self.albums)
+        self.artists_data_table = ArtistsDataTable(self.artists)
+        self.playlists_split = PlaylistSplit(self.playlists, self.tracks)
 
         self.tabs = TabbedContent(id="tabs")
         self.tabs.can_focus_children = False
 
         self.player = Player(
-            on_track_end=lambda _: self.track_finished_playing(),
-            on_time_changed=lambda elapsed_ms: self.track_time_changed(elapsed_ms),
+            on_track_end_callback=lambda _: self.call_from_thread(
+                self.track_finished_playing
+            ),
+            on_time_changed_callback=lambda ms: self.call_from_thread(
+                self.track_time_changed, ms
+            ),
         )
 
     def compose(self) -> ComposeResult:
@@ -153,12 +142,12 @@ class Client(App):
                 with TabPane("󰠃 Artists (A)", id="artists-tab"):
                     yield self.artists_data_table
                 with TabPane("󱝟 Playlists (p)", id="playlists-tab"):
-                    yield self.playlists_data_table
+                    yield self.playlists_split
         yield MuFooter()
 
     def on_mount(self) -> None:
         """Focuses playlists playlist list upon starting"""
-        self.playlists_data_table.playlist_playlists_data_table.main_table.focus()
+        self.playlists_split.playlists_data_table.main_table.focus()
 
     def action_goto_tab(self, tabid: int) -> None:
         """Switches to a dedicated tab."""
@@ -170,7 +159,7 @@ class Client(App):
             ("artists-tab", self.artists_data_table.main_table),
             (
                 "playlists-tab",
-                self.playlists_data_table.playlist_playlists_data_table.main_table,
+                self.playlists_split.playlists_data_table.main_table,
             ),
         ]
         try:
@@ -182,17 +171,16 @@ class Client(App):
 
     def play_track(self, track: Track, queue_ids: list) -> None:
         """Plays a given track."""
-        self.now_playing.set_track(track)
+
+        # Update internal queue list
         self.queue_list.start_queue(queue_ids)
+
+        # Set queue in player and start playback
+        self.player.start_playback(track.filepath)
+
+        # Update UI
+        self.update_now_playing()
         self.queue_data_table.update_queue(self.queue_list.get_queue())
-
-        filepaths = []
-        queue = self.queue_list.get_queue(offset=0)
-        for track in queue:
-            filepaths.append(track.filepath)
-
-        self.player.set_queue(filepaths)
-        self.player.start_playback()
 
     def action_pause_track(self) -> None:
         """Pauses the player"""
@@ -202,20 +190,45 @@ class Client(App):
         """Skips to a song in the queue by an offest if the song exists"""
         try:
             track = self.queue_list.skip_track(offset)
-            if track:
-                self.player.skip_by_offset(offset)
+            if track is not None:
                 self.update_now_playing()
+                self.queue_data_table.update_queue(self.queue_list.get_queue())
+                self.player.start_playback(track.filepath)
         except ValueError as e:
             self.notify(str(e), severity="warning")
+
+    def track_finished_playing(self) -> None:
+        """This function is called when the track finishes from the player"""
+        current_track = self.queue_list.get_current_track()
+        if current_track:
+            current_track = self.db.increment_play_count(f"id:{current_track.id}")[0]
+            self.tracks_data_table.set_track_plays(
+                current_track.id, current_track.plays
+            )
+            self.queue_data_table.set_track_plays(current_track.id, current_track.plays)
+            self.favorites_data_table.set_track_plays(
+                current_track.id, current_track.plays
+            )
+        self.action_skip_track(1)
+
+    def track_time_changed(self, current_ms: int) -> None:
+        """Updates the current position of now playing. Also detects if a track has finished playing."""
+        self.now_playing.progress.update_elapsed(current_ms)
+
+    def update_now_playing(self) -> None:
+        """Updates the now playing widget with the current track"""
+        track = self.queue_list.get_current_track()
+        if track:
+            self.now_playing.set_track(track)
 
     @on(
         DataTable.RowSelected,
         """
-        #queue-data-table-main-table,
-        #favorites-data-table-main-table,
-        #queue-data-table-main-table,
-        #tracks-data-table-main-table,
-        #playlist-tracks-data-table-main-table
+            #queue-main-table,
+            #favorites-main-table,
+            #queue-main-table,
+            #tracks-main-table,
+            #playlists-tracks-main-table
         """,
     )
     def tracks_row_selected(self, event: DataTable.RowSelected) -> None:
@@ -225,7 +238,7 @@ class Client(App):
             "tracks-tab": self.tracks_data_table.main_table,
             "favorites-tab": self.favorites_data_table.main_table,
             "queue-tab": self.queue_data_table.main_table,
-            "playlists-tab": self.playlists_data_table.playlist_tracks_data_table.main_table,
+            "playlists-tab": self.playlists_split.tracks_data_table.main_table,
         }
         table = tab_to_table.get(self.tabs.active)
         if table is None:
@@ -245,7 +258,7 @@ class Client(App):
         except Exception as e:
             self.notify(f"Error fetching cell data: {e}", severity="error")
 
-    @on(DataTable.RowSelected, "#album-data-table-main-table")
+    @on(DataTable.RowSelected, "#albums-main-table")
     def albums_row_selected(self, event: DataTable.RowSelected):
         """If a album is selected"""
         table = self.albums_data_table.main_table
@@ -256,7 +269,7 @@ class Client(App):
         )
         self.tracks_data_table.main_table.focus()
 
-    @on(DataTable.RowSelected, "#artist-data-table-main-table")
+    @on(DataTable.RowSelected, "#artists-main-table")
     def artist_row_selected(self, event: DataTable.RowSelected):
         """If a artist is selected"""
         table = self.artists_data_table.main_table
@@ -297,79 +310,52 @@ class Client(App):
             self.tracks_data_table.search.value = f"album:{album}"
             self.tracks_data_table.main_table.focus()
 
-    def track_finished_playing(self) -> None:
-        """This function is called when the track finishes from the player"""
-        current_track = self.queue_list.get_current_track()
-        if current_track:
-            current_track = self.db.increment_play_count(f"id:{current_track.id}")[0]
-            self.tracks_data_table.set_track_plays(
-                current_track.id, current_track.plays
-            )
-            self.queue_data_table.set_track_plays(current_track.id, current_track.plays)
-            self.favorites_data_table.set_track_plays(
-                current_track.id, current_track.plays
-            )
-
-        self.queue_list.skip_track()
-        self.update_now_playing()
-
-    def track_time_changed(self, current_ms: int) -> None:
-        """Updates the current position of now playing"""
-        self.now_playing.progress.update_elapsed(current_ms)
-
-    def update_now_playing(self) -> None:
-        """Updates the now playing widget with the current track"""
-        track = self.queue_list.get_current_track()
-        if track:
-            self.now_playing.set_track(track)
-            self.queue_data_table.update_queue(self.queue_list.get_queue())
-
     def action_favorite_track(self) -> None:
         """
         Favorites a track. If table is selected, then the track
-        is picked from the currently selected row. Else, it is
-        selected from the currently playing track.
+        is picked from the currently selected row.
         """
-        # Check if a table is focused
         track_id = None
         table = None
         result = None
+
+        # Checks if the table is currently selected
         tables = [
             self.tracks_data_table.main_table,
             self.queue_data_table.main_table,
             self.favorites_data_table.main_table,
-            self.playlists_data_table.playlist_tracks_data_table.main_table,
+            self.playlists_split.tracks_data_table.main_table,
         ]
-
-        for i in tables:
-            if i == self.focused:
-                table = i
-
-        if table:
-            # If track favorited with f key while browsing
-            if table.cursor_row is not None and table.row_count > 0:
-                track_id = table.get_cell_at(Coordinate(table.cursor_row, 0))
+        if self.focused in tables:
+            table = self.focused
         else:
-            # If track is favorited using the buttons on controls while playing
-            current_track = self.queue_list.get_current_track()
-            if current_track is not None:
-                track_id = current_track.id
+            return
 
-        if track_id:
-            result = self.db.favorite(f"id:{track_id}")[0] if track_id else None
+        # Checks if the row is valid
+        if table.cursor_row is not None and table.row_count > 0:  # type:ignore
+            track_id = table.get_cell_at(Coordinate(table.cursor_row, 0))  # type:ignore
+        else:
+            return
 
-        if result:
-            self.tracks[track_id] = result
+        result = self.db.favorite(f"id:{track_id}")[0] if track_id else None
 
-            if not table:
-                self.now_playing.controls.set_favorite(result.favorite)
+        if result is None:
+            return
 
-            self.tracks_data_table.set_track_favorite(track_id, result.favorite)
-            self.queue_data_table.set_track_favorite(track_id, result.favorite)
-            self.favorites_data_table.set_track_favorite(track_id, result.favorite)
-            self.playlists_data_table.playlist_tracks_data_table.set_track_favorite(
-                track_id, result.favorite
-            )
+        self.tracks[track_id] = result
+
+        # If track is currently playing, update the favorite button
+        current_track = self.queue_list.get_current_track()
+        if current_track is not None and current_track.id == track_id:
+            self.now_playing.controls.set_favorite(result.favorite)
+
+        # Update Tables
+        self.tracks_data_table.set_track_favorite(track_id, result.favorite)
+        self.queue_data_table.set_track_favorite(track_id, result.favorite)
+        self.favorites_data_table.set_track_favorite(track_id, result.favorite)
+        self.playlists_split.tracks_data_table.set_track_favorite(
+            track_id, result.favorite
+        )
 
     @on(AddToPopup.AddToQueueLast)
     def queue_track_last(self, event: AddToPopup.AddToQueueLast) -> None:
