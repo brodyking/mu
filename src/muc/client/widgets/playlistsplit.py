@@ -29,8 +29,8 @@ class PlaylistSplit(Static):
     """
 
     BINDINGS = [
-        ("H", "focus_table(0)", "Focus Playlists"),
-        ("L", "focus_table(1)", "Focus Tracks"),
+        ("ctrl+h", "focus_table(0)", "Focus Playlists"),
+        ("ctrl+l", "focus_table(1)", "Focus Tracks"),
     ]
 
     def __init__(
