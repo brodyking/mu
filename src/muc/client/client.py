@@ -42,12 +42,12 @@ class Client(App):
         QueueDataTable,
         AlbumsDataTable,
         ArtistsDataTable,
-        PlaylistPlaylistsDataTable {
+        PlaylistsDataTable {
             height: 1fr;
             max_height: 1fr;
             overflow-y: auto;
         }
-        PlaylistPlaylistsDataTable,PlaylistDataTable {
+        PlaylistsDataTable{
             scrollbar-size: 0 0;
             scrollbar-visibility: hidden;
         }
@@ -119,8 +119,12 @@ class Client(App):
         self.tabs.can_focus_children = False
 
         self.player = Player(
-            on_track_end=lambda _: self.track_finished_playing(),
-            on_time_changed=lambda elapsed_ms: self.track_time_changed(elapsed_ms),
+            on_track_end_callback=lambda _: self.call_from_thread(
+                self.track_finished_playing
+            ),
+            on_time_changed_callback=lambda ms: self.call_from_thread(
+                self.track_time_changed, ms
+            ),
         )
 
     def compose(self) -> ComposeResult:
@@ -172,9 +176,7 @@ class Client(App):
         self.queue_list.start_queue(queue_ids)
 
         # Set queue in player and start playback
-        self.player.stop_playback()
-        self.player.set_queue(self.queue_list.get_queue_filepaths(offset=0))
-        self.player.start_playback()
+        self.player.start_playback(track.filepath)
 
         # Update UI
         self.update_now_playing()
@@ -189,9 +191,9 @@ class Client(App):
         try:
             track = self.queue_list.skip_track(offset)
             if track is not None:
-                self.player.skip_by_offset(offset)
                 self.update_now_playing()
                 self.queue_data_table.update_queue(self.queue_list.get_queue())
+                self.player.start_playback(track.filepath)
         except ValueError as e:
             self.notify(str(e), severity="warning")
 
@@ -207,12 +209,10 @@ class Client(App):
             self.favorites_data_table.set_track_plays(
                 current_track.id, current_track.plays
             )
-
-        self.queue_list.skip_track()
-        self.update_now_playing()
+        self.action_skip_track(1)
 
     def track_time_changed(self, current_ms: int) -> None:
-        """Updates the current position of now playing"""
+        """Updates the current position of now playing. Also detects if a track has finished playing."""
         self.now_playing.progress.update_elapsed(current_ms)
 
     def update_now_playing(self) -> None:
@@ -224,11 +224,11 @@ class Client(App):
     @on(
         DataTable.RowSelected,
         """
-        #queue-main-table,
-        #favorites-main-table,
-        #queue-main-table,
-        #tracks-main-table,
-        #playlists-tracks-main-table
+            #queue-main-table,
+            #favorites-main-table,
+            #queue-main-table,
+            #tracks-main-table,
+            #playlists-tracks-main-table
         """,
     )
     def tracks_row_selected(self, event: DataTable.RowSelected) -> None:
@@ -361,10 +361,8 @@ class Client(App):
     def queue_track_last(self, event: AddToPopup.AddToQueueLast) -> None:
         self.queue_list.queue_tracks_last([event.track.id])
         self.queue_data_table.update_queue(self.queue_list.get_queue())
-        self.player.set_queue(self.queue_list.get_queue_filepaths(offset=1))
 
     @on(AddToPopup.AddToQueueNext)
     def queue_track_next(self, event: AddToPopup.AddToQueueNext) -> None:
         self.queue_list.queue_tracks_next([event.track.id])
         self.queue_data_table.update_queue(self.queue_list.get_queue())
-        self.player.set_queue(self.queue_list.get_queue_filepaths(offset=1))

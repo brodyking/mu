@@ -21,14 +21,14 @@ class QueueList:
         Inserts tracks at the current position (right after pos), removing
         any existing occurrences of those track_ids first. Returns the queue.
         """
+
         # Remove track_ids that already exist in the queue
-        existing = set(track_ids)
+        to_move = set(track_ids)
         before = self.queue[: self.pos + 1]
         after = self.queue[self.pos + 1 :]
 
-        before = [t for t in before if t not in existing]
-        after = [t for t in after if t not in existing]
-
+        before = [t for t in before if t not in to_move]
+        after = [t for t in after if t not in to_move]
         self.queue = [*before, *track_ids, *after]
         return self.queue
 
@@ -80,10 +80,9 @@ class QueueList:
         """
 
         if not self.queue:
-            raise ValueError("The queue is empty.")  # Or handle how you prefer
-
-        # Use modulo to cleanly wrap around both positive and negative offset
-        if self.pos + offset < len(self.queue) and self.pos + offset >= 0:
-            self.pos = (self.pos + offset) % len(self.queue)
-
-        return self.get_current_track()
+            raise ValueError("The queue is empty.")
+        new_pos = self.pos + offset
+        if 0 <= new_pos < len(self.queue):
+            self.pos = new_pos
+            return self.get_current_track()
+        return None  # off either end → caller can stop playback
