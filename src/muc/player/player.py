@@ -7,6 +7,7 @@
 
 """
 
+import queue
 import threading
 from collections.abc import Callable
 
@@ -25,46 +26,62 @@ class Player:
         self.on_track_end_callback = on_track_end_callback
         self.on_time_changed_callback = on_time_changed_callback
 
-        # Attach to the underlying MediaPlayer's event manager
         em = self.player.event_manager()  # type: ignore
         em.event_attach(vlc.EventType.MediaPlayerEndReached, self._on_track_end)  # type: ignore
         em.event_attach(vlc.EventType.MediaPlayerTimeChanged, self._on_time_changed)  # type: ignore
 
+        self._commands: queue.Queue = queue.Queue()
+        self._worker = threading.Thread(target=self._run, daemon=True)
+        self._worker.start()
+
     def _on_track_end(self, event):
         if self.on_track_end_callback:
             threading.Thread(
-                target=self.on_track_end_callback,
-                args=(event,),
-                daemon=True,
+                target=self.on_track_end_callback, args=(event,), daemon=True
             ).start()
 
     def _on_time_changed(self, event):
         if self.on_time_changed_callback:
             self.on_time_changed_callback(event.u.new_time)
 
-    def stop_playback(self) -> None:
-        """Stops playback"""
-        self.player.stop()  # type:ignore
+    def _run(self):
+        while True:
+            cmd, arg = self._commands.get()
+            try:
+                if cmd == "play":
+                    arg = self._collapse_plays(arg)  # spam → newest track wins
+                    media = self.instance.media_new(arg)
+                    self.player.set_media(media)
+                    self.player.play()
+                elif cmd == "stop":
+                    self.player.stop()
+                elif cmd == "pause":
+                    self.player.pause()
+                elif cmd == "seek":
+                    if self.player.is_playing():
+                        self.player.set_position(arg)
+            except Exception:
+                pass
+
+    def _collapse_plays(self, arg):
+        """Drain a run of consecutive queued plays, keeping only the last."""
+        while True:
+            try:
+                if self._commands.queue[0][0] != "play":  # peek (single consumer)
+                    break
+                _, arg = self._commands.get_nowait()
+            except IndexError:
+                break
+        return arg
 
     def start_playback(self, filepath) -> None:
-        """Starts playback"""
-        self.stop_playback()
-        media = self.instance.media_new(filepath)
-        self.player.set_media(media)
-        self.player.play()
+        self._commands.put(("play", filepath))
+
+    def stop_playback(self) -> None:
+        self._commands.put(("stop", None))
 
     def toggle_playback(self) -> None:
-        """Toggles playback"""
-        self.player.pause()  # type: ignore
+        self._commands.put(("pause", None))
 
-    def get_current_time(self) -> tuple[int, float]:
-        """Returns a tuple of the current ms and the current percent of the track"""
-        current_ms = self.player.get_time() if self.player.is_playing() else 0  # type: ignore
-        current_percent = (
-            self.player.get_position() if self.player.is_playing() else 0.0  # type:ignore
-        )  # type: ignore
-        return (current_ms, current_percent)
-
-    def move_playhead_to_percentage(self, percentage: float):
-        if self.player.is_playing():  # type: ignore
-            self.player.set_position(percentage)  # type:ignore
+    def move_playhead_to_percentage(self, percentage: float) -> None:
+        self._commands.put(("seek", percentage))
