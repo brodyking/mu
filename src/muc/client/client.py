@@ -87,6 +87,8 @@ class Client(App):
         ("a", "goto_tab(3)", "Albums"),
         ("A", "goto_tab(4)", "Artists"),
         ("p", "goto_tab(5)", "Playlists"),
+        ("L", "cycle_tab(1)", "Next Tab"),
+        ("H", "cycle_tab(-1)", "Previous Tab"),
         ("Q", "quit", "Quit"),
         ("f", "favorite_track", "Favorite"),
         ("l", "skip_track(1)", "Next"),
@@ -168,6 +170,23 @@ class Client(App):
             table.focus()
         except (ValueError, IndexError):
             pass
+
+    def action_cycle_tab(self, offset: int) -> None:
+        """Moves to the tab left or right of the current one."""
+        tab_ids = [
+            "queue-tab",
+            "favorites-tab",
+            "tracks-tab",
+            "albums-tab",
+            "artists-tab",
+            "playlists-tab",
+        ]
+        try:
+            current_index = tab_ids.index(self.tabs.active)
+        except ValueError:
+            return
+        new_index = (current_index + offset) % len(tab_ids)
+        self.action_goto_tab(new_index)
 
     def play_track(self, track: Track, queue_ids: list) -> None:
         """Plays a given track."""
