@@ -18,7 +18,7 @@ from muc.client.widgets.vimdatatable import VimDataTable
 class PlaylistsDataTable(Static):
     BINDINGS = [("/", "focus_search", "Search")]
 
-    def __init__(self, playlists: list[Playlist]):
+    def __init__(self, playlists: dict[int, Playlist]):
         super().__init__()
         self.playlists = playlists
         self.full_rows: list = []
@@ -98,7 +98,8 @@ class PlaylistsDataTable(Static):
             table.add_column(label, key=key, width=max_w)
 
         self.full_rows = []
-        for playlist in self.playlists:
+        for playlist_id in self.playlists:
+            playlist = self.playlists[playlist_id]
             row_tuple = (playlist.id, playlist.title, playlist.description)
             self.full_rows.append(row_tuple)
             table.add_row(*row_tuple, key=str(playlist.id))

@@ -102,7 +102,7 @@ class Client(App):
         self.tracks: dict = self.db.list_library_tracks()
         self.albums: list = self.db.list_library_albums()
         self.artists: list = self.db.list_library_artists(album_artist=True)
-        self.playlists: list = self.db.list_playlists()
+        self.playlists: dict = self.db.list_playlists()
         self.queue_list = QueueList(self.tracks)
 
         self.theme = "catppuccin-mocha"
@@ -110,7 +110,7 @@ class Client(App):
 
         self.now_playing = NowPlaying()
 
-        self.queue_data_table = QueueDataTable()
+        self.queue_data_table = QueueDataTable(self.tracks)
         self.favorites_data_table = FavoritesDataTable(self.tracks)
         self.tracks_data_table = TracksDataTable(self.tracks)
         self.albums_data_table = AlbumsDataTable(self.albums)
@@ -378,10 +378,12 @@ class Client(App):
 
     @on(AddToPopup.AddToQueueLast)
     def queue_track_last(self, event: AddToPopup.AddToQueueLast) -> None:
-        self.queue_list.queue_tracks_last([event.track.id])
+        if event.track is not None:
+            self.queue_list.queue_tracks_last([event.track.id])
         self.queue_data_table.update_queue(self.queue_list.get_queue())
 
     @on(AddToPopup.AddToQueueNext)
     def queue_track_next(self, event: AddToPopup.AddToQueueNext) -> None:
-        self.queue_list.queue_tracks_next([event.track.id])
+        if event.track is not None:
+            self.queue_list.queue_tracks_next([event.track.id])
         self.queue_data_table.update_queue(self.queue_list.get_queue())

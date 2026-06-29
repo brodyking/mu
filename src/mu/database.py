@@ -264,7 +264,6 @@ class Database:
                     self.upsert_track(connection, metadata)
                     yield out
                 except Exception as e:
-                    print(e)
                     out["ok"] = False
                     yield out
 
@@ -440,13 +439,13 @@ class Database:
 
         return response
 
-    def list_playlists(self) -> list[Playlist]:
+    def list_playlists(self) -> dict[int, Playlist]:
         with sqlite3.connect(str(self.db_path)) as connection:
             connection.row_factory = sqlite3.Row
             response = connection.execute("SELECT * FROM playlists").fetchall()
-            output = []
+            output = {}
             for playlist in response:
-                output.append(self.get_playlist(f"id:{playlist['id']}"))
+                output[playlist["id"]] = self.get_playlist(f"id:{playlist['id']}")
             return output
 
     def favorite(self, term: str) -> list[Track]:

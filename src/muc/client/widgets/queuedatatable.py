@@ -7,21 +7,20 @@
 
 """
 
+from mu.track import Track
 from muc.client.widgets.tracksdatatable import TracksDataTable
 
 
 class QueueDataTable(TracksDataTable):
     def __init__(self, *args, **kwargs):
-        super().__init__(dict(), show_filter=False, *args, **kwargs)
+        super().__init__(show_filter=False, *args, **kwargs)
 
         # TODO: make key from pos in queue ig. change favoriting logic
 
-    def update_queue(self, tracks):
-        self.tracks = tracks
+    def update_queue(self, tracks: list[Track]):
         self.full_rows = []
         self.main_table.clear()
-        print(self.tracks)
-        for track in self.tracks:
+        for track in tracks:
             favorite = "❤" if track.favorite else " "
 
             row_tuple = (

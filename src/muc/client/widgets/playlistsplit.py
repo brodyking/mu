@@ -9,6 +9,7 @@
 
 from textual import on
 from textual.app import ComposeResult
+from textual.coordinate import Coordinate
 from textual.widgets import DataTable, Static
 
 from mu.playlist import Playlist
@@ -34,7 +35,7 @@ class PlaylistSplit(Static):
     ]
 
     def __init__(
-        self, playlists: list[Playlist], tracks: dict[int, Track], *args, **kwargs
+        self, playlists: dict[int, Playlist], tracks: dict[int, Track], *args, **kwargs
     ):
         super().__init__(*args, **kwargs)
         self.playlists = playlists
@@ -60,8 +61,10 @@ class PlaylistSplit(Static):
         Populates seperate table with tracks from the playlist
         Then changes focus
         """
-        row_pos = event.cursor_row
-        playlist = self.playlists[row_pos]
+        playlist_id = self.playlists_data_table.main_table.get_cell_at(
+            Coordinate(event.cursor_row, 0)
+        )
+        playlist = self.playlists[playlist_id]
         tracks_sorted: dict = dict()
         for track in playlist.tracks:
             tracks_sorted[track.id] = self.tracks[track.id]

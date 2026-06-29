@@ -95,9 +95,11 @@ class TracksDataTable(Static):
 
     @on(Button.Pressed, "#tracks-addto-button")
     def action_open_addto(self) -> None:
-        row_dict = self.main_table.export_cell_as_dict(self.main_table.cursor_row)
-        if row_dict:
-            popup = AddToPopup(row_dict, self.tracks)
+        row = self.main_table.cursor_row
+        row_dict = self.main_table.export_cell_as_dict(row)
+        track = self.tracks[row_dict["id"]]
+        if track:
+            popup = AddToPopup(track)
             self.app.push_screen(popup)  # type:ignore
 
     def action_focus_search(self) -> None:
@@ -417,11 +419,11 @@ class AddToPopup(ModalScreen[str]):
             self.track = track
             super().__init__(*args, **kwargs)
 
-    def __init__(self, row_dict, tracks, *args, **kwargs) -> None:
+    def __init__(self, track, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.main_table = VimDataTable(show_inspect=False, cursor_type="row")
 
-        self.track = tracks[row_dict["id"]] if row_dict else None
+        self.track = track
 
     def compose(self) -> ComposeResult:
         yield self.main_table

@@ -72,8 +72,8 @@ def cmd_list_artists(db: Database, album_artist: bool = False):
 def cmd_list_playlists(db: Database):
     """Prints all the playlists in the database"""
     playlists = db.list_playlists()
-    for playlist in playlists:
-        Interface.print("", playlist=playlist)
+    for playlist_id in playlists:
+        Interface.print("", playlist=playlists[playlist_id])
 
 
 def cmd_list_playlist(db: Database, term: str):
