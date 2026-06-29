@@ -29,7 +29,7 @@ class FavoritesDataTable(TracksDataTable):
             row = next((r for r in self.full_rows if r[0] == track_id), None)
             if row:
                 try:
-                    self.main_table.add_row(*row, key=str(track_id))
+                    self.main_table.add_row(*row, key=str(row[0]))
                 except Exception:
                     pass  # Row already exists
         else:

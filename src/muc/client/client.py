@@ -351,7 +351,7 @@ class Client(App):
             return
 
         # Checks if the row is valid
-        if table.cursor_row is not None and table.row_count > 0:  # type:ignore
+        if table.cursor_row is not None and table.row_count > 0:  # type: ignore
             track_id = table.get_cell_at(Coordinate(table.cursor_row, 0))  # type:ignore
         else:
             return
