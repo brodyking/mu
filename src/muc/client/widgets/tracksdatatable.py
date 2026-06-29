@@ -179,7 +179,7 @@ class TracksDataTable(Static):
         table.clear()
 
         for row in filtered_rows:
-            table.add_row(*row, key=row[0])
+            table.add_row(*row, key=str(row[0]))
 
     def sort(
         self,
