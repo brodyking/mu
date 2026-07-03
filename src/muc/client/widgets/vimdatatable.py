@@ -60,6 +60,8 @@ class VimDataTable(DataTable):
     BINDINGS = [
         ("j", "cursor_down", "Down"),
         ("k", "cursor_up", "Up"),
+        ("J", "scroll_bottom", "Last"),
+        ("K", "scroll_top", "First"),
         ("tab", "inspect", "Inspect"),
     ]
 
