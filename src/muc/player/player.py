@@ -50,16 +50,16 @@ class Player:
             try:
                 if cmd == "play":
                     arg = self._collapse_plays(arg)  # spam → newest track wins
-                    media = self.instance.media_new(arg)
-                    self.player.set_media(media)
-                    self.player.play()
+                    media = self.instance.media_new(arg)  # type: ignore
+                    self.player.set_media(media)  # type: ignore
+                    self.player.play()  # type: ignore
                 elif cmd == "stop":
-                    self.player.stop()
+                    self.player.stop()  # type: ignore
                 elif cmd == "pause":
-                    self.player.pause()
+                    self.player.pause()  # type: ignore
                 elif cmd == "seek":
-                    if self.player.is_playing():
-                        self.player.set_position(arg)
+                    if self.player.is_playing():  # type: ignore
+                        self.player.set_position(arg)  # type: ignore
             except Exception:
                 pass
 

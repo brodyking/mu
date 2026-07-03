@@ -15,6 +15,9 @@ src = ["src"]
 [tool.ruff.lint]
 select = ["E", "F", "I", "N", "UP"]
 
+[tool.basedpyright]
+typeCheckingMode = "standard"
+
 [project]
 name = "mu"
 version = "0.2.0"
