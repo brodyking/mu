@@ -335,6 +335,7 @@ class Client(App):
         if current_track is not None:
             artist = current_track.artist
             self.albums_data_table.search.value = f"albumartist:{artist}"
+            self.albums_data_table.filter_table(f"albumartist:{artist}")
             self.albums_data_table.main_table.focus()
 
     @on(events.Click, "#now-playing-track-info-album")
@@ -346,6 +347,7 @@ class Client(App):
         if current_track is not None:
             album = current_track.album
             self.tracks_data_table.search.value = f"album:{album}"
+            self.tracks_data_table.filter_table(f"album:{album}")
             self.tracks_data_table.main_table.focus()
 
     def action_favorite_track(self) -> None:
