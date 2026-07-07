@@ -30,5 +30,5 @@ N/A
   - Planned fix is to only store ID's, and reference the track dict stored by the client.
 - [x] Playlist list is not auto focused on app startup.
 - [x] App crashes if skip is spammed
-- [ ] Clicking on album in now playing doesn't complete an actual search
+- [x] Clicking on album in now playing doesn't complete an actual search
 - [ ] Clicking on favorite button in now playing doesn't favorite
