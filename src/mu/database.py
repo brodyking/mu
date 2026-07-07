@@ -263,7 +263,7 @@ class Database:
                     metadata = self.copy_file(filepath)
                     self.upsert_track(connection, metadata)
                     yield out
-                except Exception as e:
+                except Exception:
                     out["ok"] = False
                     yield out
 

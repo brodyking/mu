@@ -10,12 +10,14 @@
 import platform
 
 from PIL import Image as PILImage
+from PIL import ImageOps
 from textual import on
 from textual.app import ComposeResult
 from textual.containers import Horizontal, Vertical
 from textual.events import Click
 from textual.message import Message
 from textual.widgets import Button, Label, ProgressBar, Static
+from textual_image._terminal import get_cell_size
 from textual_image.widget import Image
 
 from mu.track import Track
@@ -25,34 +27,10 @@ IS_UNIX = platform.system() in ("Darwin", "Linux")
 
 class NowPlayingControls(Static):
     DEFAULT_CSS = """
-        NowPlayingControls > Horizontal {
-            height: 3;
-            width: auto;
-            align: right middle;
-        }
-        NowPlayingControls Button {
-            border: none;
-            height: 3;
-            min-height: 3;
-            max-width: 6;
-            min-width: 1;
-            padding: 0 0;
-            margin: 0 0 0 1;
-            content-align: center middle;
-            text-align: center;
-        }
-
-        .no-bg {
-            min-width: 5;
-            margin: 0 0 0 4;
-            background: transparent!important;
-            border: none!important;
-        }
-
-        NowPlayingControls Button > .button--label {
-            height: 3;
-            content-align: center middle;
-            text-align: center;
+        Button {
+            width:3;
+            padding:0;
+            max-width: 3
         }
     """
 
@@ -62,20 +40,26 @@ class NowPlayingControls(Static):
             "",
             id="now-playing-controls-favorite",
             action="app.favorite_track(-1)",
-            flat=True,
+            compact=True,
             classes="no-bg",
         )
         self.previous = Button(
-            "⏮ ",
+            "󰒫",
             id="now-playing-controls-previous",
             action="app.skip_track(-1)",
-            flat=True,
+            compact=True,
         )
         self.toggle = Button(
-            "⏸", id="now-playing-controls-toggle", action="app.pause_track()", flat=True
+            "󰏤",
+            id="now-playing-controls-toggle",
+            action="app.pause_track()",
+            compact=True,
         )
         self.next = Button(
-            "⏭ ", id="now-playing-controls-next", action="app.skip_track(1)", flat=True
+            "󰒬",
+            id="now-playing-controls-next",
+            action="app.skip_track(1)",
+            compact=True,
         )
 
     def set_favorite(self, is_favorite: bool) -> None:
@@ -114,27 +98,35 @@ class NowPlayingProgressBar(ProgressBar):
 class NowPlayingProgress(Static):
     DEFAULT_CSS = """
         NowPlayingProgress {
-            height: 2;
+            height: 1;
             padding: 0;
-            padding-top:1;
+            padding-top:0;
+            background: $surface;
         }
         NowPlayingProgress > Horizontal {
-            width: 100%;
-            height: 2;
+            width: 1fr;
+            height: 1;
         }
         NowPlayingProgress > Horizontal > Label {
             width: auto;
-            height: 2;
+            height: 1;
             content-align: center middle;
+            background: $primary;
+            padding: 0 1;
+            color: $background;
         }
         NowPlayingProgress > Horizontal > NowPlayingProgressBar {
             width: 1fr;
-            height: 2;
-            padding: 0 2;
+            height: 1;
+            padding: 0 1;
         }
         NowPlayingProgress > Horizontal > NowPlayingProgressBar Bar {
             width: 100%;
             height: 1;
+        }
+        NowPlayingProgress > Horizontal > NowPlayingProgressBar Bar > .bar--bar {
+            color: $primary;
+            background: $panel;
         }
     """
 
@@ -171,50 +163,75 @@ class NowPlayingProgress(Static):
 
 
 class NowPlayingTrackInfo(Static):
+    DEFAULT_CSS = """
+
+        Label {
+            background: $surface
+        }
+
+        .icon {
+            background: $primary;
+            color: $background;
+        }
+    """
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.title = Label("󰈣", id="now-playing-track-info-title")
-        self.artist = Label("󰠃", id="now-playing-track-info-artist")
-        self.album = Label("󱍙", id="now-playing-track-info-album")
+        self.title = Label(" N/A ", id="now-playing-track-info-title")
+        self.artist = Label(" N/A ", id="now-playing-track-info-artist")
+        self.album = Label(" N/A ", id="now-playing-track-info-album")
 
-    def set_info(self, title, artist, album):
-        self.title.update(title)
-        self.artist.update(artist)
-        self.album.update(album)
+    def set_track(self, track: Track) -> None:
+
+        def format(text: str, length: int) -> str:
+            return f" {text[: length - 3]} " if len(text) >= length else f" {text} "
+
+        self.title.update(format(track.title, 30))
+        self.artist.update(format(track.artist, 25))
+        self.album.update(format(track.album, 25))
 
     def compose(self):
         with Vertical():
-            yield self.title
-            yield self.artist
-            yield self.album
+            with Horizontal():
+                yield Label(" 󰈣 ", classes="icon")
+                yield self.title
+                yield Label(" 󰠃 ", classes="icon")
+                yield self.artist
+                yield Label(" 󱍙 ", classes="icon")
+                yield self.album
 
 
 class NowPlaying(Static):
-    DEFAULT_CSS = """
+    SHOW_ALBUM_ART = False
 
+    DEFAULT_CSS = """
         Image {
-            max-width: 6;
-            max-height: 3;
-            margin-right: 2;
+            min-width: 4;
+            min-height: 2;
+            max-width: 4;
+            max-height: 2;
             background: $panel;
         }
 
-        NowPlaying > Vertical {
+
+        NowPlaying > Horizontal {
             width: 100%;
-            height: 7;
-            padding: 1;
+            height: 2;
         }
         NowPlayingTrackInfo {
             width: 1fr;
-            height: 1fr;
+            height: 1;
         }
-        NowPlayingControls {
-            width: auto;
-            height:auto;
+        .transport {
+            width: 1fr;
+            height: 1;
         }
-        NowPlayingControls > Horizontal {
-            align: right middle;
-            width: auto;
+        .transport > NowPlayingProgress {
+            width: 1fr;
+        }
+        .transport > NowPlayingControls {
+            width: 12;
+            height: 1;
         }
     """
 
@@ -226,45 +243,28 @@ class NowPlaying(Static):
         self.progress = NowPlayingProgress(id="now-playing-progress")
 
     def compose(self) -> ComposeResult:
-        with Vertical():
-            with Horizontal():
-                if IS_UNIX:
-                    yield self.cover_art
+        with Horizontal():
+            if IS_UNIX and self.SHOW_ALBUM_ART:
+                yield self.cover_art
+            with Vertical():
                 yield self.track_info
-                yield self.controls
-            yield self.progress
+                with Horizontal(classes="transport"):
+                    yield self.progress
+                    yield self.controls
 
     @staticmethod
     def fit_image(path: str, max_cells_w: int, max_cells_h: int) -> PILImage.Image:
-        try:
-            import fcntl
-            import struct
-            import termios
-
-            buf = struct.pack("HHHH", 0, 0, 0, 0)
-            result = fcntl.ioctl(1, termios.TIOCGWINSZ, buf)
-            rows, cols, xpix, ypix = struct.unpack("HHHH", result)
-            if rows > 0 and cols > 0 and xpix > 0 and ypix > 0:
-                cell_w, cell_h = xpix // cols, ypix // rows
-            else:
-                cell_w, cell_h = 8, 16
-        except Exception:
-            cell_w, cell_h = 8, 16
-
-        target_px_w = max_cells_w * cell_w
-        target_px_h = max_cells_h * cell_h * 2
+        cell = get_cell_size()
         img = PILImage.open(path)
-        img.thumbnail((target_px_w, target_px_h), PILImage.LANCZOS)
-        return img
+        return ImageOps.fit(
+            img,
+            (max_cells_w * cell.width, max_cells_h * cell.height),
+            PILImage.LANCZOS,
+        )
 
     def set_track(self, track: Track):
-        self.track_info.set_info(
-            f"󰈣  {track.title}", f"󰠃  {track.artist}", f"󱍙  {track.album}"
-        )
+        self.track_info.set_track(track)
         self.controls.set_favorite(track.favorite)
         self.progress.set_track(track)
         if IS_UNIX and self.cover_art:
-            self.cover_art.image = self.fit_image(track.albumart, 6, 4)
-
-    def on_mount(self) -> None:
-        pass
+            self.cover_art.image = self.fit_image(track.albumart, 4, 2)

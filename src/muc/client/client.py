@@ -11,6 +11,7 @@ from textual import events, on
 from textual.app import App, ComposeResult
 from textual.containers import Vertical
 from textual.coordinate import Coordinate
+from textual.theme import Theme
 from textual.widgets import DataTable, TabbedContent, TabPane
 
 from mu.database import Database
@@ -33,7 +34,7 @@ class Client(App):
             height: 100%;
         }
         NowPlaying {
-            height: 7;
+            height: 2;
         }
         TabbedContent {
             height: 1fr;
@@ -105,7 +106,25 @@ class Client(App):
         self.playlists: dict = self.db.list_playlists()
         self.queue_list = QueueList(self.tracks)
 
-        self.theme = "catppuccin-mocha"
+        self.register_theme(
+            theme=Theme(
+                name="tokyonight-moon",
+                primary="#82AAFFFF",  # blue
+                secondary="#394B70FF",  # blue7
+                accent="#C099FFFF",  # magenta
+                background="#222436FF",  # bg
+                foreground="#C8D3F5FF",  # fg
+                surface="#1E2030FF",  # bg_dark
+                panel="#2F334DFF",  # bg_highlight
+                success="#C3E88DFF",  # green
+                warning="#FFC777FF",  # yellow
+                error="#FF757FFF",  # red
+                dark=True,
+                variables={},
+            )
+        )
+
+        self.theme = "tokyonight-moon"
         self.animation_level = "none"
 
         self.now_playing = NowPlaying()
