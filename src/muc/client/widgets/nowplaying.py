@@ -39,7 +39,7 @@ class NowPlayingControls(Static):
         self.favorite = Button(
             "",
             id="now-playing-controls-favorite",
-            action="app.favorite_track(-1)",
+            action="app.favorite_track()",
             compact=True,
             classes="no-bg",
         )

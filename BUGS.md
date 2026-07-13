@@ -31,4 +31,4 @@ N/A
 - [x] Playlist list is not auto focused on app startup.
 - [x] App crashes if skip is spammed
 - [x] Clicking on album in now playing doesn't complete an actual search
-- [ ] Clicking on favorite button in now playing doesn't favorite
+- [x] Clicking on favorite button in now playing doesn't favorite

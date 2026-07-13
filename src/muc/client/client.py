@@ -357,7 +357,8 @@ class Client(App):
     def action_favorite_track(self) -> None:
         """
         Favorites a track. If table is selected, then the track
-        is picked from the currently selected row.
+        is picked from the currently selected row. If no table is
+        selected, it favorites the currently playing track.
         """
         track_id = None
         table = None
@@ -373,13 +374,15 @@ class Client(App):
         if self.focused in tables:
             table = self.focused
         else:
-            return
+            table = None
 
         # Checks if the row is valid
-        if table.cursor_row is not None and table.row_count > 0:  # type: ignore
+        if table is not None and table.cursor_row is not None and table.row_count > 0:  # type: ignore
             track_id = table.get_cell_at(Coordinate(table.cursor_row, 0))  # type:ignore
         else:
-            return
+            current_track = self.queue_list.get_current_track()
+            if current_track is not None:
+                track_id = current_track.id
 
         result = self.db.favorite(f"id:{track_id}")[0] if track_id else None
 
