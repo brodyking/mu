@@ -305,6 +305,9 @@ class Client(App):
         self.tracks_data_table.search.value = (
             f"album:{album_title}&albumartist:{album_artist}"
         )
+        self.tracks_data_table.filter_table(
+            f"album:{album_title}&albumartist:{album_artist}"
+        )
         self.tracks_data_table.main_table.focus()
 
     @on(DataTable.RowSelected, "#artists-main-table")
@@ -313,6 +316,7 @@ class Client(App):
         table = self.artists_data_table.main_table
         artist = table.get_cell_at(Coordinate(event.cursor_row, 0))
         self.albums_data_table.search.value = f"albumartist:{artist}"
+        self.albums_data_table.filter_table(f"albumartist:{artist}")
         self.albums_data_table.main_table.focus()
 
     @on(NowPlayingProgressBar.Clicked)
