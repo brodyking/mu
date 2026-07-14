@@ -20,7 +20,7 @@ class Player:
         on_time_changed_callback: Callable | None = None,
         on_track_end_callback: Callable | None = None,
     ):
-        self.instance = vlc.Instance("--no-xlib")
+        self.instance = vlc.Instance("--no-xlib --quiet")
         self.player = vlc.MediaPlayer(self.instance)
 
         self.on_track_end_callback = on_track_end_callback
