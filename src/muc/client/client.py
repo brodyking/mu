@@ -250,7 +250,10 @@ class Client(App):
         self.action_skip_track(1)
 
     def track_time_changed(self, current_ms: int) -> None:
-        """Updates the current position of now playing. Also detects if a track has finished playing."""
+        """
+        Updates the current position of now playing.
+        Also detects if a track has finished playing.
+        """
         self.now_playing.progress.update_elapsed(current_ms)
 
     def update_now_playing(self) -> None:
