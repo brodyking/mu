@@ -53,3 +53,28 @@ class Track:
             "filename": self.filename,
             "albumart": self.albumart,
         }
+
+
+class Album:
+    def __init__(self, response: dict):
+        """
+        Creates a album object from SQLite response
+        """
+        self.title = response["album"]
+        self.albumartist = response["albumartist"]
+
+    def get_dict(self) -> dict:
+        return {
+            "title": self.title,
+            "albumartist": self.albumartist,
+        }
+
+
+class Playlist:
+    def __init__(
+        self, id: int, title: str, description: str = "", tracks: list[Track] = []
+    ):
+        self.id = id
+        self.title = title
+        self.description = description if description is not None else ""
+        self.tracks = tracks
