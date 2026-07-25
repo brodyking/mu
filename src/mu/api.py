@@ -12,7 +12,7 @@ from pathlib import Path
 
 from mu.database import Database
 from mu.file import read_metadata
-from mu.types import Album, Track
+from mu.types import Artist, Album, Track
 
 
 class Api:
@@ -128,6 +128,9 @@ class Api:
         yield from flush()  # trailing partial batch
 
     def list_library_tracks(self, only_favorited: bool = False) -> dict[int, Track]:
+        """
+        Returns a dict of tracks with the trackid as the key
+        """
         sql = "SELECT * FROM tracks"
         if only_favorited:
             sql += " WHERE favorite = 1"
@@ -139,10 +142,54 @@ class Api:
         """
         return {t.id: t for t in (Track(row) for row in self.db.query(sql))}
 
-    def list_library_albums(self) -> list[Album]:
+    def list_library_albums(self) -> dict[str, Album]:
+        """
+        Returns every album mapped to their tracks.
+        """
+
         rows = self.db.query("""
-            SELECT album, albumartist FROM tracks
-            GROUP BY album, albumartist
-            ORDER BY albumartist COLLATE NOCASE, album COLLATE NOCASE
+            SELECT * FROM tracks
+            WHERE albumartist IS NOT NULL AND TRIM(albumartist) != ''
+            ORDER BY albumartist COLLATE NOCASE,
+                    album COLLATE NOCASE,
+                    CAST(discnumber AS INTEGER),
+                    CAST(tracknumber AS INTEGER)
         """)
-        return [Album(row) for row in rows]
+
+        albums: dict[str, Album] = {}
+        for row in rows:
+            track = Track(row)
+            album_name = track.album  # the grouping name for THIS track
+            if album_name not in albums:
+                albums[album_name] = Album(
+                    title=track.album, albumartist=track.artist, tracks=[]
+                )
+            albums[album_name].tracks.append(track)
+        return albums
+
+    def list_library_artists(
+        self, only_albumartists: bool = False
+    ) -> dict[str, Artist]:
+        """
+        Returns every artist mapped to their tracks.
+        Set only_albumartists to group by album artist instead of track artist.
+        """
+        column = "albumartist" if only_albumartists else "artist"
+
+        rows = self.db.query(f"""
+            SELECT * FROM tracks
+            WHERE {column} IS NOT NULL AND TRIM({column}) != ''
+            ORDER BY {column} COLLATE NOCASE,
+                    album COLLATE NOCASE,
+                    CAST(discnumber AS INTEGER),
+                    CAST(tracknumber AS INTEGER)
+        """)
+
+        artists: dict[str, Artist] = {}
+        for row in rows:
+            track = Track(row)
+            name = row[column]  # the grouping name for THIS track
+            if name not in artists:
+                artists[name] = Artist(name=name, tracks=[])
+            artists[name].tracks.append(track)
+        return artists

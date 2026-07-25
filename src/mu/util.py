@@ -120,7 +120,10 @@ class Interface:
                 f"{Interface.fmt(album.albumartist, 15)}"
             )
         elif artist is not None:
-            searchresult = f"{Color.red(artist)}"
+            searchresult = (
+                f"{Color.red(artist.name)} "
+                f"{Color.light_gray(f'{len(artist.tracks)} track(s)')}"
+            )
         elif playlist is not None:
             searchresult = (
                 f"{Color.light_gray('#' + str(playlist.id).rjust(4, '0'))} "

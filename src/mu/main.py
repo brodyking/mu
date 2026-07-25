@@ -44,18 +44,18 @@ def cmd_list_albums():
     """Prints all albums in the database"""
     albums = api.list_library_albums()
     total = len(albums)
-    for i, album in enumerate(albums):
-        Interface.print("", album=album, count=[i + 1, total])
+    for i, album_name in enumerate(albums):
+        Interface.print("", album=albums[album_name], count=[i + 1, total])
 
 
-#
-# def cmd_list_artists(db: Database, album_artist: bool = False):
-#     """Prints all the artists in the database"""
-#     artists = db.list_library_artists(album_artist=album_artist)
-#     total = len(artists)
-#     for i, artist in enumerate(artists):
-#         Interface.print("", artist=artist[0], count=[i + 1, total])
-#
+def cmd_list_artists(only_albumartists: bool = False):
+    """Prints all the artists in the database"""
+    artists = api.list_library_artists(only_albumartists=only_albumartists)
+    total = len(artists)
+    for i, artist_name in enumerate(artists):
+        Interface.print("", artist=artists[artist_name], count=[i + 1, total])
+
+
 #
 # def cmd_list_playlists(db: Database):
 #     """Prints all the playlists in the database"""
@@ -199,15 +199,17 @@ def _add_list_parser(subparsers) -> None:
         "albums", help="list all albums in the library"
     ).set_defaults(func=lambda _: cmd_list_albums())
 
+    # artists
+    artists = list_subparsers.add_parser(
+        "artists", help="list all artists in the library"
+    )
 
-#     # artists
-#     artists = list_subparsers.add_parser(
-#         "artists", help="list all artists in the library"
-#     )
-#     artists.add_argument(
-#         "-a", "--albums", action="store_true", help="list only album artists"
-#     )
-#     artists.set_defaults(func=lambda args: cmd_list_artists(db, args.albums))
+    artists.add_argument(
+        "-a", "--albums", action="store_true", help="list only album artists"
+    )
+    artists.set_defaults(func=lambda args: cmd_list_artists(args.albums))
+
+
 #
 #     # playlists
 #     list_subparsers.add_parser(
