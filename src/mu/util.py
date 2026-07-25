@@ -175,9 +175,3 @@ class Interface:
         lines = logo.split("\n")
         for line in lines:
             print(Color.red(line))
-
-    @staticmethod
-    def print_incorrect_schema(database_schema: int, library_version: int) -> None:
-        Interface.print("Library schema version is outdated or invalid.", ok=False)
-        print(f"Database version:\t{database_schema}")
-        print(f"Library version:\t{library_version}")

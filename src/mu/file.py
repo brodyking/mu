@@ -6,6 +6,7 @@
 |_|
 """
 
+import shutil
 import hashlib
 import os
 from pathlib import Path
@@ -31,18 +32,20 @@ _MAGIC = (
 )
 
 
-def read_metadata(filepath: Path, albumart_path: Path) -> dict:
+def read_metadata(
+    file_path: Path,
+    albumart_path: Path,
+) -> dict:
     """
     Reads tags, duration, and album art for an MP3.
     Art is deduplicated by content hash; the returned value is a
     bare filename relative to albumart_path.
     """
-    filepath = Path(filepath)
     duration = 0
     tags = None
 
     try:
-        audio = MP3(filepath)  # one parse: info AND tags
+        audio = MP3(file_path)  # one parse: info AND tags
         duration = int(audio.info.length or 0)
         tags = audio.tags  # ID3 object, or None if untagged
     except MutagenError:
@@ -56,8 +59,8 @@ def read_metadata(filepath: Path, albumart_path: Path) -> dict:
             "time": duration,
             "tracknumber": _leading_int(_text(tags, "TRCK")),
             "discnumber": _leading_int(_text(tags, "TPOS")),
-            "filepath": str(filepath),
-            "filename": filepath.name,
+            "filepath": str(file_path),
+            "filename": file_path.name,
             "albumart": extract_album_art(tags, albumart_path),
         }
     )
