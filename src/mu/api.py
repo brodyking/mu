@@ -12,7 +12,7 @@ from pathlib import Path
 
 from mu.database import Database
 from mu.file import read_metadata
-from mu.types import Track
+from mu.types import Album, Track
 
 
 class Api:
@@ -30,7 +30,7 @@ class Api:
         Inserts the track, or updates it in place if filepath already exists.
         Requires: "filepath" TEXT UNIQUE
         """
-        row: dict = conn.execute(
+        row = conn.execute(
             """
             INSERT INTO tracks (
                 title, artist, album, time, tracknumber, albumartist,
@@ -89,10 +89,10 @@ class Api:
         batch: list[tuple[dict, dict | None]] = []
 
         # Upserts metadata dict's from batch
-        def flush() -> Iterator[dict]:
+        def flush() -> list[dict]:
             if not batch:
-                return
-            metas = [m for _, m in batch if m is not None]
+                return []
+            metas: list[dict] = [m for _, m in batch if m is not None]
             if metas:
                 try:
                     with self.db.write() as con:  # lock held only here
@@ -103,8 +103,9 @@ class Api:
                         if meta is not None:
                             record["ok"] = False
                             record["error"] = f"write failed: {exc}"
-            yield from (record for record, _ in batch)
+            records: list[dict] = [record for record, _ in batch]
             batch.clear()
+            return records
 
         for count, path in enumerate(files, 1):
             record = {
@@ -125,3 +126,23 @@ class Api:
                 yield from flush()
 
         yield from flush()  # trailing partial batch
+
+    def list_library_tracks(self, only_favorited: bool = False) -> dict[int, Track]:
+        sql = "SELECT * FROM tracks"
+        if only_favorited:
+            sql += " WHERE favorite = 1"
+        sql += """
+            ORDER BY artist COLLATE NOCASE,
+                    album COLLATE NOCASE,
+                    CAST(discnumber AS INTEGER),
+                    CAST(tracknumber AS INTEGER)
+        """
+        return {t.id: t for t in (Track(row) for row in self.db.query(sql))}
+
+    def list_library_albums(self) -> list[Album]:
+        rows = self.db.query("""
+            SELECT album, albumartist FROM tracks
+            GROUP BY album, albumartist
+            ORDER BY albumartist COLLATE NOCASE, album COLLATE NOCASE
+        """)
+        return [Album(row) for row in rows]

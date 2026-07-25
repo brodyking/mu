@@ -32,22 +32,22 @@ def cmd_version():
     Interface.print_version(VERSION, api.db.SCHEMA)
 
 
-#
-#
-# def cmd_list_tracks(db: Database, only_favorited: bool = False):
-#     """Prints all tracks in the database"""
-#     tracks = db.list_library_tracks(only_favorited=only_favorited)
-#     for track_id in tracks:
-#         Interface.print("", track=tracks[track_id])
-#
-#
-# def cmd_list_albums(db: Database):
-#     """Prints all albums in the database"""
-#     albums = db.list_library_albums()
-#     total = len(albums)
-#     for i, album in enumerate(albums):
-#         Interface.print("", album=album, count=[i + 1, total])
-#
+def cmd_list_tracks(only_favorited: bool = False):
+    """Prints all tracks in the database"""
+    tracks = api.list_library_tracks(only_favorited=only_favorited)
+    total = len(tracks)
+    for i, track_id in enumerate(tracks):
+        Interface.print("", track=tracks[track_id], count=[i + 1, total])
+
+
+def cmd_list_albums():
+    """Prints all albums in the database"""
+    albums = api.list_library_albums()
+    total = len(albums)
+    for i, album in enumerate(albums):
+        Interface.print("", album=album, count=[i + 1, total])
+
+
 #
 # def cmd_list_artists(db: Database, album_artist: bool = False):
 #     """Prints all the artists in the database"""
@@ -165,7 +165,7 @@ def build_parser() -> argparse.ArgumentParser:
         dest="action", help="options for library", required=True
     )
 
-    # _add_list_parser(db, subparsers)
+    _add_list_parser(subparsers)
     # _add_playlist_parser(db, subparsers)
     _add_scan_parser(subparsers)
     _add_version_parser(subparsers)
@@ -177,29 +177,29 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
-#
-# def _add_list_parser(db: Database, subparsers) -> None:
-#     list_parser = subparsers.add_parser(
-#         "list", help="list different parts of your library"
-#     )
-#     list_subparsers = list_parser.add_subparsers(
-#         dest="list_type", required=True, help="what to list"
-#     )
-#
-#     # tracks
-#     tracks = list_subparsers.add_parser("tracks", help="list all tracks in the library")
-#     tracks.add_argument(
-#         "-f", "--favorited", action="store_true", help="list only your favorite tracks"
-#     )
-#     tracks.set_defaults(
-#         func=lambda args: cmd_list_tracks(db, only_favorited=args.favorited)
-#     )
-#
-#     # albums
-#     list_subparsers.add_parser(
-#         "albums", help="list all albums in the library"
-#     ).set_defaults(func=lambda _: cmd_list_albums(db))
-#
+def _add_list_parser(subparsers) -> None:
+    list_parser = subparsers.add_parser(
+        "list", help="list different parts of your library"
+    )
+    list_subparsers = list_parser.add_subparsers(
+        dest="list_type", required=True, help="what to list"
+    )
+
+    # tracks
+    tracks = list_subparsers.add_parser("tracks", help="list all tracks in the library")
+    tracks.add_argument(
+        "-f", "--favorited", action="store_true", help="list only your favorite tracks"
+    )
+    tracks.set_defaults(
+        func=lambda args: cmd_list_tracks(only_favorited=args.favorited)
+    )
+
+    # albums
+    list_subparsers.add_parser(
+        "albums", help="list all albums in the library"
+    ).set_defaults(func=lambda _: cmd_list_albums())
+
+
 #     # artists
 #     artists = list_subparsers.add_parser(
 #         "artists", help="list all artists in the library"
