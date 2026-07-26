@@ -109,26 +109,27 @@ class Interface:
         if track is not None:
             searchresult = (
                 f"{Color.light_gray('#' + str(track.id).rjust(4, '0'))} "
-                f"{favorited}{Color.red(Interface.fmt(f'{track.title}', 25))} | "
-                f"{Interface.fmt(track.artist, 15)} | "
-                f"{Interface.fmt(track.album, 15)} | "
+                f"{favorited}{Color.red(Interface.fmt(f'{track.title}', 25))} "
+                f"{Interface.fmt(track.artist, 15)} "
+                f"{Interface.fmt(track.album, 15)} "
                 f"{Color.blue(track.filepath)}"
             )
         elif album is not None:
             searchresult = (
-                f"{Color.red(Interface.fmt(album.title, 25))} | "
-                f"{Interface.fmt(album.albumartist, 15)}"
+                f"{Color.red(Interface.fmt(album.title, 25))} "
+                f"{Interface.fmt(album.albumartist, 25)} "
+                f"{Interface.fmt(f'{Color.light_gray(f"{len(album.tracks)} track(s)")}', 25)}"
             )
         elif artist is not None:
             searchresult = (
-                f"{Color.red(artist.name)} "
-                f"{Color.light_gray(f'{len(artist.tracks)} track(s)')}"
+                f"{Color.red(Interface.fmt(artist.name, width=25))} "
+                f"{Interface.fmt(f'{Color.light_gray(f"{len(artist.tracks)} track(s)")}', 25)}"
             )
         elif playlist is not None:
             searchresult = (
                 f"{Color.light_gray('#' + str(playlist.id).rjust(4, '0'))} "
-                f"{Color.red(Interface.fmt(playlist.title, 15))} | "
-                f"{Color.green(Interface.fmt(str(len(playlist.tracks)), 3))} | "
+                f"{Color.red(Interface.fmt(playlist.title, 15))} "
+                f"{Color.green(Interface.fmt(str(len(playlist.tracks)), 3))} "
                 f"{playlist.description}"
             )
         else:
