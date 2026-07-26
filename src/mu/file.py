@@ -34,7 +34,7 @@ _MAGIC = (
 
 def read_metadata(
     file_path: Path,
-    albumart_path: Path,
+    albumart_path: Path | None,
 ) -> dict:
     """
     Reads tags, duration, and album art for an MP3.
@@ -61,7 +61,9 @@ def read_metadata(
             "discnumber": _leading_int(_text(tags, "TPOS")),
             "filepath": str(file_path),
             "filename": file_path.name,
-            "albumart": extract_album_art(tags, albumart_path),
+            "albumart": extract_album_art(tags, albumart_path)
+            if albumart_path
+            else None,
         }
     )
     return meta

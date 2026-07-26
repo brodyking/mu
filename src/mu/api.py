@@ -8,11 +8,14 @@
 """
 
 from collections.abc import Iterator
+import copy
 from pathlib import Path
 
 from mu.database import Database
 from mu.file import read_metadata
-from mu.types import Artist, Album, Track
+from mu.file import read_metadata
+from mu.types import Album, Artist, Track
+import shutil
 
 
 class Api:
@@ -69,21 +72,34 @@ class Api:
         )
         yield from self._ingest(files, batch_size)
 
-    # def import_media(self, path, batch_size: int = 100) -> Iterator[dict]:
-    #
-    #     path = Path(path).resolve()
-    #     files = (
-    #         sorted(
-    #             p for p in path.rglob("*") if p.is_file() and p.suffix.lower() == ".mp3"
-    #         )
-    #         if path.is_dir()
-    #         else [path]
-    #     )
-    #     files = [self._copy_into_source(p) for p in files]  # copy first, then ingest
-    #     yield from self._ingest(files, batch_size)
-    #
+    def _copy_file_to_source(self, path: Path) -> Path:
+        """
+        Copies the file, and returns the new path of the file.
+        """
+        metadata = read_metadata(path, None)
 
-    def _ingest(self, files: list[Path], batch_size: int) -> Iterator[dict]:
+        newpath = Path(self.db.source_path / metadata["artist"] / metadata["album"])
+        newpath.mkdir(exist_ok=True, parents=True)
+        shutil.copy(path, newpath)
+
+        return newpath
+
+    def import_media(self, path, batch_size: int = 10) -> Iterator[dict]:
+
+        path = Path(path).resolve()
+        files = (
+            sorted(
+                p for p in path.rglob("*") if p.is_file() and p.suffix.lower() == ".mp3"
+            )
+            if path.is_dir()
+            else [path]
+        )
+
+        yield from self._ingest(files, batch_size, copy_to_source=True)
+
+    def _ingest(
+        self, files: list[Path], batch_size: int, copy_to_source: bool = False
+    ) -> Iterator[dict]:
         """Shared by scan_source_folder and import_media."""
         total = len(files)
         batch: list[tuple[dict, dict | None]] = []
@@ -117,6 +133,8 @@ class Api:
             }
             meta = None
             try:
+                if copy_to_source:
+                    path = self._copy_file_to_source(path)
                 meta = read_metadata(path, self.db.albumart_path)
             except Exception as exc:
                 record["ok"] = False

@@ -118,18 +118,16 @@ def cmd_list_artists(only_albumartists: bool = False):
 #         Interface.print(str(e), ok=False)
 #
 #
-# def cmd_import(db: Database, path: str, itunes: bool):
-#     """Imports all files from the specified directory"""
-#     if itunes:
-#         importer = ITunesImport(db, path)
-#         importer.start()
-#         return
-#     for response in db.import_media(path):
-#         Interface.print(
-#             response["filename"],
-#             count=[response["count"] + 1, response["total"]],
-#             ok=response["ok"],
-#         )
+def cmd_import(path: str):
+    """Imports all files from the specified directory"""
+    for response in api.import_media(path):
+        Interface.print(
+            response["filename"],
+            count=[response["count"] + 1, response["total"]],
+            ok=response["ok"],
+        )
+
+
 #
 #
 # def cmd_favorite(db: Database, term: str):
@@ -171,7 +169,7 @@ def build_parser() -> argparse.ArgumentParser:
     _add_version_parser(subparsers)
     # _add_reset_parser(db, subparsers)
     # _add_favorite_parser(db, subparsers)
-    # _add_import_parser(db, subparsers)
+    _add_import_parser(subparsers)
     # _add_search_parser(db, subparsers)
 
     return parser
@@ -326,14 +324,15 @@ def _add_version_parser(subparsers) -> None:
 #     favorite.set_defaults(func=lambda args: cmd_favorite(db, args.term))
 #
 #
-# def _add_import_parser(db: Database, subparsers) -> None:
-#     imp = subparsers.add_parser("import", help="import individual files")
-#     imp.add_argument(
-#         "-i", "--itunes", help="import from a itunes xml export", action="store_true"
-#     )
-#     imp.add_argument("filepath", help="path to the file(s) being imported")
-#     imp.set_defaults(func=lambda args: cmd_import(db, args.filepath, args.itunes))
-#
+def _add_import_parser(subparsers) -> None:
+    imp = subparsers.add_parser("import", help="import individual files")
+    imp.add_argument(
+        "-i", "--itunes", help="import from a itunes xml export", action="store_true"
+    )
+    imp.add_argument("filepath", help="path to the file(s) being imported")
+    imp.set_defaults(func=lambda args: cmd_import(args.filepath))
+
+
 #
 # def _add_search_parser(db: Database, subparsers) -> None:
 #     search = subparsers.add_parser("search", help="search the library")
