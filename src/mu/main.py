@@ -21,7 +21,8 @@ def cmd_scan():
     global api
     for response in api.scan_source_folder():
         Interface.print(
-            response["filename"],
+            "",
+            url=response["filename"],
             count=[response["count"] + 1, response["total"]],
             ok=response["ok"],
         )
@@ -122,7 +123,8 @@ def cmd_import(path: str):
     """Imports all files from the specified directory"""
     for response in api.import_media(path):
         Interface.print(
-            response["filename"],
+            "",
+            url=response["filename"],
             count=[response["count"] + 1, response["total"]],
             ok=response["ok"],
         )

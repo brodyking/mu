@@ -83,6 +83,7 @@ class Interface:
         - album (Album): Prints album metadata
         - playlist (Playlist): Prints playlist metadata
         - artist (str): Prints the artist names
+        - url (str): Prints out the URL in blue
         """
 
         ok = kwargs.get("ok", True)  # Status. Shows check or x.
@@ -93,6 +94,7 @@ class Interface:
         album = kwargs.get("album", None)
         artist = kwargs.get("artist", None)
         playlist = kwargs.get("playlist", None)
+        url = kwargs.get("url", None)
 
         prefix = Color.green("[✓] ") if ok else Color.red("[✘] ")
         counter = (
@@ -105,8 +107,9 @@ class Interface:
             if track is not None and track.favorite
             else Color.light_gray("♥ ")
         )
-
-        if track is not None:
+        if url is not None:
+            searchresult = f"{Color.blue(url)}"
+        elif track is not None:
             searchresult = (
                 f"{Color.light_gray('#' + str(track.id).rjust(4, '0'))} "
                 f"{favorited}{Color.red(Interface.fmt(f'{track.title}', 25))} "
