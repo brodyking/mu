@@ -10,12 +10,12 @@
 from collections.abc import Iterator
 import copy
 from pathlib import Path
+import shutil
 
 from mu.database import Database
 from mu.file import read_metadata
 from mu.file import read_metadata
 from mu.types import Album, Artist, Track
-import shutil
 
 
 class Api:
@@ -27,38 +27,6 @@ class Api:
     ):
 
         self.db = Database(db_path, source_path, albumart_path)
-
-    def _upsert_track(self, conn, metadata: dict) -> Track:
-        """
-        Inserts the track, or updates it in place if filepath already exists.
-        Requires: "filepath" TEXT UNIQUE
-        """
-        row = conn.execute(
-            """
-            INSERT INTO tracks (
-                title, artist, album, time, tracknumber, albumartist,
-                discnumber, genre, date, filepath, filename, albumart
-            ) VALUES (
-                :title, :artist, :album, :time, :tracknumber, :albumartist,
-                :discnumber, :genre, :date, :filepath, :filename, :albumart
-            )
-            ON CONFLICT(filepath) DO UPDATE SET
-                title       = excluded.title,
-                artist      = excluded.artist,
-                album       = excluded.album,
-                time        = excluded.time,
-                tracknumber = excluded.tracknumber,
-                albumartist = excluded.albumartist,
-                discnumber  = excluded.discnumber,
-                genre       = excluded.genre,
-                date        = excluded.date,
-                filename    = excluded.filename,
-                albumart    = excluded.albumart
-            RETURNING *
-            """,
-            metadata,
-        ).fetchone()
-        return Track(row)
 
     def scan_source_folder(self, batch_size: int = 100) -> Iterator[dict]:
         """
@@ -72,18 +40,6 @@ class Api:
         )
         yield from self._ingest(files, batch_size)
 
-    def _copy_file_to_source(self, path: Path) -> Path:
-        """
-        Copies the file, and returns the new path of the file.
-        """
-        metadata = read_metadata(path, None)
-
-        newpath = Path(self.db.source_path / metadata["artist"] / metadata["album"])
-        newpath.mkdir(exist_ok=True, parents=True)
-        shutil.copy(path, newpath)
-
-        return newpath
-
     def import_media(self, path, batch_size: int = 10) -> Iterator[dict]:
 
         path = Path(path).resolve()
@@ -96,54 +52,6 @@ class Api:
         )
 
         yield from self._ingest(files, batch_size, copy_to_source=True)
-
-    def _ingest(
-        self, files: list[Path], batch_size: int, copy_to_source: bool = False
-    ) -> Iterator[dict]:
-        """Shared by scan_source_folder and import_media."""
-        total = len(files)
-        batch: list[tuple[dict, dict | None]] = []
-
-        # Upserts metadata dict's from batch
-        def flush() -> list[dict]:
-            if not batch:
-                return []
-            metas: list[dict] = [m for _, m in batch if m is not None]
-            if metas:
-                try:
-                    with self.db.write() as con:  # lock held only here
-                        for meta in metas:
-                            self._upsert_track(con, meta)
-                except Exception as exc:
-                    for record, meta in batch:
-                        if meta is not None:
-                            record["ok"] = False
-                            record["error"] = f"write failed: {exc}"
-            records: list[dict] = [record for record, _ in batch]
-            batch.clear()
-            return records
-
-        for count, path in enumerate(files, 1):
-            record = {
-                "ok": True,
-                "count": count,
-                "total": total,
-                "filename": path.name,
-                "error": None,
-            }
-            meta = None
-            try:
-                if copy_to_source:
-                    path = self._copy_file_to_source(path)
-                meta = read_metadata(path, self.db.albumart_path)
-            except Exception as exc:
-                record["ok"] = False
-                record["error"] = f"read failed: {exc}"
-            batch.append((record, meta))
-            if len(batch) >= batch_size:
-                yield from flush()
-
-        yield from flush()  # trailing partial batch
 
     def list_library_tracks(self, only_favorited: bool = False) -> dict[int, Track]:
         """
@@ -211,3 +119,95 @@ class Api:
                 artists[name] = Artist(name=name, tracks=[])
             artists[name].tracks.append(track)
         return artists
+
+    def _upsert_track(self, conn, metadata: dict) -> Track:
+        """
+        Inserts the track, or updates it in place if filepath already exists.
+        Requires: "filepath" TEXT UNIQUE
+        """
+        row = conn.execute(
+            """
+            INSERT INTO tracks (
+                title, artist, album, time, tracknumber, albumartist,
+                discnumber, genre, date, filepath, filename, albumart
+            ) VALUES (
+                :title, :artist, :album, :time, :tracknumber, :albumartist,
+                :discnumber, :genre, :date, :filepath, :filename, :albumart
+            )
+            ON CONFLICT(filepath) DO UPDATE SET
+                title       = excluded.title,
+                artist      = excluded.artist,
+                album       = excluded.album,
+                time        = excluded.time,
+                tracknumber = excluded.tracknumber,
+                albumartist = excluded.albumartist,
+                discnumber  = excluded.discnumber,
+                genre       = excluded.genre,
+                date        = excluded.date,
+                filename    = excluded.filename,
+                albumart    = excluded.albumart
+            RETURNING *
+            """,
+            metadata,
+        ).fetchone()
+        return Track(row)
+
+    def _ingest(
+        self, files: list[Path], batch_size: int, copy_to_source: bool = False
+    ) -> Iterator[dict]:
+        """Shared by scan_source_folder and import_media."""
+        total = len(files)
+        batch: list[tuple[dict, dict | None]] = []
+
+        # Upserts metadata dict's from batch
+        def flush() -> list[dict]:
+            if not batch:
+                return []
+            metas: list[dict] = [m for _, m in batch if m is not None]
+            if metas:
+                try:
+                    with self.db.write() as con:  # lock held only here
+                        for meta in metas:
+                            self._upsert_track(con, meta)
+                except Exception as exc:
+                    for record, meta in batch:
+                        if meta is not None:
+                            record["ok"] = False
+                            record["error"] = f"write failed: {exc}"
+            records: list[dict] = [record for record, _ in batch]
+            batch.clear()
+            return records
+
+        for count, path in enumerate(files, 1):
+            record = {
+                "ok": True,
+                "count": count,
+                "total": total,
+                "filename": path.name,
+                "error": None,
+            }
+            meta = None
+            try:
+                if copy_to_source:
+                    path = self._copy_file_to_source(path)
+                meta = read_metadata(path, self.db.albumart_path)
+            except Exception as exc:
+                record["ok"] = False
+                record["error"] = f"read failed: {exc}"
+            batch.append((record, meta))
+            if len(batch) >= batch_size:
+                yield from flush()
+
+        yield from flush()  # trailing partial batch
+
+    def _copy_file_to_source(self, path: Path) -> Path:
+        """
+        Copies the file, and returns the new path of the file.
+        """
+        metadata = read_metadata(path, None)
+
+        newpath = Path(self.db.source_path / metadata["artist"] / metadata["album"])
+        newpath.mkdir(exist_ok=True, parents=True)
+        shutil.copy(path, newpath)
+
+        return newpath
