@@ -6,12 +6,13 @@
 |_|
 """
 
-import shutil
 import hashlib
 import os
+import re
+import shutil
 from pathlib import Path
 
-from mutagen import MutagenError  # pyright: ignore[reportPrivateImportUsage]
+from mutagen import MutagenError
 from mutagen.mp3 import MP3
 
 # ID3 frame -> metadata key
@@ -41,8 +42,13 @@ def read_metadata(
     Art is deduplicated by content hash; the returned value is a
     bare filename relative to albumart_path.
     """
-    duration = 0
-    tags = None
+    try:
+        audio = MP3(file_path)
+        duration = int(audio.info.length or 0)  # never reached
+        tags = audio.tags  # never reached
+    except MutagenError as exc:
+        print(f"PARSE FAILED: {file_path} -> {type(exc).__name__}: {exc}")
+        pass  # duration stays 0, tags stays None
 
     try:
         audio = MP3(file_path)  # one parse: info AND tags
@@ -125,3 +131,37 @@ def _atomic_write(path: Path, data: bytes) -> None:
     tmp = path.with_name(f".{path.name}.{os.getpid()}.tmp")
     tmp.write_bytes(data)
     os.replace(tmp, path)
+
+
+def _sanitize_tag(name: str | None, fallback: str) -> str:
+    """Make a tag value safe as a folder name."""
+    name = (name or "").strip()
+    if not name:
+        return fallback
+    name = re.sub(r'[<>:"/\\|?*\x00-\x1f]', "_", name)  # illegal path chars
+    name = name.rstrip(". ")  # trailing dot/space
+    return name or fallback
+
+
+def copy_file_to_source(src: Path, source_path: Path, albumart_path: Path) -> dict:
+    """
+    Reads metadata once, copies the file into source_path organised as
+    artist/album/, and returns that metadata with filepath/filename
+    pointing at the copy.
+    """
+    meta = read_metadata(src, albumart_path)  # the ONE read
+
+    dest_dir = (
+        source_path
+        / _sanitize_tag(meta["artist"], "Unknown Artist")
+        / _sanitize_tag(meta["album"], "Unknown Album")
+    )
+    dest_dir.mkdir(parents=True, exist_ok=True)
+    dest = dest_dir / src.name  # the FILE, not the dir
+
+    if src.resolve() != dest.resolve():
+        shutil.copy2(src, dest)
+
+    meta["filepath"] = str(dest)
+    meta["filename"] = dest.name
+    return meta

@@ -8,14 +8,11 @@
 """
 
 from collections.abc import Iterator
-import copy
 from pathlib import Path
-import shutil
 
 from mu.database import Database
-from mu.file import read_metadata
-from mu.file import read_metadata
-from mu.types import Album, Artist, Track
+from mu.file import copy_file_to_source, read_metadata
+from mu.types import Album, Artist, Playlist, Track
 
 
 class Api:
@@ -41,15 +38,16 @@ class Api:
         yield from self._ingest(files, batch_size)
 
     def import_media(self, path, batch_size: int = 10) -> Iterator[dict]:
-
         path = Path(path).resolve()
-        files = (
-            sorted(
+
+        if path.is_dir():
+            files = sorted(
                 p for p in path.rglob("*") if p.is_file() and p.suffix.lower() == ".mp3"
             )
-            if path.is_dir()
-            else [path]
-        )
+        elif path.is_file() and path.suffix.lower() == ".mp3":
+            files = [path]
+        else:
+            return  # not a dir, not an mp3 — nothing to do
 
         yield from self._ingest(files, batch_size, copy_to_source=True)
 
@@ -120,6 +118,31 @@ class Api:
             artists[name].tracks.append(track)
         return artists
 
+    def list_library_playlists(self) -> dict[int, Playlist]:
+        playlists: dict[int, Playlist] = {}
+
+        # Create playlists
+        playlist_rows = self.db.query("SELECT * FROM playlists")
+        for row in playlist_rows:
+            playlists[row["id"]] = Playlist(
+                id=row["id"],
+                title=row["title"],
+                description=row["description"],
+            )
+
+        # Get playlist tracks
+        track_rows = self.db.query("""
+            SELECT pt.playlist_id, t.*
+            FROM playlist_tracks pt
+            JOIN tracks t ON t.id = pt.track_id
+            ORDER BY pt.playlist_id, pt.position
+        """)
+        for row in track_rows:
+            playlist = playlists.get(row["playlist_id"])
+            if playlist is not None:
+                playlist.tracks.append(Track(row))
+        return playlists
+
     def _upsert_track(self, conn, metadata: dict) -> Track:
         """
         Inserts the track, or updates it in place if filepath already exists.
@@ -189,8 +212,11 @@ class Api:
             meta = None
             try:
                 if copy_to_source:
-                    path = self._copy_file_to_source(path)
-                meta = read_metadata(path, self.db.albumart_path)
+                    meta = copy_file_to_source(
+                        path, self.db.source_path, self.db.albumart_path
+                    )
+                else:
+                    meta = read_metadata(path, self.db.albumart_path)
             except Exception as exc:
                 record["ok"] = False
                 record["error"] = f"read failed: {exc}"
@@ -199,15 +225,3 @@ class Api:
                 yield from flush()
 
         yield from flush()  # trailing partial batch
-
-    def _copy_file_to_source(self, path: Path) -> Path:
-        """
-        Copies the file, and returns the new path of the file.
-        """
-        metadata = read_metadata(path, None)
-
-        newpath = Path(self.db.source_path / metadata["artist"] / metadata["album"])
-        newpath.mkdir(exist_ok=True, parents=True)
-        shutil.copy(path, newpath)
-
-        return newpath

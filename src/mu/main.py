@@ -57,13 +57,13 @@ def cmd_list_artists(only_albumartists: bool = False):
         Interface.print("", artist=artists[artist_name], count=[i + 1, total])
 
 
-#
-# def cmd_list_playlists(db: Database):
-#     """Prints all the playlists in the database"""
-#     playlists = db.list_playlists()
-#     for playlist_id in playlists:
-#         Interface.print("", playlist=playlists[playlist_id])
-#
+def cmd_list_playlists():
+    """Prints all the playlists in the database"""
+    playlists = api.list_library_playlists()
+    for playlist_id in playlists:
+        Interface.print("", playlist=playlists[playlist_id])
+
+
 #
 # def cmd_list_playlist(db: Database, term: str):
 #     try:
@@ -209,13 +209,12 @@ def _add_list_parser(subparsers) -> None:
     )
     artists.set_defaults(func=lambda args: cmd_list_artists(args.albums))
 
+    # playlists
+    list_subparsers.add_parser(
+        "playlists", help="list all playlists in the library"
+    ).set_defaults(func=lambda _: cmd_list_playlists())
 
-#
-#     # playlists
-#     list_subparsers.add_parser(
-#         "playlists", help="list all playlists in the library"
-#     ).set_defaults(func=lambda _: cmd_list_playlists(db))
-#
+
 #     playlist = list_subparsers.add_parser(
 #         "playlist", help="list all tracks in a playlist"
 #     )
