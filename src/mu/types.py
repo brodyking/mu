@@ -13,22 +13,22 @@ class Track:
         """
         Creates a track object from SQLite response
         """
-        self.id = response["id"]
-        self.favorite = bool(response["favorite"])
-        self.title = response["title"]
-        self.artist = response["artist"]
-        self.album = response["album"]
-        self.plays = response["plays"]
-        self.time = response["time"]
-        self.dateadded = response["dateadded"]
-        self.tracknumber = response["tracknumber"]
-        self.albumartist = response["albumartist"]
-        self.discnumber = response["discnumber"]
-        self.genre = response["genre"]
-        self.date = response["date"]
-        self.filepath = response["filepath"]
-        self.filename = response["filename"]
-        self.albumart = response["albumart"]
+        self.id: int = response["id"]
+        self.favorite: bool = bool(response["favorite"])
+        self.title: str = response["title"]
+        self.artist: str = response["artist"]
+        self.album: str = response["album"]
+        self.plays: int = response["plays"]
+        self.time: str = response["time"]
+        self.dateadded: str = response["dateadded"]
+        self.tracknumber: int = response["tracknumber"]
+        self.albumartist: str = response["albumartist"]
+        self.discnumber: int = response["discnumber"]
+        self.genre: str = response["genre"]
+        self.date: str = response["date"]
+        self.filepath: str = response["filepath"]
+        self.filename: str = response["filename"]
+        self.albumart: str = response["albumart"]
 
     def get_time_ms(self) -> int:
         minutes, seconds = map(int, self.time.split(":"))
