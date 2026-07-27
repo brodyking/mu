@@ -47,8 +47,7 @@ def read_metadata(
         duration = int(audio.info.length or 0)  # never reached
         tags = audio.tags  # never reached
     except MutagenError as exc:
-        print(f"PARSE FAILED: {file_path} -> {type(exc).__name__}: {exc}")
-        pass  # duration stays 0, tags stays None
+        raise ValueError(f"cannot read {file_path.name}: {exc}") from exc
 
     try:
         audio = MP3(file_path)  # one parse: info AND tags
