@@ -62,7 +62,7 @@ def cmd_list_artists(only_albumartists: bool = False):
 
 def cmd_list_playlists():
     """Prints all the playlists in the database"""
-    playlists = api.list_playlists()
+    playlists = api.get_playlists()
     for playlist_id in playlists:
         Interface.print("", playlist=playlists[playlist_id])
 
