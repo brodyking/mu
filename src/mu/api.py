@@ -55,47 +55,53 @@ class Api:
 
         yield from self._ingest(files, batch_size, copy_to_source=True)
 
-    def list_tracks(self, only_favorited: bool = False) -> dict[int, Track]:
+    def get_tracks(self, term: str | None = None) -> dict[int, Track]:
         """
         Returns a dict of tracks with the trackid as the key
         """
-        sql = "SELECT * FROM tracks"
-        if only_favorited:
-            sql += " WHERE favorite = 1"
-        sql += """
+        ordering = """
             ORDER BY artist COLLATE NOCASE,
-                    album COLLATE NOCASE,
-                    CAST(discnumber AS INTEGER),
-                    CAST(tracknumber AS INTEGER)
+            album COLLATE NOCASE,
+            CAST(discnumber AS INTEGER),
+            CAST(tracknumber AS INTEGER)
         """
-        return {t.id: t for t in (Track(row) for row in self.db.query(sql))}
+        if term:
+            sql = self._build_search_sql(term, "tracks")
+            rows = self.db.query(sql[0] + ordering, sql[1])
+        else:
+            sql = "SELECT * FROM tracks"
+            rows = self.db.query(sql + ordering)
+        return {t.id: t for t in (Track(row) for row in rows)}
 
-    def list_albums(self) -> dict[str, Album]:
+    def get_albums(self, term: str | None = None) -> dict[tuple, Album]:
         """
-        Returns every album mapped to their tracks.
+        Returns every album mapped to its tracks.
+        Optional `term` filters tracks using the same prefix syntax as list_tracks.
         """
-
-        rows = self.db.query("""
-            SELECT * FROM tracks
-            WHERE albumartist IS NOT NULL AND TRIM(albumartist) != ''
+        ordering = """
             ORDER BY albumartist COLLATE NOCASE,
                     album COLLATE NOCASE,
                     CAST(discnumber AS INTEGER),
                     CAST(tracknumber AS INTEGER)
-        """)
+        """
+        if term:
+            where, params = self._build_search_sql(term, "tracks")
+            rows = self.db.query(where + ordering, params)
+        else:
+            rows = self.db.query("SELECT * FROM tracks" + ordering)
 
-        albums: dict[str, Album] = {}
+        albums: dict[tuple[str, str], Album] = {}
         for row in rows:
-            track = Track(row)
-            album_name = track.album  # the grouping name for THIS track
-            if album_name not in albums:
-                albums[album_name] = Album(
-                    title=track.album, albumartist=track.artist, tracks=[]
+            track: Track = Track(row)
+            key: tuple[str, str] = (track.albumartist, track.album)
+            if key not in albums:
+                albums[key] = Album(
+                    title=track.album, albumartist=track.albumartist, tracks=[]
                 )
-            albums[album_name].tracks.append(track)
+            albums[key].tracks.append(track)
         return albums
 
-    def list_artists(self, only_albumartists: bool = False) -> dict[str, Artist]:
+    def get_artists(self, only_albumartists: bool = False) -> dict[str, Artist]:
         """
         Returns every artist mapped to their tracks.
         Set only_albumartists to group by album artist instead of track artist.
@@ -120,13 +126,13 @@ class Api:
             artists[name].tracks.append(track)
         return artists
 
-    def list_playlists(self, term: str | None = None) -> dict[int, Playlist]:
+    def get_playlists(self, term: str | None = None) -> dict[int, Playlist]:
         playlists: dict[int, Playlist] = {}
 
         # Create playlists
         if term:
-            sql = self._build_search_sql(term, "playlists")
-            playlist_rows = self.db.query(sql[0], sql[1])
+            sql, values = self._build_search_sql(term, "playlists")
+            playlist_rows = self.db.query(sql, values)
         else:
             playlist_rows = self.db.query("SELECT * FROM playlists")
         for row in playlist_rows:

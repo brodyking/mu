@@ -35,7 +35,10 @@ def cmd_version():
 
 def cmd_list_tracks(only_favorited: bool = False):
     """Prints all tracks in the database"""
-    tracks = api.list_tracks(only_favorited=only_favorited)
+    if only_favorited:
+        tracks = api.get_tracks("favorite:1")
+    else:
+        tracks = api.get_tracks()
     total = len(tracks)
     for i, track_id in enumerate(tracks):
         Interface.print("", track=tracks[track_id], count=[i + 1, total])
@@ -43,7 +46,7 @@ def cmd_list_tracks(only_favorited: bool = False):
 
 def cmd_list_albums():
     """Prints all albums in the database"""
-    albums = api.list_albums()
+    albums = api.get_albums()
     total = len(albums)
     for i, album_name in enumerate(albums):
         Interface.print("", album=albums[album_name], count=[i + 1, total])
@@ -51,7 +54,7 @@ def cmd_list_albums():
 
 def cmd_list_artists(only_albumartists: bool = False):
     """Prints all the artists in the database"""
-    artists = api.list_artists(only_albumartists=only_albumartists)
+    artists = api.get_artists(only_albumartists=only_albumartists)
     total = len(artists)
     for i, artist_name in enumerate(artists):
         Interface.print("", artist=artists[artist_name], count=[i + 1, total])
@@ -66,7 +69,7 @@ def cmd_list_playlists():
 
 def cmd_list_playlist(term: str):
     try:
-        playlists = api.list_playlists(term)
+        playlists = api.get_playlists(term)
         for playlist_id in playlists:
             playlist = playlists[playlist_id]
             for i, track in enumerate(playlist.tracks):
