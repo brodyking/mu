@@ -15,6 +15,27 @@ from pathlib import Path
 
 class Database:
     SCHEMA = 2
+    SEARCHABLE: dict[str, set[str]] = {
+        "playlists": {"id", "title", "description"},
+        "tracks": {
+            "id",
+            "favorite",
+            "title",
+            "artist",
+            "album",
+            "plays",
+            "time",
+            "dateadded",
+            "tracknumber",
+            "albumartist",
+            "discnumber",
+            "genre",
+            "date",
+            "filepath",
+            "filename",
+            "albumart",
+        },
+    }
 
     def __init__(
         self,

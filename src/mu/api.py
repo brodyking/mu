@@ -143,6 +143,40 @@ class Api:
                 playlist.tracks.append(Track(row))
         return playlists
 
+    def _build_search_sql(self, term: str, table: str) -> tuple[str, tuple]:
+        groups = []
+        values = []
+
+        if table not in self.db.SEARCHABLE:
+            raise ValueError(f"Cannot search table {table!r}.")
+
+        columns: set[str] = self.db.SEARCHABLE[table]
+
+        for query in term.split("+"):
+            conditions = []
+            for filter in query.split("&"):
+                col, sep, value = filter.partition(":")
+                if not sep:
+                    col, sep, value = filter.partition("=")  # try exact-match operator
+                if not sep:
+                    raise ValueError(f"Filter {filter!r} needs ':' or '='.")
+
+                col, value = col.strip(), value.strip()
+                if col not in columns:
+                    raise ValueError(f"Unknown or empty search field {col!r}.")
+                if not value:
+                    raise ValueError(f"Filter {filter!r} has no value.")
+                if sep == ":":
+                    conditions.append(f"{col} LIKE ? COLLATE NOCASE")
+                    values.append(f"%{value}%")
+                else:
+                    conditions.append(f"{col} = ?")
+                    values.append(value)
+            groups.append("(" + " AND ".join(conditions) + ")")
+
+        sql = f"SELECT * FROM {table} WHERE " + " OR ".join(groups)
+        return sql, tuple(values)
+
     def _upsert_track(self, conn, metadata: dict) -> Track:
         """
         Inserts the track, or updates it in place if filepath already exists.
