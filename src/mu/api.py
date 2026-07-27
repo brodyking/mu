@@ -38,6 +38,10 @@ class Api:
         yield from self._ingest(files, batch_size)
 
     def import_media(self, path, batch_size: int = 10) -> Iterator[dict]:
+        """
+        Copies media from the path into the source folder,
+        then upserts to the database. Yields one progress dict per file
+        """
         path = Path(path).resolve()
 
         if path.is_dir():
