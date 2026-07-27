@@ -55,7 +55,7 @@ class Api:
 
         yield from self._ingest(files, batch_size, copy_to_source=True)
 
-    def list_library_tracks(self, only_favorited: bool = False) -> dict[int, Track]:
+    def list_tracks(self, only_favorited: bool = False) -> dict[int, Track]:
         """
         Returns a dict of tracks with the trackid as the key
         """
@@ -70,7 +70,7 @@ class Api:
         """
         return {t.id: t for t in (Track(row) for row in self.db.query(sql))}
 
-    def list_library_albums(self) -> dict[str, Album]:
+    def list_albums(self) -> dict[str, Album]:
         """
         Returns every album mapped to their tracks.
         """
@@ -95,9 +95,7 @@ class Api:
             albums[album_name].tracks.append(track)
         return albums
 
-    def list_library_artists(
-        self, only_albumartists: bool = False
-    ) -> dict[str, Artist]:
+    def list_artists(self, only_albumartists: bool = False) -> dict[str, Artist]:
         """
         Returns every artist mapped to their tracks.
         Set only_albumartists to group by album artist instead of track artist.
@@ -122,11 +120,15 @@ class Api:
             artists[name].tracks.append(track)
         return artists
 
-    def list_library_playlists(self) -> dict[int, Playlist]:
+    def list_playlists(self, term: str | None = None) -> dict[int, Playlist]:
         playlists: dict[int, Playlist] = {}
 
         # Create playlists
-        playlist_rows = self.db.query("SELECT * FROM playlists")
+        if term:
+            sql = self._build_search_sql(term, "playlists")
+            playlist_rows = self.db.query(sql[0], sql[1])
+        else:
+            playlist_rows = self.db.query("SELECT * FROM playlists")
         for row in playlist_rows:
             playlists[row["id"]] = Playlist(
                 id=row["id"],

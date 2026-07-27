@@ -35,7 +35,7 @@ def cmd_version():
 
 def cmd_list_tracks(only_favorited: bool = False):
     """Prints all tracks in the database"""
-    tracks = api.list_library_tracks(only_favorited=only_favorited)
+    tracks = api.list_tracks(only_favorited=only_favorited)
     total = len(tracks)
     for i, track_id in enumerate(tracks):
         Interface.print("", track=tracks[track_id], count=[i + 1, total])
@@ -43,7 +43,7 @@ def cmd_list_tracks(only_favorited: bool = False):
 
 def cmd_list_albums():
     """Prints all albums in the database"""
-    albums = api.list_library_albums()
+    albums = api.list_albums()
     total = len(albums)
     for i, album_name in enumerate(albums):
         Interface.print("", album=albums[album_name], count=[i + 1, total])
@@ -51,7 +51,7 @@ def cmd_list_albums():
 
 def cmd_list_artists(only_albumartists: bool = False):
     """Prints all the artists in the database"""
-    artists = api.list_library_artists(only_albumartists=only_albumartists)
+    artists = api.list_artists(only_albumartists=only_albumartists)
     total = len(artists)
     for i, artist_name in enumerate(artists):
         Interface.print("", artist=artists[artist_name], count=[i + 1, total])
@@ -59,20 +59,22 @@ def cmd_list_artists(only_albumartists: bool = False):
 
 def cmd_list_playlists():
     """Prints all the playlists in the database"""
-    playlists = api.list_library_playlists()
+    playlists = api.list_playlists()
     for playlist_id in playlists:
         Interface.print("", playlist=playlists[playlist_id])
 
 
-#
-# def cmd_list_playlist(db: Database, term: str):
-#     try:
-#         playlist = db.get_playlist(term)
-#         for i, track in enumerate(playlist.tracks):
-#             Interface.print("", track=track, count=[i + 1, len(playlist.tracks)])
-#     except ValueError as e:
-#         Interface.print(str(e), ok=False)
-#
+def cmd_list_playlist(term: str):
+    try:
+        playlists = api.list_playlists(term)
+        for playlist_id in playlists:
+            playlist = playlists[playlist_id]
+            for i, track in enumerate(playlist.tracks):
+                Interface.print("", track=track, count=[i + 1, len(playlist.tracks)])
+    except ValueError as e:
+        Interface.print(str(e), ok=False)
+
+
 #
 # def cmd_playlist_create(db: Database, title: str, description: str):
 #     """Creates a playlist, prints it once created."""
@@ -214,19 +216,18 @@ def _add_list_parser(subparsers) -> None:
         "playlists", help="list all playlists in the library"
     ).set_defaults(func=lambda _: cmd_list_playlists())
 
+    playlist = list_subparsers.add_parser(
+        "playlist", help="list all tracks in a playlist"
+    )
+    playlist.add_argument(
+        "term",
+        help=(
+            "the name of the playlist you are searching for.supports prefixes (id:, title:)"
+        ),
+    )
+    playlist.set_defaults(func=lambda args: cmd_list_playlist(args.term))
 
-#     playlist = list_subparsers.add_parser(
-#         "playlist", help="list all tracks in a playlist"
-#     )
-#     playlist.add_argument(
-#         "term",
-#         help=(
-#             "the name of the playlist you are searching for."
-#             "supports prefixes (id:, title:)"
-#         ),
-#     )
-#     playlist.set_defaults(func=lambda args: cmd_list_playlist(db, args.term))
-#
+
 #
 # def _add_playlist_parser(db: Database, subparsers) -> None:
 #     playlist_parser = subparsers.add_parser(
