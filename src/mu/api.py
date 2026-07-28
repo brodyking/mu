@@ -110,6 +110,7 @@ class Api:
         """
         Returns every artist mapped to their tracks.
         Set only_albumartists to group by album artist instead of track artist.
+        Term filters through tracks.
         """
         column = "albumartist" if only_albumartists else "artist"
         ordering = f"""
@@ -138,6 +139,10 @@ class Api:
         return artists
 
     def get_playlists(self, term: str | None = None) -> dict[int, Playlist]:
+        """
+        Returns a dictionary with playlist id mapped to each playlist object.
+        Term filters through tracks.
+        """
         playlists: dict[int, Playlist] = {}
         ordering = " ORDER BY title COLLATE NOCASE"
         select = "SELECT * FROM playlists"
@@ -168,6 +173,11 @@ class Api:
         return playlists
 
     def favorite_tracks(self, term: str) -> dict[int, Track]:
+        """
+        Toggles the favorite status of track(s), returns them
+        as a dict with tracks mapped to their ids.
+        Term filters through tracks.
+        """
         match, values = self._build_sql(term, "tracks")
         with self.db.write() as conn:
             rows = conn.execute(
@@ -178,6 +188,10 @@ class Api:
         return {t.id: t for t in (Track(row) for row in rows)}
 
     def _build_sql(self, term: str, table: str) -> tuple[str, tuple]:
+        """
+        Converts mu search queries into SQL where statments.
+        Returns a tuple of the SQL string and a tuple of values.
+        """
         groups = []
         values = []
 
