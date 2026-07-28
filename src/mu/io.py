@@ -133,8 +133,8 @@ def mu_print(
         searchresult = (
             f"{Color.light_gray('#' + str(playlist.id or '').rjust(4, '0'))} "
             f"{Color.green('󱝟 ' + (playlist.title or '')[:15])} "
+            f"{(playlist.description)} "
             f"{Color.red('󰈣 ' + str(len(playlist.tracks)))}"
-            f"{playlist.description}"
         )
     else:
         searchresult = ""
