@@ -115,8 +115,8 @@ def mu_print(
             f"{Color.light_gray('#' + str(track.id or '').rjust(4, '0'))} "
             f"{favorited} "
             f"{Color.red('󰈣 ' + (track.title or '')[:25])} "
-            f"{Color.blue('󰠃 ' + (track.artist or '')[:15])} "
-            f"{Color.pink('󱍙 ' + (track.album) or '')[:15]} "
+            f"{Color.blue('󰠃 ' + (track.artist or '')[:20])} "
+            f"{Color.pink('󱍙 ' + (track.album) or '')[:25]} "
         )
     elif album is not None:
         searchresult = (
@@ -132,8 +132,8 @@ def mu_print(
     elif playlist is not None:
         searchresult = (
             f"{Color.light_gray('#' + str(playlist.id or '').rjust(4, '0'))} "
-            f"{Color.green('󱝟 ' + (playlist.title or '')[:15])} "
-            f"{(playlist.description)} "
+            f"{Color.green('󱝟 ' + (playlist.title or '')[:25])} "
+            f"{(playlist.description or '')[:25]} "
             f"{Color.red('󰈣 ' + str(len(playlist.tracks)))}"
         )
     else:
