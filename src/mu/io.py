@@ -114,25 +114,25 @@ def mu_print(
         searchresult = (
             f"{Color.light_gray('#' + str(track.id or '').rjust(4, '0'))} "
             f"{favorited} "
-            f"{Color.red('󰈣 ' + (track.title[:25] or ''))} "
-            f"{Color.blue('󰠃 ' + (track.artist[:15] or ''))} "
-            f"{Color.pink('󱍙 ' + (track.album[:15]) or '')} "
+            f"{Color.red('󰈣 ' + (track.title or '')[:25])} "
+            f"{Color.blue('󰠃 ' + (track.artist or '')[:15])} "
+            f"{Color.pink('󱍙 ' + (track.album) or '')[:15]} "
         )
     elif album is not None:
         searchresult = (
-            f"{Color.pink('󱍙 ' + (album.title[:25] or ''))} "
-            f"{Color.blue('󰠃 ' + (album.albumartist[:25] or ''))} "
+            f"{Color.pink('󱍙 ' + (album.title or '')[:25])} "
+            f"{Color.blue('󰠃 ' + (album.albumartist or '')[:25])} "
             f"{Color.red('󰈣 ' + str(len(album.tracks)))}"
         )
     elif artist is not None:
         searchresult = (
-            f"{Color.blue('󰠃 ' + (artist.name[:25] or ''))} "
+            f"{Color.blue('󰠃 ' + (artist.name or '')[:25])} "
             f"{Color.red('󰈣 ' + str(len(artist.tracks)))}"
         )
     elif playlist is not None:
         searchresult = (
-            f"{Color.light_gray('#' + str(playlist.id if playlist.id else '').rjust(4, '0'))} "
-            f"{Color.green('󱝟 ' + (playlist.title[:15] if playlist.title else ''))} "
+            f"{Color.light_gray('#' + str(playlist.id or '').rjust(4, '0'))} "
+            f"{Color.green('󱝟 ' + (playlist.title or '')[:15])} "
             f"{Color.red('󰈣 ' + str(len(playlist.tracks)))}"
             f"{playlist.description}"
         )
