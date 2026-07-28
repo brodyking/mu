@@ -65,12 +65,12 @@ class Api:
             CAST(discnumber AS INTEGER),
             CAST(tracknumber AS INTEGER)
         """
+        select = "SELECT * FROM tracks "
         if term:
-            where, values = self._build_search_sql(term, "tracks")
-            rows = self.db.query(where + ordering, values)
+            where, values = self._build_sql(term, "tracks")
+            rows = self.db.query(select + where + ordering, values)
         else:
-            sql = "SELECT * FROM tracks"
-            rows = self.db.query(sql + ordering)
+            rows = self.db.query(select + ordering)
         return {t.id: t for t in (Track(row) for row in rows)}
 
     def get_albums(self, term: str | None = None) -> dict[tuple, Album]:
@@ -84,11 +84,12 @@ class Api:
                     CAST(discnumber AS INTEGER),
                     CAST(tracknumber AS INTEGER)
         """
+        select = "SELECT * FROM tracks"
         if term:
-            where, values = self._build_search_sql(term, "tracks")
-            rows = self.db.query(where + ordering, values)
+            where, values = self._build_sql(term, "tracks")
+            rows = self.db.query(select + where + ordering, values)
         else:
-            rows = self.db.query("SELECT * FROM tracks" + ordering)
+            rows = self.db.query(select + ordering)
 
         albums: dict[tuple[str, str], Album] = {}
         for row in rows:
@@ -111,19 +112,19 @@ class Api:
         Set only_albumartists to group by album artist instead of track artist.
         """
         column = "albumartist" if only_albumartists else "artist"
-
         ordering = f"""
             ORDER BY {column} COLLATE NOCASE,
                 album COLLATE NOCASE,
                 CAST(discnumber AS INTEGER),
                 CAST(tracknumber AS INTEGER)
         """
+        select = "SELECT * FROM tracks"
 
         if term:
-            where, values = self._build_search_sql(term, "tracks")
-            rows = self.db.query(where + ordering, values)
+            where, values = self._build_sql(term, "tracks")
+            rows = self.db.query(select + where + ordering, values)
         else:
-            rows = self.db.query("SELECT * FROM tracks" + ordering)
+            rows = self.db.query(select + ordering)
 
         artists: dict[str, Artist] = {}
         for row in rows:
@@ -138,15 +139,14 @@ class Api:
 
     def get_playlists(self, term: str | None = None) -> dict[int, Playlist]:
         playlists: dict[int, Playlist] = {}
-
-        ordering = "ORDER BY title COLLATE NOCASE"
-
+        ordering = " ORDER BY title COLLATE NOCASE"
+        select = "SELECT * FROM playlists"
         # Create playlists
         if term:
-            where, values = self._build_search_sql(term, "playlists")
-            playlist_rows = self.db.query(where + ordering, values)
+            where, values = self._build_sql(term, "playlists")
+            playlist_rows = self.db.query(select + where + ordering, values)
         else:
-            playlist_rows = self.db.query("SELECT * FROM playlists" + ordering)
+            playlist_rows = self.db.query(select + ordering)
         for row in playlist_rows:
             playlists[row["id"]] = Playlist(
                 id=row["id"],
@@ -167,7 +167,17 @@ class Api:
                 playlist.tracks.append(Track(row))
         return playlists
 
-    def _build_search_sql(self, term: str, table: str) -> tuple[str, tuple]:
+    def favorite_tracks(self, term: str) -> dict[int, Track]:
+        match, values = self._build_sql(term, "tracks")
+        with self.db.write() as conn:
+            rows = conn.execute(
+                "UPDATE tracks SET favorite = 1 - favorite " + match + " RETURNING *",
+                values,
+            ).fetchall()
+
+        return {t.id: t for t in (Track(row) for row in rows)}
+
+    def _build_sql(self, term: str, table: str) -> tuple[str, tuple]:
         groups = []
         values = []
 
@@ -181,7 +191,7 @@ class Api:
             for filter in query.split("&"):
                 col, sep, value = filter.partition(":")
                 if not sep:
-                    col, sep, value = filter.partition("=")  # try exact-match operator
+                    col, sep, value = filter.partition("=")
                 if not sep:
                     raise ValueError(f"Filter {filter!r} needs ':' or '='.")
 
@@ -198,7 +208,7 @@ class Api:
                     values.append(value)
             groups.append("(" + " AND ".join(conditions) + ")")
 
-        sql = f"SELECT * FROM {table} WHERE " + " OR ".join(groups)
+        sql = " WHERE " + " OR ".join(groups)
         return sql, tuple(values)
 
     def _upsert_track(self, conn, metadata: dict) -> Track:
@@ -247,7 +257,7 @@ class Api:
             metas: list[dict] = [m for _, m in batch if m is not None]
             if metas:
                 try:
-                    with self.db.write() as con:  # lock held only here
+                    with self.db.write() as con:
                         for meta in metas:
                             self._upsert_track(con, meta)
                 except Exception as exc:
@@ -282,4 +292,4 @@ class Api:
             if len(batch) >= batch_size:
                 yield from flush()
 
-        yield from flush()  # trailing partial batch
+        yield from flush()

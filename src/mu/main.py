@@ -135,18 +135,17 @@ def cmd_import(path: str):
         )
 
 
-#
-#
-# def cmd_favorite(db: Database, term: str):
-#     """Favorite track(s)"""
-#     try:
-#         tracks = db.favorite(term)
-#         total = len(tracks)
-#         for i, track in enumerate(tracks):
-#             Interface.print("", track=track, count=[i + 1, total])
-#     except ValueError as e:
-#         Interface.print(str(e), ok=False)
-#
+def cmd_favorite(term: str):
+    """Favorite track(s)"""
+    try:
+        tracks: dict[int, Track] = api.favorite_tracks(term)
+        total: int = len(tracks)
+        for i, track_id in enumerate(tracks):
+            Interface.print("", track=tracks[track_id], count=[i + 1, total])
+    except ValueError as e:
+        Interface.print(str(e), ok=False)
+
+
 #
 def cmd_search(term: str):
     """Search the database"""
@@ -174,7 +173,7 @@ def build_parser() -> argparse.ArgumentParser:
     _add_scan_parser(subparsers)
     _add_version_parser(subparsers)
     # _add_reset_parser(db, subparsers)
-    # _add_favorite_parser(db, subparsers)
+    _add_favorite_parser(subparsers)
     _add_import_parser(subparsers)
     _add_search_parser(subparsers)
 
@@ -319,15 +318,15 @@ def _add_version_parser(subparsers) -> None:
 #     )
 #
 #
-# def _add_favorite_parser(db: Database, subparsers) -> None:
-#     favorite = subparsers.add_parser("favorite", help="favorite or unfavorite track(s)")
-#     favorite.add_argument(
-#         "term",
-#         help="the name of the track you wish to favorite (use id: to select by id)",
-#     )
-#     favorite.set_defaults(func=lambda args: cmd_favorite(db, args.term))
-#
-#
+def _add_favorite_parser(subparsers) -> None:
+    favorite = subparsers.add_parser("favorite", help="favorite or unfavorite track(s)")
+    favorite.add_argument(
+        "term",
+        help="the name of the track you wish to favorite (use id: to select by id)",
+    )
+    favorite.set_defaults(func=lambda args: cmd_favorite(args.term))
+
+
 def _add_import_parser(subparsers) -> None:
     imp = subparsers.add_parser("import", help="import individual files")
     imp.add_argument(
