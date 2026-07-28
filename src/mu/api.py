@@ -66,8 +66,8 @@ class Api:
             CAST(tracknumber AS INTEGER)
         """
         if term:
-            sql = self._build_search_sql(term, "tracks")
-            rows = self.db.query(sql[0] + ordering, sql[1])
+            where, values = self._build_search_sql(term, "tracks")
+            rows = self.db.query(where + ordering, values)
         else:
             sql = "SELECT * FROM tracks"
             rows = self.db.query(sql + ordering)
@@ -85,14 +85,16 @@ class Api:
                     CAST(tracknumber AS INTEGER)
         """
         if term:
-            where, params = self._build_search_sql(term, "tracks")
-            rows = self.db.query(where + ordering, params)
+            where, values = self._build_search_sql(term, "tracks")
+            rows = self.db.query(where + ordering, values)
         else:
             rows = self.db.query("SELECT * FROM tracks" + ordering)
 
         albums: dict[tuple[str, str], Album] = {}
         for row in rows:
             track: Track = Track(row)
+            if not track.album or not track.albumartist:
+                continue
             key: tuple[str, str] = (track.albumartist, track.album)
             if key not in albums:
                 albums[key] = Album(
@@ -101,26 +103,34 @@ class Api:
             albums[key].tracks.append(track)
         return albums
 
-    def get_artists(self, only_albumartists: bool = False) -> dict[str, Artist]:
+    def get_artists(
+        self, term: str | None = None, only_albumartists: bool = False
+    ) -> dict[str, Artist]:
         """
         Returns every artist mapped to their tracks.
         Set only_albumartists to group by album artist instead of track artist.
         """
         column = "albumartist" if only_albumartists else "artist"
 
-        rows = self.db.query(f"""
-            SELECT * FROM tracks
-            WHERE {column} IS NOT NULL AND TRIM({column}) != ''
+        ordering = f"""
             ORDER BY {column} COLLATE NOCASE,
-                    album COLLATE NOCASE,
-                    CAST(discnumber AS INTEGER),
-                    CAST(tracknumber AS INTEGER)
-        """)
+                album COLLATE NOCASE,
+                CAST(discnumber AS INTEGER),
+                CAST(tracknumber AS INTEGER)
+        """
+
+        if term:
+            where, values = self._build_search_sql(term, "tracks")
+            rows = self.db.query(where + ordering, values)
+        else:
+            rows = self.db.query("SELECT * FROM tracks" + ordering)
 
         artists: dict[str, Artist] = {}
         for row in rows:
             track = Track(row)
             name = row[column]  # the grouping name for THIS track
+            if not name or not name.strip():
+                continue
             if name not in artists:
                 artists[name] = Artist(name=name, tracks=[])
             artists[name].tracks.append(track)
@@ -129,12 +139,14 @@ class Api:
     def get_playlists(self, term: str | None = None) -> dict[int, Playlist]:
         playlists: dict[int, Playlist] = {}
 
+        ordering = "ORDER BY title COLLATE NOCASE"
+
         # Create playlists
         if term:
-            sql, values = self._build_search_sql(term, "playlists")
-            playlist_rows = self.db.query(sql, values)
+            where, values = self._build_search_sql(term, "playlists")
+            playlist_rows = self.db.query(where + ordering, values)
         else:
-            playlist_rows = self.db.query("SELECT * FROM playlists")
+            playlist_rows = self.db.query("SELECT * FROM playlists" + ordering)
         for row in playlist_rows:
             playlists[row["id"]] = Playlist(
                 id=row["id"],
