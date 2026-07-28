@@ -144,7 +144,7 @@ class Api:
         Term filters through tracks.
         """
         playlists: dict[int, Playlist] = {}
-        ordering = " ORDER BY title COLLATE NOCASE"
+        ordering = " ORDER BY id, title COLLATE NOCASE"
         select = "SELECT * FROM playlists"
         # Create playlists
         if term:
@@ -157,19 +157,9 @@ class Api:
                 id=row["id"],
                 title=row["title"],
                 description=row["description"],
+                tracks=self._get_playlist_tracks(row["id"]),
             )
 
-        # Get playlist tracks
-        track_rows = self.db.query("""
-            SELECT pt.playlist_id, t.*
-            FROM playlist_tracks pt
-            JOIN tracks t ON t.id = pt.track_id
-            ORDER BY pt.playlist_id, pt.position
-        """)
-        for row in track_rows:
-            playlist = playlists.get(row["playlist_id"])
-            if playlist is not None:
-                playlist.tracks.append(Track(row))
         return playlists
 
     def favorite_tracks(self, term: str) -> dict[int, Track]:
@@ -215,6 +205,45 @@ class Api:
             playlist_id = playlist_row["id"]
 
         return self.get_playlists(f"id={playlist_id}")[playlist_id]
+
+    def append_playlists(
+        self, playlists_term: str, tracks_term: str
+    ) -> dict[int, Playlist]:
+        pids = list(self.get_playlists(playlists_term).keys())
+        tids = list(self.get_tracks(tracks_term).keys())
+        with self.db.write() as conn:
+            for pid in pids:
+                pos = conn.execute(
+                    "SELECT COALESCE(MAX(position), -1) + 1 FROM playlist_tracks WHERE playlist_id = ?",
+                    (pid,),
+                ).fetchone()[0]
+                for tid in tids:
+                    cur = conn.execute(
+                        """INSERT INTO playlist_tracks (playlist_id, track_id, position)
+                        VALUES (?, ?, ?) ON CONFLICT DO NOTHING""",
+                        (pid, tid, pos),
+                    )
+                    if cur.rowcount:
+                        pos += 1
+        return self.get_playlists(playlists_term)
+
+    def _get_playlist_tracks(self, playlist_id: int) -> list[Track]:
+        """
+        Returns a list of tracks in a playlist, in order.
+        This is a supporting method to get get_playlist() method
+        and should not be used alone.
+        """
+        rows = self.db.query(
+            """
+                SELECT tracks.*
+                FROM tracks
+                JOIN playlist_tracks ON tracks.id = playlist_tracks.track_id
+                WHERE playlist_tracks.playlist_id = ?
+                ORDER BY playlist_tracks.position
+            """,
+            (playlist_id,),
+        )
+        return [Track(row) for row in rows]
 
     def _build_sql(self, term: str, table: str) -> tuple[str, tuple]:
         """

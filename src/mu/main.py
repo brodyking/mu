@@ -127,16 +127,17 @@ def list_artists(
 def list_playlists() -> None:
     """Prints all the playlists in the database"""
     playlists = api.get_playlists()
-    for playlist_id in playlists:
-        mu_print("", playlist=playlists[playlist_id])
+    total = len(playlists)
+    for i, pid in enumerate(playlists):
+        mu_print("", playlist=playlists[pid], count=(i + 1, total))
 
 
 @list_parser.command("playlist", help="list a playlist's tracks")
 def list_playlist(term: Annotated[str, typer.Argument(help="search term")]) -> None:
     try:
         playlists = api.get_playlists(term)
-        for playlist_id in playlists:
-            playlist = playlists[playlist_id]
+        for pid in playlists:
+            playlist = playlists[pid]
             for i, track in enumerate(playlist.tracks):
                 mu_print("", track=track, count=(i + 1, len(playlist.tracks)))
     except ValueError as e:
@@ -150,6 +151,16 @@ def playlist_create(
 ) -> None:
     playlist = api.create_playlist(title, description)
     mu_print("", playlist=playlist)
+
+
+@playlist_parser.command("append", help="append track(s) into playlist(s)")
+def playlist_append(
+    playlists_term: Annotated[str, typer.Argument(help="playlist search term")],
+    tracks_term: Annotated[str, typer.Argument(help="tracks search term")],
+) -> None:
+    playlists = api.append_playlists(playlists_term, tracks_term)
+    for i, pid in enumerate(playlists):
+        mu_print("", playlist=playlists[pid], count=(i + 1, len(playlists)))
 
 
 def main():
