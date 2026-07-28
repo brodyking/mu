@@ -25,13 +25,11 @@ parser = typer.Typer(
 )
 list_parser = typer.Typer(no_args_is_help=True)
 parser.add_typer(list_parser, name="list", help="list different parts of your library")
-api = Api()
 
 
 @parser.command("scan", help="refresh metadata")
-def scan():
+def scan() -> None:
     """Scans the source folder"""
-    global api
     for response in api.scan_source_folder():
         mu_print(
             "",
@@ -42,7 +40,7 @@ def scan():
 
 
 @parser.command("version", help="get version")
-def print_version():
+def print_version() -> None:
     """Prints the version of mu+muc+db"""
     mu_print_version(VERSION, api.db.SCHEMA)
 
@@ -50,7 +48,7 @@ def print_version():
 @parser.command("import", help="import media")
 def import_tracks(
     path: Annotated[str, typer.Argument(help="directory/location of track(s)")],
-):
+) -> None:
     """Imports all files from the specified directory"""
     for response in api.import_media(path):
         mu_print(
@@ -62,7 +60,7 @@ def import_tracks(
 
 
 @parser.command("favorite", help="favorite track(s)")
-def favorite_tracks(term: Annotated[str, typer.Argument(help="search term")]):
+def favorite_tracks(term: Annotated[str, typer.Argument(help="search term")]) -> None:
     """Favorite track(s)"""
     try:
         tracks = api.favorite_tracks(term)
@@ -74,7 +72,7 @@ def favorite_tracks(term: Annotated[str, typer.Argument(help="search term")]):
 
 
 @parser.command("search")
-def search_tracks(term: Annotated[str, typer.Argument(help="search term")]):
+def search_tracks(term: Annotated[str, typer.Argument(help="search term")]) -> None:
     """Search the database"""
     try:
         tracks = api.get_tracks(term)
@@ -90,7 +88,7 @@ def list_tracks(
     only_favorited: Annotated[
         bool, typer.Option("--favorited", "-f", help="list only favorited")
     ] = False,
-):
+) -> None:
     """Prints all tracks in the database"""
     if only_favorited:
         tracks = api.get_tracks("favorite:1")
@@ -102,7 +100,7 @@ def list_tracks(
 
 
 @list_parser.command("albums", help="list all albums")
-def list_albums():
+def list_albums() -> None:
     """Prints all albums in the database"""
     albums = api.get_albums()
     total = len(albums)
@@ -115,7 +113,7 @@ def list_artists(
     only_albumartists: Annotated[
         bool, typer.Option("--albumartists", "-a", help="list only album artists")
     ] = False,
-):
+) -> None:
     """Prints all the artists in the database"""
     artists = api.get_artists(only_albumartists=only_albumartists)
     total = len(artists)
@@ -124,7 +122,7 @@ def list_artists(
 
 
 @list_parser.command("playlists", help="list all playlists")
-def list_playlists():
+def list_playlists() -> None:
     """Prints all the playlists in the database"""
     playlists = api.get_playlists()
     for playlist_id in playlists:
@@ -132,7 +130,7 @@ def list_playlists():
 
 
 @list_parser.command("playlist", help="list a playlist's tracks")
-def list_playlist(term: Annotated[str, typer.Argument(help="search term")]):
+def list_playlist(term: Annotated[str, typer.Argument(help="search term")]) -> None:
     try:
         playlists = api.get_playlists(term)
         for playlist_id in playlists:
