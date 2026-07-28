@@ -24,7 +24,9 @@ parser = typer.Typer(
     epilog="maintained by brodyking at https://github.com/brodyking/mu",
 )
 list_parser = typer.Typer(no_args_is_help=True)
+playlist_parser = typer.Typer(no_args_is_help=True)
 parser.add_typer(list_parser, name="list", help="list different parts of your library")
+parser.add_typer(playlist_parser, name="playlist", help="modify playlists")
 
 
 @parser.command("scan", help="refresh metadata")
@@ -139,6 +141,15 @@ def list_playlist(term: Annotated[str, typer.Argument(help="search term")]) -> N
                 mu_print("", track=track, count=(i + 1, len(playlist.tracks)))
     except ValueError as e:
         mu_print(str(e), ok=False)
+
+
+@playlist_parser.command("create", help="create a new playlist")
+def playlist_create(
+    title: Annotated[str, typer.Argument(help="name of playlist")],
+    description: Annotated[str, typer.Argument(help="description of playlist")] = "",
+) -> None:
+    playlist = api.create_playlist(title, description)
+    mu_print("", playlist=playlist)
 
 
 def main():

@@ -187,6 +187,35 @@ class Api:
 
         return {t.id: t for t in (Track(row) for row in rows)}
 
+    def create_playlist(self, title: str, description: str = "") -> Playlist:
+        """
+        Creates a new playlist. If one is already found with the same name,
+        it returns the playlists contents.
+        """
+        with self.db.write() as conn:
+            playlist_row = conn.execute(
+                """
+                INSERT INTO playlists (title,description)
+                VALUES (?,?)
+                ON CONFLICT (title) DO NOTHING
+                RETURNING *
+                """,
+                (title, description),
+            ).fetchone()
+
+            if playlist_row is None:
+                playlist_row = conn.execute(
+                    """
+                    SELECT * FROM playlists
+                    WHERE title = ?
+                    """,
+                    (title,),
+                ).fetchone()
+
+            playlist_id = playlist_row["id"]
+
+        return self.get_playlists(f"id={playlist_id}")[playlist_id]
+
     def _build_sql(self, term: str, table: str) -> tuple[str, tuple]:
         """
         Converts mu search queries into SQL where statments.
