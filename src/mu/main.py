@@ -148,16 +148,15 @@ def cmd_import(path: str):
 #         Interface.print(str(e), ok=False)
 #
 #
-# def cmd_search(db: Database, term: str):
-#     """Search the database"""
-#     try:
-#         tracks = db.search(term)
-#         total = len(tracks)
-#         for i, track in enumerate(tracks):
-#             Interface.print("", track=track, count=[i + 1, total])
-#     except ValueError as e:
-#         Interface.print(str(e), ok=False)
-#
+def cmd_search(term: str):
+    """Search the database"""
+    try:
+        tracks = api.get_tracks(term)
+        total = len(tracks)
+        for i, track_id in enumerate(tracks):
+            Interface.print("", track=tracks[track_id], count=[i + 1, total])
+    except ValueError as e:
+        Interface.print(str(e), ok=False)
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -177,7 +176,7 @@ def build_parser() -> argparse.ArgumentParser:
     # _add_reset_parser(db, subparsers)
     # _add_favorite_parser(db, subparsers)
     _add_import_parser(subparsers)
-    # _add_search_parser(db, subparsers)
+    _add_search_parser(subparsers)
 
     return parser
 
@@ -338,17 +337,15 @@ def _add_import_parser(subparsers) -> None:
     imp.set_defaults(func=lambda args: cmd_import(args.filepath))
 
 
-#
-# def _add_search_parser(db: Database, subparsers) -> None:
-#     search = subparsers.add_parser("search", help="search the library")
-#     search.add_argument(
-#         "term",
-#         help=(
-#             "the name of the item(s) you are searching for.prefixes (id:, album:, etc)"
-#         ),
-#     )
-#     search.set_defaults(func=lambda args: cmd_search(db, args.term))
-#
+def _add_search_parser(subparsers) -> None:
+    search = subparsers.add_parser("search", help="search the library")
+    search.add_argument(
+        "term",
+        help=(
+            "the name of the item(s) you are searching for.prefixes (id:, album:, etc)"
+        ),
+    )
+    search.set_defaults(func=lambda args: cmd_search(args.term))
 
 
 def main():
