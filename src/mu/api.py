@@ -55,7 +55,7 @@ class Api:
 
         yield from self._ingest(files, batch_size, copy_to_source=True)
 
-    def get_tracks(self, term: str | None = None) -> dict[int, Track]:
+    def get_tracks(self, tracks_term: str | None = None) -> dict[int, Track]:
         """
         Returns a dict of tracks with the trackid as the key
         """
@@ -66,14 +66,14 @@ class Api:
             CAST(tracknumber AS INTEGER)
         """
         select = "SELECT * FROM tracks "
-        if term:
-            where, values = self._build_sql(term, "tracks")
+        if tracks_term:
+            where, values = self._build_sql(tracks_term, "tracks")
             rows = self.db.query(select + where + ordering, values)
         else:
             rows = self.db.query(select + ordering)
         return {t.id: t for t in (Track(row) for row in rows)}
 
-    def get_albums(self, term: str | None = None) -> dict[tuple, Album]:
+    def get_albums(self, tracks_term: str | None = None) -> dict[tuple, Album]:
         """
         Returns every album mapped to its tracks.
         Optional `term` filters tracks using the same prefix syntax as list_tracks.
@@ -85,8 +85,8 @@ class Api:
                     CAST(tracknumber AS INTEGER)
         """
         select = "SELECT * FROM tracks"
-        if term:
-            where, values = self._build_sql(term, "tracks")
+        if tracks_term:
+            where, values = self._build_sql(tracks_term, "tracks")
             rows = self.db.query(select + where + ordering, values)
         else:
             rows = self.db.query(select + ordering)
@@ -105,7 +105,7 @@ class Api:
         return albums
 
     def get_artists(
-        self, term: str | None = None, only_albumartists: bool = False
+        self, tracks_term: str | None = None, only_albumartists: bool = False
     ) -> dict[str, Artist]:
         """
         Returns every artist mapped to their tracks.
@@ -121,8 +121,8 @@ class Api:
         """
         select = "SELECT * FROM tracks"
 
-        if term:
-            where, values = self._build_sql(term, "tracks")
+        if tracks_term:
+            where, values = self._build_sql(tracks_term, "tracks")
             rows = self.db.query(select + where + ordering, values)
         else:
             rows = self.db.query(select + ordering)
@@ -138,7 +138,7 @@ class Api:
             artists[name].tracks.append(track)
         return artists
 
-    def get_playlists(self, term: str | None = None) -> dict[int, Playlist]:
+    def get_playlists(self, playlists_term: str | None = None) -> dict[int, Playlist]:
         """
         Returns a dictionary with playlist id mapped to each playlist object.
         Term filters through tracks.
@@ -147,8 +147,8 @@ class Api:
         ordering = " ORDER BY id, title COLLATE NOCASE"
         select = "SELECT * FROM playlists"
         # Create playlists
-        if term:
-            where, values = self._build_sql(term, "playlists")
+        if playlists_term:
+            where, values = self._build_sql(playlists_term, "playlists")
             playlist_rows = self.db.query(select + where + ordering, values)
         else:
             playlist_rows = self.db.query(select + ordering)
@@ -162,13 +162,13 @@ class Api:
 
         return playlists
 
-    def favorite_tracks(self, term: str) -> dict[int, Track]:
+    def favorite_tracks(self, tracks_term: str) -> dict[int, Track]:
         """
         Toggles the favorite status of track(s), returns them
         as a dict with tracks mapped to their ids.
         Term filters through tracks.
         """
-        match, values = self._build_sql(term, "tracks")
+        match, values = self._build_sql(tracks_term, "tracks")
         with self.db.write() as conn:
             rows = conn.execute(
                 "UPDATE tracks SET favorite = 1 - favorite " + match + " RETURNING *",
@@ -214,13 +214,19 @@ class Api:
         with self.db.write() as conn:
             for pid in pids:
                 pos = conn.execute(
-                    "SELECT COALESCE(MAX(position), -1) + 1 FROM playlist_tracks WHERE playlist_id = ?",
+                    """
+                    SELECT COALESCE(MAX(position), -1) + 1
+                    FROM playlist_tracks
+                    WHERE playlist_id = ?
+                    """,
                     (pid,),
                 ).fetchone()[0]
                 for tid in tids:
                     cur = conn.execute(
-                        """INSERT INTO playlist_tracks (playlist_id, track_id, position)
-                        VALUES (?, ?, ?) ON CONFLICT DO NOTHING""",
+                        """
+                        INSERT INTO playlist_tracks (playlist_id, track_id, position)
+                        VALUES (?, ?, ?) ON CONFLICT DO NOTHING
+                        """,
                         (pid, tid, pos),
                     )
                     if cur.rowcount:
@@ -263,17 +269,17 @@ class Api:
         return self.get_playlists(playlists_term)
 
     def insert_into_playlist(
-        self, playlist_term: str, tracks_term: str, position: int
+        self, playlists_term: str, tracks_term: str, position: int
     ) -> dict[int, Playlist]:
         """
         Inserts tracks into matching playlist(s) starting at `position`,
         shifting existing tracks down to make room. Tracks already in a
         playlist are skipped.
         """
-        pids: list[int] = list(self.get_playlists(playlist_term).keys())
+        pids: list[int] = list(self.get_playlists(playlists_term).keys())
         tids: list[int] = list(self.get_tracks(tracks_term).keys())
         if not tids:
-            return self.get_playlists(playlist_term)
+            return self.get_playlists(playlists_term)
 
         with self.db.write() as conn:
             for pid in pids:
@@ -315,7 +321,32 @@ class Api:
                     [(pid, tid, at + i) for i, tid in enumerate(new_tids)],
                 )
 
-        return self.get_playlists(playlist_term)
+        return self.get_playlists(playlists_term)
+
+    def delete_playlists(self, playlists_term: str) -> dict[int, bool]:
+        """
+        Delete playlist(s), returns a dict of the playlists id and its deletion status.
+        """
+        status: dict[int, bool] = {}
+        pids: list[int] = list(self.get_playlists(playlists_term).keys())
+        with self.db.write() as conn:
+            for pid in pids:
+                cur = conn.execute(
+                    """
+                    DELETE FROM playlist_tracks
+                    WHERE playlist_id = ?
+                """,
+                    (pid,),
+                )
+                conn.execute(
+                    """
+                    DELETE FROM playlists
+                    WHERE id = ?
+                """,
+                    (pid,),
+                )
+                status[pid] = cur.rowcount > 0
+        return status
 
     def _get_playlist_tracks(self, playlist_id: int) -> list[Track]:
         """
