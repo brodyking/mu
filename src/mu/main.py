@@ -29,7 +29,7 @@ parser.add_typer(list_parser, name="ls", help="list different parts of your libr
 parser.add_typer(playlist_parser, name="p", help="modify playlists")
 
 
-@parser.command("scan", help="refresh metadata")
+@parser.command("s", help="refresh metadata")
 def scan() -> None:
     """Scans the source folder"""
     for response in api.scan_source_folder():
@@ -75,24 +75,27 @@ def favorite_tracks(term: Annotated[str, typer.Argument(help="search term")]) ->
 
 @list_parser.command("t", help="list all tracks")
 def list_tracks(
+    term: Annotated[str | None, typer.Argument(help="search term")] = None,
     only_favorited: Annotated[
         bool, typer.Option("--favorited", "-f", help="list only favorited")
     ] = False,
 ) -> None:
     """Prints all tracks in the database"""
     if only_favorited:
-        tracks = api.get_tracks("favorite:1")
+        tracks = api.get_tracks(f"favorite:1&{term}")
     else:
-        tracks = api.get_tracks()
+        tracks = api.get_tracks(term)
     total = len(tracks)
     for i, track_id in enumerate(tracks):
         mu_print("", track=tracks[track_id], count=(i + 1, total))
 
 
 @list_parser.command("al", help="list all albums")
-def list_albums() -> None:
+def list_albums(
+    term: Annotated[str | None, typer.Argument(help="search term")] = None,
+) -> None:
     """Prints all albums in the database"""
-    albums = api.get_albums()
+    albums = api.get_albums(term)
     total = len(albums)
     for i, album_name in enumerate(albums):
         mu_print("", album=albums[album_name], count=(i + 1, total))
@@ -100,21 +103,24 @@ def list_albums() -> None:
 
 @list_parser.command("ar", help="list all artists")
 def list_artists(
+    term: Annotated[str | None, typer.Argument(help="search term")] = None,
     only_albumartists: Annotated[
         bool, typer.Option("--albumartists", "-a", help="list only album artists")
     ] = False,
 ) -> None:
     """Prints all the artists in the database"""
-    artists = api.get_artists(only_albumartists=only_albumartists)
+    artists = api.get_artists(term, only_albumartists=only_albumartists)
     total = len(artists)
     for i, artist_name in enumerate(artists):
         mu_print("", artist=artists[artist_name], count=(i + 1, total))
 
 
 @list_parser.command("p", help="list all playlists")
-def list_playlists() -> None:
+def list_playlists(
+    term: Annotated[str | None, typer.Argument(help="search term")] = None,
+) -> None:
     """Prints all the playlists in the database"""
-    playlists = api.get_playlists()
+    playlists = api.get_playlists(term)
     total = len(playlists)
     for i, pid in enumerate(playlists):
         mu_print("", playlist=playlists[pid], count=(i + 1, total))
