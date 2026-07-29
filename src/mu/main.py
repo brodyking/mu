@@ -25,8 +25,8 @@ parser = typer.Typer(
 )
 list_parser = typer.Typer(no_args_is_help=True)
 playlist_parser = typer.Typer(no_args_is_help=True)
-parser.add_typer(list_parser, name="list", help="list different parts of your library")
-parser.add_typer(playlist_parser, name="playlist", help="modify playlists")
+parser.add_typer(list_parser, name="ls", help="list different parts of your library")
+parser.add_typer(playlist_parser, name="p", help="modify playlists")
 
 
 @parser.command("scan", help="refresh metadata")
@@ -41,13 +41,13 @@ def scan() -> None:
         )
 
 
-@parser.command("version", help="get version")
+@parser.command("v", help="get version")
 def print_version() -> None:
     """Prints the version of mu+muc+db"""
     mu_print_version(VERSION, api.db.SCHEMA)
 
 
-@parser.command("import", help="import media")
+@parser.command("i", help="import media")
 def import_tracks(
     path: Annotated[str, typer.Argument(help="directory/location of track(s)")],
 ) -> None:
@@ -61,7 +61,7 @@ def import_tracks(
         )
 
 
-@parser.command("favorite", help="favorite track(s)")
+@parser.command("f", help="favorite track(s)")
 def favorite_tracks(term: Annotated[str, typer.Argument(help="search term")]) -> None:
     """Favorite track(s)"""
     try:
@@ -73,19 +73,7 @@ def favorite_tracks(term: Annotated[str, typer.Argument(help="search term")]) ->
         mu_print(str(e), ok=False)
 
 
-@parser.command("search")
-def search_tracks(term: Annotated[str, typer.Argument(help="search term")]) -> None:
-    """Search the database"""
-    try:
-        tracks = api.get_tracks(term)
-        total = len(tracks)
-        for i, track_id in enumerate(tracks):
-            mu_print("", track=tracks[track_id], count=(i + 1, total))
-    except ValueError as e:
-        mu_print(str(e), ok=False)
-
-
-@list_parser.command("tracks", help="list all tracks")
+@list_parser.command("t", help="list all tracks")
 def list_tracks(
     only_favorited: Annotated[
         bool, typer.Option("--favorited", "-f", help="list only favorited")
@@ -101,7 +89,7 @@ def list_tracks(
         mu_print("", track=tracks[track_id], count=(i + 1, total))
 
 
-@list_parser.command("albums", help="list all albums")
+@list_parser.command("al", help="list all albums")
 def list_albums() -> None:
     """Prints all albums in the database"""
     albums = api.get_albums()
@@ -110,7 +98,7 @@ def list_albums() -> None:
         mu_print("", album=albums[album_name], count=(i + 1, total))
 
 
-@list_parser.command("artists", help="list all artists")
+@list_parser.command("ar", help="list all artists")
 def list_artists(
     only_albumartists: Annotated[
         bool, typer.Option("--albumartists", "-a", help="list only album artists")
@@ -123,7 +111,7 @@ def list_artists(
         mu_print("", artist=artists[artist_name], count=(i + 1, total))
 
 
-@list_parser.command("playlists", help="list all playlists")
+@list_parser.command("p", help="list all playlists")
 def list_playlists() -> None:
     """Prints all the playlists in the database"""
     playlists = api.get_playlists()
@@ -132,7 +120,7 @@ def list_playlists() -> None:
         mu_print("", playlist=playlists[pid], count=(i + 1, total))
 
 
-@list_parser.command("playlist", help="list a playlist's tracks")
+@list_parser.command("pt", help="list a playlist's tracks")
 def list_playlist(term: Annotated[str, typer.Argument(help="search term")]) -> None:
     try:
         playlists = api.get_playlists(term)
@@ -144,7 +132,7 @@ def list_playlist(term: Annotated[str, typer.Argument(help="search term")]) -> N
         mu_print(str(e), ok=False)
 
 
-@playlist_parser.command("create", help="create a new playlist")
+@playlist_parser.command("c", help="create a new playlist")
 def playlist_create(
     title: Annotated[str, typer.Argument(help="name of playlist")],
     description: Annotated[str, typer.Argument(help="description of playlist")] = "",
@@ -153,7 +141,7 @@ def playlist_create(
     mu_print("", playlist=playlist)
 
 
-@playlist_parser.command("append", help="append track(s) into playlist(s)")
+@playlist_parser.command("a", help="append track(s) into playlist(s)")
 def playlist_append(
     playlists_term: Annotated[str, typer.Argument(help="playlist search term")],
     tracks_term: Annotated[str, typer.Argument(help="tracks search term")],
@@ -161,6 +149,17 @@ def playlist_append(
     playlists = api.append_playlists(playlists_term, tracks_term)
     for i, pid in enumerate(playlists):
         mu_print("", playlist=playlists[pid], count=(i + 1, len(playlists)))
+
+
+@playlist_parser.command("rm", help="unappend track(s) from playlist(s)")
+def playlist_remove(
+    playlists_term: Annotated[str, typer.Argument(help="playlist search term")],
+    tracks_term: Annotated[str, typer.Argument(help="tracks search term")],
+) -> None:
+    playlists = api.playlist_remove(playlists_term, tracks_term)
+    total = len(playlists)
+    for i, pid in enumerate(playlists):
+        mu_print("", playlist=playlists[pid], count=(i + 1, total))
 
 
 def main():

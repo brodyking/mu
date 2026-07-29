@@ -209,8 +209,8 @@ class Api:
     def append_playlists(
         self, playlists_term: str, tracks_term: str
     ) -> dict[int, Playlist]:
-        pids = list(self.get_playlists(playlists_term).keys())
-        tids = list(self.get_tracks(tracks_term).keys())
+        pids: list[int] = list(self.get_playlists(playlists_term).keys())
+        tids: list[int] = list(self.get_tracks(tracks_term).keys())
         with self.db.write() as conn:
             for pid in pids:
                 pos = conn.execute(
@@ -225,6 +225,35 @@ class Api:
                     )
                     if cur.rowcount:
                         pos += 1
+        return self.get_playlists(playlists_term)
+
+    def playlist_remove(self, playlists_term, tracks_term) -> dict[int, Playlist]:
+        pids = list(self.get_playlists(playlists_term).keys())
+        tids = list(self.get_tracks(tracks_term).keys())
+        if not tids:
+            return self.get_playlists(playlists_term)
+
+        placeholders = ",".join("?" * len(tids))
+        with self.db.write() as conn:
+            for pid in pids:
+                cur = conn.execute(
+                    f"DELETE FROM playlist_tracks "
+                    f"WHERE playlist_id = ? AND track_id IN ({placeholders})",
+                    (pid, *tids),
+                )
+                if cur.rowcount:  # only renumber if we removed something
+                    conn.execute(
+                        """
+                        UPDATE playlist_tracks
+                        SET position = (
+                            SELECT COUNT(*) FROM playlist_tracks p2
+                            WHERE p2.playlist_id = playlist_tracks.playlist_id
+                            AND p2.position < playlist_tracks.position
+                        )
+                        WHERE playlist_id = ?
+                        """,
+                        (pid,),
+                    )
         return self.get_playlists(playlists_term)
 
     def _get_playlist_tracks(self, playlist_id: int) -> list[Track]:
