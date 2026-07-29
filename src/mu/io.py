@@ -9,7 +9,7 @@
 
 import typer
 
-from mu.types import Album, Artist, Playlist, Track
+from mu.models import Album, Artist, Playlist, Track
 
 
 class Color:

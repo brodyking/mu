@@ -12,7 +12,7 @@ from pathlib import Path
 
 from mu.database import Database
 from mu.file import copy_file_to_source, read_metadata
-from mu.types import Album, Artist, Playlist, Track
+from mu.models import Album, Artist, Playlist, Track
 
 
 class Api:

@@ -73,12 +73,16 @@ class Album:
 
 class Playlist:
     def __init__(
-        self, id: int, title: str, description: str = "", tracks: list[Track] = []
+        self,
+        id: int,
+        title: str,
+        description: str = "",
+        tracks: list[Track] | None = None,
     ):
         self.id = id
         self.title = title
         self.description = description if description is not None else ""
-        self.tracks = tracks
+        self.tracks = tracks if tracks else []
 
 
 class Artist:

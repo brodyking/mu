@@ -23,7 +23,7 @@ from mu.io import (
     mu_print_tracks_deletion,
     mu_print_version,
 )
-from mu.types import Playlist, Track
+from mu.models import Playlist, Track
 
 VERSION: str = version("mu")
 
@@ -103,8 +103,8 @@ def list_tracks(
     ] = False,
 ) -> None:
     """Prints all tracks in the database"""
-    if only_favorited and tracks_term:
-        tracks_term += "&favorite:1"
+    if only_favorited:
+        tracks_term = f"{tracks_term}&favorite:1" if tracks_term else "favorite:1"
     tracks: dict[int, Track] = api.get_tracks(tracks_term)
     mu_print_tracks(tracks)
 
