@@ -15,6 +15,7 @@ import typer
 from mu.api import Api
 from mu.io import (
     mu_print,
+    mu_print_albums,
     mu_print_artists,
     mu_print_playlist_deletion,
     mu_print_playlist_tracks,
@@ -117,9 +118,7 @@ def list_albums(
 ) -> None:
     """Prints all albums in the database"""
     albums = api.get_albums(tracks_term)
-    total = len(albums)
-    for i, album_name in enumerate(albums):
-        mu_print("", album=albums[album_name], count=(i + 1, total))
+    mu_print_albums(albums)
 
 
 @list_parser.command("ar", help="list all artists")
