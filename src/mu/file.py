@@ -45,17 +45,10 @@ def read_metadata(
     """
     try:
         audio = MP3(file_path)
-        duration = int(audio.info.length or 0)  # never reached
-        tags = audio.tags  # never reached
+        duration = format_duration(int(audio.info.length or 0))
+        tags = audio.tags
     except MutagenError as exc:
         raise ValueError(f"cannot read {file_path.name}: {exc}") from exc
-
-    try:
-        audio = MP3(file_path)  # one parse: info AND tags
-        duration = int(audio.info.length or 0)
-        tags = audio.tags  # ID3 object, or None if untagged
-    except MutagenError:
-        pass  # unreadable file -> blank metadata
 
     meta: dict[str, str | int | None] = {
         key: _text(tags, frame) for frame, key in _TEXT_FRAMES.items()
