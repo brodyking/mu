@@ -108,7 +108,7 @@ def mu_print(
         if track is not None and track.favorite
         else Color.light_gray("♥ ")
     )
-    link: str = f"{Color.blue(url)}" if url is not None else ""
+    link: str = f"{Color.blue(url)} " if url is not None else ""
 
     if track is not None:
         searchresult = (
@@ -140,6 +140,55 @@ def mu_print(
         searchresult = ""
 
     typer.echo(f"{prefix}{content}{link}{counter}{searchresult}")
+
+
+def mu_print_playlists(playlists: dict[int, Playlist]) -> None:
+    total = len(playlists)
+    if total == 0:
+        mu_print("No results found", ok=False)
+        return
+    for i, pid in enumerate(playlists):
+        mu_print("", playlist=playlists[pid], count=(i + 1, total))
+
+
+def mu_print_tracks(tracks: dict[int, Track]) -> None:
+    total: int = len(tracks)
+    if total == 0:
+        mu_print("No results found", ok=False)
+        return
+    for i, track_id in enumerate(tracks):
+        mu_print("", track=tracks[track_id], count=(i + 1, total))
+
+
+def mu_print_playlist_tracks(playlists: dict[int, Playlist]) -> None:
+    tracks = []
+    for pid in playlists:
+        playlist = playlists[pid]
+        tracks.extend(playlist.tracks)
+    total = len(tracks)
+    if total == 0:
+        mu_print("No results found", ok=False)
+        return
+    for i, track in enumerate(tracks):
+        mu_print("", track=track, count=(i + 1, total))
+
+
+def mu_print_albums(albums: dict[tuple, Album]) -> None:
+    total = len(albums)
+    if total == 0:
+        mu_print("No results found", ok=False)
+        return
+    for i, album_name in enumerate(albums):
+        mu_print("", album=albums[album_name], count=(i + 1, total))
+
+
+def mu_print_artists(artists: dict[str, Artist]) -> None:
+    total = len(artists)
+    if total == 0:
+        mu_print("No results found", ok=False)
+        return
+    for i, artist_name in enumerate(artists):
+        mu_print("", artist=artists[artist_name], count=(i + 1, total))
 
 
 def mu_print_version(client_version: str, database_schema: int) -> None:

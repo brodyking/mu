@@ -227,7 +227,13 @@ class Api:
                         pos += 1
         return self.get_playlists(playlists_term)
 
-    def remove_from_playlist(self, playlists_term, tracks_term) -> dict[int, Playlist]:
+    def remove_from_playlist(
+        self, playlists_term: str, tracks_term: str
+    ) -> dict[int, Playlist]:
+        """
+        Removes tracks from a matching playlist(s), shifting remaining
+        tracks back to correct order after.
+        """
         pids = list(self.get_playlists(playlists_term).keys())
         tids = list(self.get_tracks(tracks_term).keys())
         if not tids:
@@ -255,6 +261,61 @@ class Api:
                         (pid,),
                     )
         return self.get_playlists(playlists_term)
+
+    def insert_into_playlist(
+        self, playlist_term: str, tracks_term: str, position: int
+    ) -> dict[int, Playlist]:
+        """
+        Inserts tracks into matching playlist(s) starting at `position`,
+        shifting existing tracks down to make room. Tracks already in a
+        playlist are skipped.
+        """
+        pids: list[int] = list(self.get_playlists(playlist_term).keys())
+        tids: list[int] = list(self.get_tracks(tracks_term).keys())
+        if not tids:
+            return self.get_playlists(playlist_term)
+
+        with self.db.write() as conn:
+            for pid in pids:
+                # which of the requested tracks are NOT already in this playlist
+                existing = {
+                    r["track_id"]
+                    for r in conn.execute(
+                        "SELECT track_id FROM playlist_tracks WHERE playlist_id = ?",
+                        (pid,),
+                    ).fetchall()
+                }
+                new_tids: list[int] = [t for t in tids if t not in existing]
+                if not new_tids:
+                    continue
+
+                # clamp the insert point to the current length
+                count = conn.execute(
+                    "SELECT COUNT(*) FROM playlist_tracks WHERE playlist_id = ?",
+                    (pid,),
+                ).fetchone()[0]
+                at = max(0, min(position, count))
+
+                # make room: shift everything at/after `at` down by how many we'll add
+                conn.execute(
+                    """
+                    UPDATE playlist_tracks
+                    SET position = position + ?
+                    WHERE playlist_id = ? AND position >= ?
+                    """,
+                    (len(new_tids), pid, at),
+                )
+
+                # insert the new tracks into the gap, contiguously
+                conn.executemany(
+                    """
+                    INSERT INTO playlist_tracks (playlist_id, track_id, position)
+                    VALUES (?, ?, ?)
+                    """,
+                    [(pid, tid, at + i) for i, tid in enumerate(new_tids)],
+                )
+
+        return self.get_playlists(playlist_term)
 
     def _get_playlist_tracks(self, playlist_id: int) -> list[Track]:
         """
