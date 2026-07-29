@@ -16,12 +16,13 @@ from mu.api import Api
 from mu.io import (
     mu_print,
     mu_print_artists,
+    mu_print_playlist_deletion,
     mu_print_playlist_tracks,
     mu_print_playlists,
     mu_print_tracks,
     mu_print_version,
 )
-from mu.types import Album, Artist, Playlist, Track
+from mu.types import Playlist, Track
 
 VERSION: str = version("mu")
 
@@ -81,24 +82,28 @@ def favorite_tracks(term: Annotated[str, typer.Argument(help="search term")]) ->
 
 @list_parser.command("t", help="list all tracks")
 def list_tracks(
-    term: Annotated[str | None, typer.Argument(help="search term")] = None,
+    tracks_term: Annotated[
+        str | None, typer.Argument(help="tracks search term")
+    ] = None,
     only_favorited: Annotated[
         bool, typer.Option("--favorited", "-f", help="list only favorited")
     ] = False,
 ) -> None:
     """Prints all tracks in the database"""
-    if only_favorited:
-        term = f"favorite:1&{term}"
-    tracks: dict[int, Track] = api.get_tracks(term)
+    if only_favorited and tracks_term:
+        tracks_term += "&favorite:1"
+    tracks: dict[int, Track] = api.get_tracks(tracks_term)
     mu_print_tracks(tracks)
 
 
 @list_parser.command("al", help="list all albums")
 def list_albums(
-    term: Annotated[str | None, typer.Argument(help="search term")] = None,
+    tracks_term: Annotated[
+        str | None, typer.Argument(help="tracks search term")
+    ] = None,
 ) -> None:
     """Prints all albums in the database"""
-    albums = api.get_albums(term)
+    albums = api.get_albums(tracks_term)
     total = len(albums)
     for i, album_name in enumerate(albums):
         mu_print("", album=albums[album_name], count=(i + 1, total))
@@ -106,39 +111,43 @@ def list_albums(
 
 @list_parser.command("ar", help="list all artists")
 def list_artists(
-    term: Annotated[str | None, typer.Argument(help="search term")] = None,
+    tracks_term: Annotated[
+        str | None, typer.Argument(help="tracks search term")
+    ] = None,
     only_albumartists: Annotated[
         bool, typer.Option("--albumartists", "-a", help="list only album artists")
     ] = False,
 ) -> None:
     """Prints all the artists in the database"""
-    artists = api.get_artists(term, only_albumartists=only_albumartists)
+    artists = api.get_artists(tracks_term, only_albumartists=only_albumartists)
     mu_print_artists(artists)
 
 
 @list_parser.command("p", help="list all playlists")
 def list_playlists(
-    term: Annotated[str | None, typer.Argument(help="search term")] = None,
+    playlists_term: Annotated[
+        str | None, typer.Argument(help="playlists search term")
+    ] = None,
 ) -> None:
     """Prints all the playlists in the database"""
-    playlists = api.get_playlists(term)
+    playlists = api.get_playlists(playlists_term)
     mu_print_playlists(playlists)
 
 
 @list_parser.command("pt", help="list a playlist's tracks")
 def list_playlist_tracks(
-    term: Annotated[str, typer.Argument(help="search term")],
+    playlists_term: Annotated[str, typer.Argument(help="playlists search term")],
 ) -> None:
     try:
-        playlists: dict[int, Playlist] = api.get_playlists(term)
-        mu_print_playlists(playlists)
+        playlists: dict[int, Playlist] = api.get_playlists(playlists_term)
+        mu_print_playlist_tracks(playlists)
     except ValueError as e:
         mu_print(str(e), ok=False)
 
 
 @playlist_parser.command("a", help="append track(s) into playlist(s)")
 def playlist_append(
-    playlists_term: Annotated[str, typer.Argument(help="playlist search term")],
+    playlists_term: Annotated[str, typer.Argument(help="playlists search term")],
     tracks_term: Annotated[str, typer.Argument(help="tracks search term")],
 ) -> None:
     playlists = api.append_playlists(playlists_term, tracks_term)
@@ -152,6 +161,14 @@ def playlist_create(
 ) -> None:
     playlist = api.create_playlist(title, description)
     mu_print("", playlist=playlist)
+
+
+@playlist_parser.command("d", help="delete a playlist")
+def playlist_delete(
+    playlists_term: Annotated[str, typer.Argument(help="playlist search term")],
+) -> None:
+    response: dict[int, bool] = api.delete_playlists(playlists_term)
+    mu_print_playlist_deletion(response)
 
 
 @playlist_parser.command(

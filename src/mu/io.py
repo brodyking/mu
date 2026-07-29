@@ -173,6 +173,14 @@ def mu_print_playlist_tracks(playlists: dict[int, Playlist]) -> None:
         mu_print("", track=track, count=(i + 1, total))
 
 
+def mu_print_playlist_deletion(response: dict[int, bool]) -> None:
+    for pid in response:
+        if response[pid]:
+            mu_print(f"Playlist (#{pid}) has been deleted")
+        else:
+            mu_print(f"Playlist (#{pid}) could not be deleted", ok=False)
+
+
 def mu_print_albums(albums: dict[tuple, Album]) -> None:
     total = len(albums)
     if total == 0:
