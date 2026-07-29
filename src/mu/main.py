@@ -162,7 +162,7 @@ def playlist_remove(
     playlists_term: Annotated[str, typer.Argument(help="playlist search term")],
     tracks_term: Annotated[str, typer.Argument(help="tracks search term")],
 ) -> None:
-    playlists = api.playlist_remove(playlists_term, tracks_term)
+    playlists = api.remove_from_playlist(playlists_term, tracks_term)
     total = len(playlists)
     for i, pid in enumerate(playlists):
         mu_print("", playlist=playlists[pid], count=(i + 1, total))

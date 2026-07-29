@@ -227,7 +227,7 @@ class Api:
                         pos += 1
         return self.get_playlists(playlists_term)
 
-    def playlist_remove(self, playlists_term, tracks_term) -> dict[int, Playlist]:
+    def remove_from_playlist(self, playlists_term, tracks_term) -> dict[int, Playlist]:
         pids = list(self.get_playlists(playlists_term).keys())
         tids = list(self.get_tracks(tracks_term).keys())
         if not tids:
