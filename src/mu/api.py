@@ -177,6 +177,33 @@ class Api:
 
         return {t.id: t for t in (Track(row) for row in rows)}
 
+    def remove_tracks(self, tracks_term: str) -> dict[int, tuple[Track, bool]]:
+        """
+        Removes matching track(s) from the database. Leaves the files on disk.
+        Returns {track_id: (track, deleted)} where `deleted` is True if the row
+        was removed. Note: a subsequent scan of the source folder will re-add
+        any files still present on disk.
+        """
+
+        tracks = self.get_tracks(tracks_term)
+        if not tracks:
+            return {}
+
+        tids = list(tracks.keys())
+        placeholders = ",".join("?" * len(tids))
+        status: dict[int, tuple[Track, bool]] = {}
+
+        with self.db.write() as conn:
+            conn.execute(
+                f"DELETE FROM playlist_tracks WHERE track_id IN ({placeholders})",
+                tids,
+            )
+            for tid in tids:
+                cur = conn.execute("DELETE FROM tracks WHERE id = ?", (tid,))
+                status[tid] = (tracks[tid], cur.rowcount > 0)
+
+        return status
+
     def create_playlist(self, title: str, description: str = "") -> Playlist:
         """
         Creates a new playlist. If one is already found with the same name,
@@ -323,29 +350,30 @@ class Api:
 
         return self.get_playlists(playlists_term)
 
-    def delete_playlists(self, playlists_term: str) -> dict[int, bool]:
+    def delete_playlists(self, playlists_term: str) -> dict[int, tuple[Playlist, bool]]:
         """
         Delete playlist(s), returns a dict of the playlists id and its deletion status.
         """
-        status: dict[int, bool] = {}
-        pids: list[int] = list(self.get_playlists(playlists_term).keys())
+        status: dict[int, tuple[Playlist, bool]] = {}
+        playlists: dict[int, Playlist] = self.get_playlists(playlists_term)
+        pids: list[int] = list(playlists.keys())
         with self.db.write() as conn:
             for pid in pids:
-                cur = conn.execute(
+                conn.execute(
                     """
                     DELETE FROM playlist_tracks
                     WHERE playlist_id = ?
                 """,
                     (pid,),
                 )
-                conn.execute(
+                cur = conn.execute(
                     """
                     DELETE FROM playlists
                     WHERE id = ?
                 """,
                     (pid,),
                 )
-                status[pid] = cur.rowcount > 0
+                status[pid] = (playlists[pid], cur.rowcount > 0)
         return status
 
     def _get_playlist_tracks(self, playlist_id: int) -> list[Track]:

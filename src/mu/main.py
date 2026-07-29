@@ -20,6 +20,7 @@ from mu.io import (
     mu_print_playlist_tracks,
     mu_print_playlists,
     mu_print_tracks,
+    mu_print_tracks_deletion,
     mu_print_version,
 )
 from mu.types import Playlist, Track
@@ -30,12 +31,14 @@ parser = typer.Typer(
     name="mu",
     no_args_is_help=True,
     help="your personal music library",
-    epilog="maintained by brodyking at https://github.com/brodyking/mu",
+    epilog="created and maintained by brody king at https://github.com/brodyking/mu",
 )
 list_parser = typer.Typer(no_args_is_help=True)
 playlist_parser = typer.Typer(no_args_is_help=True)
+track_parser = typer.Typer(no_args_is_help=True)
 parser.add_typer(list_parser, name="ls", help="list different parts of your library")
 parser.add_typer(playlist_parser, name="p", help="modify playlists")
+parser.add_typer(track_parser, name="t", help="modify tracks")
 
 
 @parser.command("s", help="refresh metadata")
@@ -70,14 +73,24 @@ def import_tracks(
         )
 
 
-@parser.command("f", help="favorite track(s)")
-def favorite_tracks(term: Annotated[str, typer.Argument(help="search term")]) -> None:
+@track_parser.command("f", help="favorite track(s)")
+def track_favorite(
+    tracks_term: Annotated[str, typer.Argument(help="tracks search term")],
+) -> None:
     """Favorite track(s)"""
     try:
-        tracks: dict[int, Track] = api.favorite_tracks(term)
+        tracks: dict[int, Track] = api.favorite_tracks(tracks_term)
         mu_print_tracks(tracks)
     except ValueError as e:
         mu_print(str(e), ok=False)
+
+
+@track_parser.command("rm", help="remove track(s)")
+def track_remove(
+    tracks_term: Annotated[str, typer.Argument(help="tracks search term")],
+) -> None:
+    response: dict[int, tuple[Track, bool]] = api.remove_tracks(tracks_term)
+    mu_print_tracks_deletion(response)
 
 
 @list_parser.command("t", help="list all tracks")
@@ -167,7 +180,7 @@ def playlist_create(
 def playlist_delete(
     playlists_term: Annotated[str, typer.Argument(help="playlist search term")],
 ) -> None:
-    response: dict[int, bool] = api.delete_playlists(playlists_term)
+    response: dict[int, tuple[Playlist, bool]] = api.delete_playlists(playlists_term)
     mu_print_playlist_deletion(response)
 
 
