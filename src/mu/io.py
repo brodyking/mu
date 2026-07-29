@@ -116,7 +116,7 @@ def mu_print(
             f"{favorited} "
             f"{Color.red('󰈣 ' + (track.title or '')[:25])} "
             f"{Color.blue('󰠃 ' + (track.artist or '')[:20])} "
-            f"{Color.pink('󱍙 ' + (track.album) or '')[:25]} "
+            f"{Color.pink('󱍙 ' + (track.album or '')[:25])} "
         )
     elif album is not None:
         searchresult = (
