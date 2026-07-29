@@ -104,9 +104,7 @@ def list_tracks(
     ] = False,
 ) -> None:
     """Prints all tracks in the database"""
-    if only_favorited:
-        tracks_term = f"{tracks_term}&favorite:1" if tracks_term else "favorite:1"
-    tracks: dict[int, Track] = api.get_tracks(tracks_term)
+    tracks: dict[int, Track] = api.get_tracks(tracks_term, only_favorited)
     mu_print_tracks(tracks)
 
 

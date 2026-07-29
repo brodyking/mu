@@ -55,7 +55,9 @@ class Api:
 
         yield from self._ingest(files, batch_size, copy_to_source=True)
 
-    def get_tracks(self, tracks_term: str | None = None) -> dict[int, Track]:
+    def get_tracks(
+        self, tracks_term: str | None = None, only_favorited: bool = False
+    ) -> dict[int, Track]:
         """
         Returns a dict of tracks with the trackid as the key
         """
@@ -68,9 +70,11 @@ class Api:
         select = "SELECT * FROM tracks "
         if tracks_term:
             where, values = self._build_sql(tracks_term, "tracks")
+            where += " AND (favorite = 1)" if only_favorited else ""
             rows = self.db.query(select + where + ordering, values)
         else:
-            rows = self.db.query(select + ordering)
+            where: str = " WHERE (favorite = 1)" if only_favorited else ""
+            rows: list = self.db.query(select + where + ordering)
         return {t.id: t for t in (Track(row) for row in rows)}
 
     def get_albums(self, tracks_term: str | None = None) -> dict[tuple, Album]:
