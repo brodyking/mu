@@ -37,12 +37,20 @@ parser = typer.Typer(
 list_parser = typer.Typer(no_args_is_help=True)
 playlist_parser = typer.Typer(no_args_is_help=True)
 track_parser = typer.Typer(no_args_is_help=True)
-parser.add_typer(list_parser, name="ls", help="list different parts of your library")
-parser.add_typer(playlist_parser, name="p", help="modify playlists")
-parser.add_typer(track_parser, name="t", help="modify tracks")
+parser.add_typer(
+    list_parser, name="list", help="list different parts of your library (alias: ls)"
+)
+parser.add_typer(list_parser, name="ls", hidden=True)
+
+parser.add_typer(playlist_parser, name="playlist", help="modify playlists (alias: p)")
+parser.add_typer(playlist_parser, name="p", hidden=True)
+
+parser.add_typer(track_parser, name="t", hidden=True)
+parser.add_typer(track_parser, name="track", help="modify tracks (alias: t)")
 
 
-@parser.command("s", help="refresh metadata")
+@parser.command("s", hidden=True)
+@parser.command("scan", help="refresh metadata (alias: s)")
 def scan() -> None:
     """Scans the source folder"""
     for response in api.scan_source_folder():
@@ -54,13 +62,15 @@ def scan() -> None:
         )
 
 
-@parser.command("v", help="get version")
+@parser.command("v", hidden=True)
+@parser.command("version", help="get version (alias: v)")
 def print_version() -> None:
     """Prints the version of mu+muc+db"""
     mu_print_version(VERSION, api.db.SCHEMA)
 
 
-@parser.command("i", help="import media")
+@parser.command("i", hidden=True)
+@parser.command("import", help="import media (alias: i)")
 def import_tracks(
     path: Annotated[str, typer.Argument(help="directory/location of track(s)")],
 ) -> None:
@@ -74,7 +84,8 @@ def import_tracks(
         )
 
 
-@track_parser.command("f", help="favorite track(s)")
+@track_parser.command("f", hidden=True)
+@track_parser.command("favorite", help="favorite track(s) (alias: f)")
 def track_favorite(
     tracks_term: Annotated[str, typer.Argument(help="tracks search term")],
 ) -> None:
@@ -86,7 +97,8 @@ def track_favorite(
         mu_print(str(e), ok=False)
 
 
-@track_parser.command("rm", help="remove track(s)")
+@track_parser.command("rm", hidden=True)
+@track_parser.command("remove", help="remove track(s) (alias: rm)")
 def track_remove(
     tracks_term: Annotated[str, typer.Argument(help="tracks search term")],
 ) -> None:
@@ -94,7 +106,8 @@ def track_remove(
     mu_print_tracks_deletion(response)
 
 
-@list_parser.command("t", help="list all tracks")
+@list_parser.command("t", hidden=True)
+@list_parser.command("tracks", help="list all tracks (alias: t)")
 def list_tracks(
     tracks_term: Annotated[
         str | None, typer.Argument(help="tracks search term")
@@ -108,7 +121,8 @@ def list_tracks(
     mu_print_tracks(tracks)
 
 
-@list_parser.command("al", help="list all albums")
+@list_parser.command("al", hidden=True)
+@list_parser.command("albums", help="list all albums (alias: al)")
 def list_albums(
     tracks_term: Annotated[
         str | None, typer.Argument(help="tracks search term")
@@ -119,7 +133,8 @@ def list_albums(
     mu_print_albums(albums)
 
 
-@list_parser.command("ar", help="list all artists")
+@list_parser.command("ar", hidden=True)
+@list_parser.command("artists", help="list all artists (alias: ar)")
 def list_artists(
     tracks_term: Annotated[
         str | None, typer.Argument(help="tracks search term")
@@ -133,7 +148,8 @@ def list_artists(
     mu_print_artists(artists)
 
 
-@list_parser.command("p", help="list all playlists")
+@list_parser.command("p", hidden=True)
+@list_parser.command("playlists", help="list all playlists (alias: p)")
 def list_playlists(
     playlists_term: Annotated[
         str | None, typer.Argument(help="playlists search term")
@@ -144,7 +160,8 @@ def list_playlists(
     mu_print_playlists(playlists)
 
 
-@list_parser.command("pt", help="list a playlist's tracks")
+@list_parser.command("pt", hidden=True)
+@list_parser.command("playlist", help="list a playlist's tracks (alias: pt)")
 def list_playlist_tracks(
     playlists_term: Annotated[str, typer.Argument(help="playlists search term")],
 ) -> None:
@@ -155,7 +172,8 @@ def list_playlist_tracks(
         mu_print(str(e), ok=False)
 
 
-@playlist_parser.command("a", help="append track(s) into playlist(s)")
+@playlist_parser.command("a", hidden=True)
+@playlist_parser.command("append", help="append track(s) into playlist(s) (alias: a)")
 def playlist_append(
     playlists_term: Annotated[str, typer.Argument(help="playlists search term")],
     tracks_term: Annotated[str, typer.Argument(help="tracks search term")],
@@ -164,7 +182,8 @@ def playlist_append(
     mu_print_playlists(playlists)
 
 
-@playlist_parser.command("c", help="create a new playlist")
+@playlist_parser.command("c", hidden=True)
+@playlist_parser.command("create", help="create a new playlist (alias: c)")
 def playlist_create(
     title: Annotated[str, typer.Argument(help="name of playlist")],
     description: Annotated[str, typer.Argument(help="description of playlist")] = "",
@@ -173,7 +192,8 @@ def playlist_create(
     mu_print("", playlist=playlist)
 
 
-@playlist_parser.command("d", help="delete a playlist")
+@playlist_parser.command("d", hidden=True)
+@playlist_parser.command("delete", help="delete a playlist (alias: d)")
 def playlist_delete(
     playlists_term: Annotated[str, typer.Argument(help="playlist search term")],
 ) -> None:
@@ -181,8 +201,9 @@ def playlist_delete(
     mu_print_playlist_deletion(response)
 
 
+@playlist_parser.command("i", hidden=True)
 @playlist_parser.command(
-    "i", help="insert track(s) into playlist(s) at a specified position"
+    "insert", help="insert track(s) into playlist(s) at a specified position (alias: i)"
 )
 def playlist_insert(
     playlists_term: Annotated[str, typer.Argument(help="playlist search term")],
@@ -193,7 +214,8 @@ def playlist_insert(
     mu_print_playlists(playlists)
 
 
-@playlist_parser.command("rm", help="remove track(s) from playlist(s)")
+@playlist_parser.command("rm", hidden=True)
+@playlist_parser.command("remove", help="remove track(s) from playlist(s) (alias: rm)")
 def playlist_remove(
     playlists_term: Annotated[str, typer.Argument(help="playlist search term")],
     tracks_term: Annotated[str, typer.Argument(help="tracks search term")],
