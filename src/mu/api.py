@@ -9,6 +9,7 @@
 
 from collections.abc import Iterator
 from pathlib import Path
+from typing import Literal
 
 from mu.database import Database
 from mu.file import copy_file_to_source, read_metadata
@@ -56,20 +57,33 @@ class Api:
         yield from self._ingest(files, batch_size, copy_to_source=True)
 
     def get_tracks(
-        self, tracks_term: str | None = None, only_favorited: bool = False
+        self,
+        tracks_term: str | None = None,
+        order_by: Literal[
+            "artist",
+            "album",
+            "date",
+            "dateadded",
+            "id",
+            "plays",
+            "genre",
+            "title",
+            "time",
+            "cancel",
+            "shuffle",
+            "reset",
+        ]
+        | None = None,
+        descending: bool = False,
+        only_favorited: bool = False,
     ) -> dict[int, Track]:
         """
         Returns a dict of tracks with the trackid as the key
         """
-        ordering = """
-            ORDER BY artist COLLATE NOCASE,
-            album COLLATE NOCASE,
-            CAST(discnumber AS INTEGER),
-            CAST(tracknumber AS INTEGER)
-        """
+        ordering = self._build_sql_order(order_by, descending)
         select = "SELECT * FROM tracks "
         if tracks_term:
-            where, values = self._build_sql(tracks_term, "tracks")
+            where, values = self._build_sql_where(tracks_term, "tracks")
             where += " AND (favorite = 1)" if only_favorited else ""
             rows = self.db.query(select + where + ordering, values)
         else:
@@ -90,7 +104,7 @@ class Api:
         """
         select = "SELECT * FROM tracks"
         if tracks_term:
-            where, values = self._build_sql(tracks_term, "tracks")
+            where, values = self._build_sql_where(tracks_term, "tracks")
             rows = self.db.query(select + where + ordering, values)
         else:
             rows = self.db.query(select + ordering)
@@ -126,7 +140,7 @@ class Api:
         select = "SELECT * FROM tracks"
 
         if tracks_term:
-            where, values = self._build_sql(tracks_term, "tracks")
+            where, values = self._build_sql_where(tracks_term, "tracks")
             rows = self.db.query(select + where + ordering, values)
         else:
             rows = self.db.query(select + ordering)
@@ -152,7 +166,7 @@ class Api:
         select = "SELECT * FROM playlists"
         # Create playlists
         if playlists_term:
-            where, values = self._build_sql(playlists_term, "playlists")
+            where, values = self._build_sql_where(playlists_term, "playlists")
             playlist_rows = self.db.query(select + where + ordering, values)
         else:
             playlist_rows = self.db.query(select + ordering)
@@ -172,7 +186,7 @@ class Api:
         as a dict with tracks mapped to their ids.
         Term filters through tracks.
         """
-        match, values = self._build_sql(tracks_term, "tracks")
+        match, values = self._build_sql_where(tracks_term, "tracks")
         with self.db.write() as conn:
             rows = conn.execute(
                 "UPDATE tracks SET favorite = 1 - favorite " + match + " RETURNING *",
@@ -398,7 +412,7 @@ class Api:
         )
         return [Track(row) for row in rows]
 
-    def _build_sql(self, term: str, table: str) -> tuple[str, tuple]:
+    def _build_sql_where(self, term: str, table: str) -> tuple[str, tuple]:
         """
         Converts mu search queries into SQL where statments.
         Returns a tuple of the SQL string and a tuple of values.
@@ -418,13 +432,13 @@ class Api:
                 if not sep:
                     col, sep, value = filter.partition("=")
                 if not sep:
-                    raise ValueError(f"Filter {filter!r} needs ':' or '='.")
+                    raise ValueError("Filter is missing a prefix (needs ':' or '=')")
 
                 col, value = col.strip(), value.strip()
                 if col not in columns:
-                    raise ValueError(f"Unknown or empty search field {col!r}.")
+                    raise ValueError("Unknown or empty search field.")
                 if not value:
-                    raise ValueError(f"Filter {filter!r} has no value.")
+                    raise ValueError("Filter has no value.")
                 if sep == ":":
                     conditions.append(f"{col} LIKE ? COLLATE NOCASE")
                     values.append(f"%{value}%")
@@ -435,6 +449,51 @@ class Api:
 
         sql = " WHERE " + " OR ".join(groups)
         return sql, tuple(values)
+
+    def _build_sql_order(
+        self,
+        order_by: Literal[
+            "artist",
+            "album",
+            "date",
+            "dateadded",
+            "id",
+            "plays",
+            "genre",
+            "title",
+            "time",
+            "cancel",
+            "shuffle",
+            "reset",
+        ]
+        | None = None,
+        descending: bool = False,
+    ) -> str:
+        """
+        Builds a safe ORDER BY clause for the tracks table.
+
+        order_by=None  -> default library ordering (artist/album/disc/track).
+        order_by=<col> -> sort by that column, validated against the
+                        SEARCHABLE whitelist before interpolation.
+        Nulls always sort last, in both directions.
+        """
+        if order_by is None:
+            return self.db.DEFAULT_TRACK_ORDER
+
+        if order_by not in self.db.SEARCHABLE["tracks"]:
+            raise ValueError(f"Cannot sort by {order_by!r}.")
+
+        if order_by in self.db.NUMERIC_SORT_COLS:
+            key = f"CAST({order_by} AS INTEGER)"
+        elif order_by == "time":
+            key = (
+                "CAST(substr(time, 1, instr(time, ':') - 1) AS INTEGER) * 60 "
+                "+ CAST(substr(time, instr(time, ':') + 1) AS INTEGER)"
+            )
+        else:
+            key = f"{order_by} COLLATE NOCASE"
+
+        return f" ORDER BY {key} {'DESC' if descending else 'ASC'} NULLS LAST"
 
     def _upsert_track(self, conn, metadata: dict) -> Track:
         """

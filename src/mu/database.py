@@ -36,6 +36,14 @@ class Database:
             "albumart",
         },
     }
+    NUMERIC_SORT_COLS = {"id", "favorite", "plays", "tracknumber", "discnumber"}
+
+    DEFAULT_TRACK_ORDER = """
+        ORDER BY artist COLLATE NOCASE,
+                album COLLATE NOCASE,
+                CAST(discnumber AS INTEGER),
+                CAST(tracknumber AS INTEGER)
+    """
 
     def __init__(
         self,

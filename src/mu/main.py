@@ -8,7 +8,7 @@
 """
 
 from importlib.metadata import version
-from typing import Annotated
+from typing import Annotated, Literal
 
 import typer
 
@@ -112,12 +112,37 @@ def list_tracks(
     tracks_term: Annotated[
         str | None, typer.Argument(help="tracks search term")
     ] = None,
+    order_by: Annotated[
+        Literal[
+            "artist",
+            "album",
+            "date",
+            "dateadded",
+            "id",
+            "plays",
+            "genre",
+            "title",
+            "cancel",
+            "shuffle",
+            "reset",
+        ]
+        | None,
+        typer.Argument(help="order by a specified column"),
+    ] = None,
+    descending: Annotated[
+        bool, typer.Argument(help="return in descending order")
+    ] = False,
     only_favorited: Annotated[
         bool, typer.Option("--favorited", "-f", help="list only favorited")
     ] = False,
 ) -> None:
     """Prints all tracks in the database"""
-    tracks: dict[int, Track] = api.get_tracks(tracks_term, only_favorited)
+    tracks: dict[int, Track] = api.get_tracks(
+        tracks_term,
+        order_by=order_by,
+        descending=descending,
+        only_favorited=only_favorited,
+    )
     mu_print_tracks(tracks)
 
 
