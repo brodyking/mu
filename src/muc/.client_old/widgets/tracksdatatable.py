@@ -7,18 +7,17 @@
 
 """
 
-import random
 from typing import Literal
 
+from mu.track import Track
 from textual import on
 from textual.app import ComposeResult
 from textual.containers import Horizontal, Vertical
 from textual.coordinate import Coordinate
+from textual.message import Message
 from textual.screen import ModalScreen
-from textual.widgets import DataTable, Input, Static
+from textual.widgets import Button, DataTable, Input, Static
 
-from mu.api import Api
-from mu.models import Track
 from muc.client.widgets.vimdatatable import VimDataTable
 
 
@@ -27,10 +26,26 @@ class TracksDataTable(Static):
         ("/", "focus_search", "Search"),
         ("comma", "open_sort", "Sort"),
         (".", "open_addto", "Add to"),
-        ("f", "favorite_track", "Favorite"),
     ]
 
-    COL_INDEXES: dict[str, int] = {
+    DEFAULT_CSS = """
+        TracksDataTable {
+            width: 1fr;
+            height: 1fr;
+        }
+        TracksDataTable > Vertical > Horizontal {
+            height: 1;
+        }
+        TracksDataTable > Vertical > Horizontal > Input {
+            width: 1fr;
+        }
+        #tracks-sort-button, #tracks-addto-button {
+            width: 8;
+            max-width: 8;
+        }
+    """
+
+    PREFIXES = {
         "id": 0,
         "favorite": 1,
         "title": 2,
@@ -50,55 +65,41 @@ class TracksDataTable(Static):
     }
 
     def __init__(
-        self, api: Api, show_filter: bool = True, only_favorites: bool = False
+        self,
+        tracks: dict[int, Track],
+        show_filter: bool = True,
     ):
         super().__init__()
-
-        self.api = api
-        self.only_favorites = only_favorites
-
-        self.tids: list[int] = []
+        self.tracks = tracks
         self.full_rows: list = []
         self.show_filter = show_filter
 
-        self._sort_col: (
-            Literal[
-                "artist",
-                "album",
-                "date",
-                "dateadded",
-                "id",
-                "plays",
-                "genre",
-                "title",
-                "time",
-                "cancel",
-                "shuffle",
-                "reset",
-            ]
-            | None
-        ) = None
-        self._sort_desc: bool = False
-
-        self.search = Input(placeholder="Filter tracks (/)", compact=True, id="search")
+        self.search = Input(placeholder="Filter tracks (/)", id="search")
         self.main_table = VimDataTable(cursor_type="row", id="tracks-main-table")
+        self.sort_button = Button("󰒼 Sort", compact=True, id="tracks-sort-button")
+        self.addto_button = Button(" Add to", compact=True, id="tracks-addto-button")
 
     def compose(self) -> ComposeResult:
         with Vertical():
             with Horizontal():
                 yield self.search
+                if self.show_filter:
+                    yield self.sort_button
+                yield self.addto_button
             yield self.main_table
 
+    @on(Button.Pressed, "#tracks-sort-button")
     def action_open_sort(self) -> None:
         if self.show_filter:
             self.app.push_screen(SortTracksPopup(), callback=self.sort)  # type:ignore
 
+    @on(Button.Pressed, "#tracks-addto-button")
     def action_open_addto(self) -> None:
-        row_index = self.main_table.cursor_row
-        row_dict = self.main_table.export_row_as_dict(row_index)
-        tid = int(row_dict["id"])
-        if tid:
-            popup = AddToPopup(tid)
+        row = self.main_table.cursor_row
+        row_dict = self.main_table.export_cell_as_dict(row)
+        track = self.tracks[row_dict["id"]]
+        if track:
+            popup = AddToPopup(track)
             self.app.push_screen(popup)  # type:ignore
 
     def action_focus_search(self) -> None:
@@ -106,25 +107,79 @@ class TracksDataTable(Static):
 
     @on(Input.Submitted)
     def input_submitted(self, event: Input.Submitted) -> None:
-        self.populate(event.value)
-        self.redraw_rows()
+        self.filter_table(event.value)
         self.main_table.focus()
 
-    def action_favorite_track(self) -> None:
+    def set_track_favorite(self, track_id, is_favorite) -> None:
         """
         Toggles a tracks favorite icon
         TODO: Make it not refresh all rows when updating
         """
         try:
-            row_index: int = self.main_table.cursor_row
-            tid: int = int(self.main_table.export_row_as_dict(row_index)["id"])
-            track: Track = self.api.favorite_tracks(f"id={tid}")[tid]
             self.main_table.update_cell(
-                str(tid), "favorite", "❤" if track.favorite else " "
+                str(track_id), "favorite", "❤" if is_favorite else " "
             )
-            self.populate()
-        except Exception as e:
-            self.app.notify(f"Couldn't favorite: {e}", severity="error")
+            self.tracks[track_id].favorite = is_favorite
+            self.generate_full_rows()
+        except Exception:
+            return
+
+    def set_track_plays(self, track_id: int, amount: int) -> None:
+        """
+        Sets a tracks play count
+        TODO: Make it not refresh all rows when updating
+        """
+        try:
+            self.main_table.update_cell(str(track_id), "plays", str(amount))
+            self.tracks[track_id].plays = amount
+            self.generate_full_rows()
+        except Exception:
+            return
+
+    def filter_table(self, search_term: str) -> None:
+        """Filters a table with the same prefix/query support as the database"""
+        table = self.main_table
+        queries = search_term.split("+")
+
+        if not search_term:
+            filtered_rows = self.full_rows
+        else:
+            filtered_rows = []
+            for query in queries:
+                filters = query.split("&")
+                # Start with all rows, then narrow down
+                query_rows = set(map(tuple, self.full_rows))
+
+                for filter in filters:
+                    filter = filter.strip()
+                    if ":" not in filter:
+                        value = filter.lower()
+                        query_rows &= {
+                            tuple(row)
+                            for row in self.full_rows
+                            if value in str(row[2]).lower()
+                            or value in str(row[3]).lower()
+                            or value in str(row[4]).lower()
+                        }
+                    else:
+                        prefix, sep, value = filter.partition(":")
+                        prefix, value = prefix.strip(), value.strip().lower()
+                        if sep and prefix in self.PREFIXES and value:
+                            row_index = self.PREFIXES[prefix]
+                            query_rows &= {
+                                tuple(row)
+                                for row in self.full_rows
+                                if value in str(row[row_index]).lower()
+                            }
+
+                # Add rows matched by this query group (avoiding duplicates)
+                for row in self.full_rows:
+                    if tuple(row) in query_rows and row not in filtered_rows:
+                        filtered_rows.append(row)
+        table.clear()
+
+        for row in filtered_rows:
+            table.add_row(*row, key=str(row[0]))
 
     def sort(
         self,
@@ -137,71 +192,63 @@ class TracksDataTable(Static):
             "plays",
             "genre",
             "title",
-            "time",
             "cancel",
             "shuffle",
             "reset",
         ],
     ):
-        """Callback for the sort popup."""
+        """This is the callback function for the sort popup"""
         if method in (None, "cancel"):
             return
 
         if method == "reset":
-            self._sort_col, self._sort_desc = None, False
-            self.populate()
-            self.redraw_rows()
-            return
+            if method == "reset":
+                self._last_sort = None
+                self._sort_reverse = False
+                self.generate_full_rows()
+        elif method == "shuffle":
+            import random
 
-        if method == "shuffle":
-            random.shuffle(self.full_rows)  # session state, stays in memory
-            self.redraw_rows()
-            return
+            random.shuffle(self.full_rows)
+        else:
+            numeric_cols = {"id", "plays", "tracknumber", "discnumber"}
 
-        # column sort: toggle direction only when re-selecting the same column
-        self._sort_desc = not self._sort_desc if self._sort_col == method else False
-        self._sort_col = method
-        self.populate()  # re-queries the DB in the new order
-        self.redraw_rows()
+            col_index = self.PREFIXES[method]
+            reverse = getattr(self, "_sort_reverse", False)
 
-    def redraw_rows(self) -> None:
-        self.main_table.clear()
-        for row in self.full_rows:
-            self.main_table.add_row(*row, key=str(row[0]))
+            if getattr(self, "_last_sort", None) == method:
+                reverse = not reverse
+            else:
+                reverse = False
 
-    def populate(
-        self,
-        tracks_term: str | None = None,
-    ) -> None:
-        """
-        Clears and repopulates the table with tracks. Calls the database
-        each time this is called. Also supports search queries with standard
-        mu search syntax. If no prefix is given, it searches artist, albumartist,
-        album, and title
-        """
+            self._last_sort = method
+            self._sort_reverse = reverse
+
+            def sort_key(row):
+                val = row[col_index]
+                if val is None:
+                    return (1, 0 if method in numeric_cols else "")
+                if method in numeric_cols:
+                    try:
+                        return (0, int(val))
+                    except (ValueError, TypeError):
+                        return (1, 0)
+                return (0, str(val).lower())
+
+            self.full_rows.sort(key=sort_key, reverse=reverse)
+
+        search_term = self.search.value
+        if search_term:
+            self.filter_table(search_term)
+        else:
+            self.main_table.clear()
+            for row in self.full_rows:
+                self.main_table.add_row(*row, key=str(row[0]))
+
+    def generate_full_rows(self):
         self.full_rows = []
-
-        if tracks_term and ":" not in tracks_term and "=" not in tracks_term:
-            tracks_term = (
-                f"artist:{tracks_term}+"
-                f"albumartist:{tracks_term}+"
-                f"album:{tracks_term}+"
-                f"title:{tracks_term}"
-            )
-
-        try:
-            tracks: dict[int, Track] = self.api.get_tracks(
-                tracks_term,
-                only_favorited=self.only_favorites,
-                order_by=self._sort_col,
-                descending=self._sort_desc,
-            )
-        except ValueError as e:
-            self.app.notify(str(e), severity="error")
-            return
-
-        for tid in tracks:
-            track = tracks[tid]
+        for trackid in self.tracks:
+            track = self.tracks[trackid]
             favorite = "❤" if track.favorite else " "
 
             row_tuple = (
@@ -251,13 +298,31 @@ class TracksDataTable(Static):
         for label, key, max_w in columns:
             table.add_column(label, key=key, width=max_w)
 
-        self.populate()
-        self.redraw_rows()
+        self.generate_full_rows()
+
+        for row_tuple in self.full_rows:
+            table.add_row(*row_tuple, key=str(row_tuple[0]))
 
         table.focus()
 
 
 class SortTracksPopup(ModalScreen[str]):
+    DEFAULT_CSS = """
+        SortTracksPopup {
+            align: center middle;
+            background: transparent;
+        }
+
+        VimDataTable {
+            width: 35;
+            height: auto;
+            border: heavy $primary;
+            padding: 0 0;
+            align: center middle;
+            overflow:hidden;
+        }
+    """
+
     TABLE = [
         ("A", "Sort by Artist"),
         ("a", "Sort by Album"),
@@ -268,7 +333,6 @@ class SortTracksPopup(ModalScreen[str]):
         ("p", "Sort by Plays"),
         ("s", "Sort by Shuffle"),
         ("t", "Sort by Title"),
-        ("T", "Sort by Time"),
         ("r", "Reset"),
         ("esc", "Cancel"),
     ]
@@ -277,14 +341,13 @@ class SortTracksPopup(ModalScreen[str]):
         ("enter", "option_selected", "Select Option"),
         ("escape", "dismiss_msg('cancel')", "Close"),
         ("i", "dismiss_msg('id')", "Id"),
-        ("T", "dismiss_msg('time')", "Time"),
         ("t", "dismiss_msg('title')", "Title"),
         ("A", "dismiss_msg('artist')", "Artist"),
         ("a", "dismiss_msg('album')", "Album"),
         ("p", "dismiss_msg('plays')", "Plays"),
         ("d", "dismiss_msg('dateadded')", "Dateadded"),
         ("g", "dismiss_msg('genre')", "Genre"),
-        ("s", "dismiss_msg('shuffle')", "Shuffle"),
+        ("s", "dismiss_msg('shuffle')", "Genre"),
         ("D", "dismiss_msg('date')", "Date"),
         ("r", "dismiss_msg('reset')", "Reset"),
     ]
@@ -318,6 +381,21 @@ class SortTracksPopup(ModalScreen[str]):
 
 
 class AddToPopup(ModalScreen[str]):
+    DEFAULT_CSS = """
+        AddToPopup {
+            align: center middle;
+            background: transparent;
+        }
+
+        VimDataTable {
+            width: 30;
+            height: auto;
+            border: heavy $primary;
+            padding: 0 0;
+            align: center middle;
+            overflow:hidden;
+        }
+    """
     TABLE = [
         ("l", "Queue Last"),
         ("n", "Queue Next"),
@@ -331,11 +409,21 @@ class AddToPopup(ModalScreen[str]):
         ("n", "dismiss_msg('next')", "Queue Next"),
     ]
 
-    def __init__(self, tid, *args, **kwargs) -> None:
+    class AddToQueueLast(Message):
+        def __init__(self, track: Track | None, *args, **kwargs):
+            self.track = track
+            super().__init__(*args, **kwargs)
+
+    class AddToQueueNext(Message):
+        def __init__(self, track: Track | None, *args, **kwargs):
+            self.track = track
+            super().__init__(*args, **kwargs)
+
+    def __init__(self, track, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.main_table = VimDataTable(show_inspect=False, cursor_type="row")
 
-        self.tid = tid
+        self.track = track
 
     def compose(self) -> ComposeResult:
         yield self.main_table
@@ -358,12 +446,12 @@ class AddToPopup(ModalScreen[str]):
             case "Queue Next":
                 self.action_dismiss_msg("next")
             case _:
-                self.action_dismiss_msg("cancel")
+                self.action_dismiss_msg("Cancel")
 
     def action_dismiss_msg(self, message: str):
         match message:
             case "last":
-                pass
+                self.post_message(self.AddToQueueLast(self.track))
             case "next":
-                pass
+                self.post_message(self.AddToQueueNext(self.track))
         self.dismiss(message)

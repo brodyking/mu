@@ -7,12 +7,13 @@
 
 """
 
-from mu.track import Track
+from mu.api import Api
+from mu.models import Track
 
 
 class QueueList:
-    def __init__(self, tracks: dict) -> None:
-        self.tracks = tracks  # Dict of all tracks
+    def __init__(self, api: Api) -> None:
+        self.api: Api = api  # Dict of all tracks
         self.queue: list[int] = []  # List of track Ids in the queue (full of ints)
         self.pos = 0  # Position in the queue
 
@@ -44,7 +45,8 @@ class QueueList:
     def get_current_track(self) -> Track | None:
         """Returns the currently selected track"""
         if self.pos <= len(self.queue) - 1:
-            return self.tracks[self.queue[self.pos]]
+            tid: int = self.queue[self.pos]
+            return self.api.get_tracks(f"id={tid}")[tid]
         else:
             return None
 
@@ -56,22 +58,19 @@ class QueueList:
         return self.get_current_track()
 
     def get_queue_filepaths(self, offset=1) -> list[str]:
-        tracks = self.get_queue(offset=offset)
-        output = []
+        tracks: list[Track] = self.get_queue(offset=offset)
+        filepaths: list[str] = []
         for track in tracks:
-            output.append(track.filepath)
-        return output
+            filepaths.append(track.filepath)
+        return filepaths
 
-    def get_queue(self, offset=1) -> list[Track]:
-        """
-        Returns the queue of tracks remaining in the queue.
-        By default, it will return all tracks after the currently playing one.
-        You can change this with offset.
-        """
-        output = []
-        for id in self.queue[self.pos + offset :]:
-            output.append(self.tracks[id])
-        return output
+    def get_queue(self, offset: int = 1) -> list[Track]:
+        tids: list[int] = self.queue[self.pos + offset :]
+        if not tids:
+            return []
+        term: str = "+".join(f"id={tid}" for tid in tids)
+        tracks: dict[int, Track] = self.api.get_tracks(term)  # ONE query
+        return [tracks[tid] for tid in tids if tid in tracks]  # preserve queue order
 
     def skip_track(self, offset: int = 1) -> Track | None:
         """

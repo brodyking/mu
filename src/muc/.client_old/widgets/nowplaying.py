@@ -9,6 +9,7 @@
 
 import platform
 
+from mu.track import Track
 from PIL import Image as PILImage
 from PIL import ImageOps
 from textual import on
@@ -19,8 +20,6 @@ from textual.message import Message
 from textual.widgets import Button, Label, ProgressBar, Static
 from textual_image._terminal import get_cell_size
 from textual_image.widget import Image
-
-from mu.track import Track
 
 IS_UNIX = platform.system() in ("Darwin", "Linux")
 
