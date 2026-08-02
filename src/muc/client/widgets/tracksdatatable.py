@@ -180,6 +180,11 @@ class TracksDataTable(Static):
         album, and title
         """
 
+        self.app.notify(
+            "Fetching tracks. " + (f"[i]{tracks_term}[/i]" if tracks_term else ""),
+            severity="warning",
+        )
+
         self.full_rows = []
 
         if tracks_term and ":" not in tracks_term and "=" not in tracks_term:
@@ -197,6 +202,7 @@ class TracksDataTable(Static):
                 order_by=self._sort_col,
                 descending=self._sort_desc,
             )
+            self.app.notify(f"Recieved {len(tracks)} tracks.")
         except ValueError as e:
             self.app.notify(str(e), severity="error")
             return
