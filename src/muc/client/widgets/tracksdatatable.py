@@ -179,6 +179,7 @@ class TracksDataTable(Static):
         mu search syntax. If no prefix is given, it searches artist, albumartist,
         album, and title
         """
+
         self.full_rows = []
 
         if tracks_term and ":" not in tracks_term and "=" not in tracks_term:
@@ -251,10 +252,10 @@ class TracksDataTable(Static):
         for label, key, max_w in columns:
             table.add_column(label, key=key, width=max_w)
 
-        self.populate()
+    def on_show(self) -> None:
+        self.populate(self.search.value)
         self.redraw_rows()
-
-        table.focus()
+        self.main_table.focus()
 
 
 class SortTracksPopup(ModalScreen[str]):

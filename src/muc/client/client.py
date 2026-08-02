@@ -29,6 +29,11 @@ class Client(App):
         ("F", "goto_tab(1)", "Favorites"),
     )  # type:ignore
 
+    TAB_IDS = [
+        "tracks-tab",
+        "favorites-tab",
+    ]
+
     def __init__(self) -> None:
         super().__init__()
         self.api = Api()
@@ -56,7 +61,7 @@ class Client(App):
 
         self.tabs = TabbedContent(id="tabs")
         self.tracks_data_table = TracksDataTable(self.api)
-        self.favorite_tracks_data_Table: TracksDataTable = TracksDataTable(
+        self.favorite_tracks_data_table: TracksDataTable = TracksDataTable(
             self.api, only_favorites=True
         )
 
@@ -66,31 +71,22 @@ class Client(App):
                 with TabPane(title="Tracks (T)", id="tracks-tab"):
                     yield self.tracks_data_table
                 with TabPane(title="Favorites (F)", id="favorites-tab"):
-                    yield self.favorite_tracks_data_Table
+                    yield self.favorite_tracks_data_table
             yield Footer()
 
     def action_goto_tab(self, tabid: int) -> None:
         """Switches to a dedicated tab."""
-        all_tabs: list[tuple] = [
-            ("tracks-tab", self.tracks_data_table.main_table),
-            ("favorites-tab", self.favorite_tracks_data_Table.main_table),
-        ]
         try:
-            tab_name, table = all_tabs[tabid]
+            tab_name = self.TAB_IDS[tabid]
             self.tabs.active = tab_name
-            table.focus()
         except (ValueError, IndexError):
             pass
 
     def action_cycle_tab(self, offset: int) -> None:
         """Moves to the tab left or right of the current one."""
-        tab_ids = [
-            "tracks-tab",
-            "favorites-tab",
-        ]
         try:
-            current_index = tab_ids.index(self.tabs.active)
+            current_index = self.TAB_IDS.index(self.tabs.active)
         except ValueError:
             return
-        new_index = (current_index + offset) % len(tab_ids)
+        new_index = (current_index + offset) % len(self.TAB_IDS)
         self.action_goto_tab(new_index)
