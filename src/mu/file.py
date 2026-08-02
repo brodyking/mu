@@ -13,7 +13,7 @@ import re
 import shutil
 from pathlib import Path
 
-from mutagen import MutagenError
+from mutagen._util import MutagenError
 from mutagen.mp3 import MP3
 
 # ID3 frame -> metadata key
