@@ -83,3 +83,17 @@ AddToPopup > VimDataTable {
     align: center middle;
     overflow:hidden;
 }
+ToastRack {
+  dock: top;
+  align: right top;      /* was 'left top' */
+  margin: 0;
+  overflow-y: hidden;    /* removes the reserved scrollbar column */
+}
+Toast {
+    padding: 0;
+    margin: 0;
+    width: auto;
+    max-width: 300;
+    background: $background;
+}
+

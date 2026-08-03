@@ -24,6 +24,7 @@ from mu.io import (
     mu_print_tracks_deletion,
     mu_print_version,
 )
+from mu.itunesimport import ITunesImport
 from mu.models import Playlist, Track
 
 VERSION: str = version("mu")
@@ -81,6 +82,22 @@ def import_tracks(
             url=response["filename"],
             count=(response["count"] + 1, response["total"]),
             ok=response["ok"],
+        )
+
+
+@parser.command("it", hidden=True)
+@parser.command("itunes", help="import an itunes library xml (alias: it)")
+def itunes_import(
+    path: Annotated[str, typer.Argument(help="path to iTunes Library.xml")],
+) -> None:
+    for r in ITunesImport(api, path).run():
+        mu_print(
+            "",
+            url=r["name"],
+            count=(r["count"], r["total"]),
+            ok=r["ok"],
+            track=r["track"],
+            playlist=r["playlist"],
         )
 
 
