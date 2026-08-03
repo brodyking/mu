@@ -34,7 +34,7 @@ InspectRowPopup {
 }
 InspectRowPopup > VimDataTable {
     min-width: 50;
-    max-width: 800;
+    max-width: 70;
     height: auto;
     border: heavy $primary;
     padding: 0 0;
@@ -92,8 +92,7 @@ ToastRack {
 Toast {
     padding: 0;
     margin: 0;
-    width: auto;
-    max-width: 300;
+    width: 30;
     background: $background;
 }
 
