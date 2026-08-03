@@ -60,6 +60,7 @@ class Client(App):
         self.animation_level = "none"
 
         self.tabs = TabbedContent(id="tabs")
+
         self.tracks_data_table = TracksDataTable(self.api)
         self.favorite_tracks_data_table: TracksDataTable = TracksDataTable(
             self.api, only_favorites=True
