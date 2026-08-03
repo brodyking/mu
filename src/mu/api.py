@@ -195,6 +195,20 @@ class Api:
 
         return {t.id: t for t in (Track(row) for row in rows)}
 
+    def increment_playcount_tracks(
+        self, tracks_term: str, amount: int
+    ) -> dict[int, Track]:
+        """
+        Increments track(s) playcount
+        """
+        where, values = self._build_sql_where(tracks_term, "tracks")
+        with self.db.write() as conn:
+            rows = conn.execute(
+                "UPDATE tracks SET plays = plays + ?" + where + " RETURNING *",
+                (amount, *values),
+            ).fetchall()
+        return {t.id: t for t in (Track(row) for row in rows)}
+
     def remove_tracks(self, tracks_term: str) -> dict[int, tuple[Track, bool]]:
         """
         Removes matching track(s) from the database. Leaves the files on disk.
