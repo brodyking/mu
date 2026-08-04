@@ -128,11 +128,6 @@ class QueueDataTable(Static):
         Clears and repopulates the table with tracks in the current queue.
         Calls the database from the QueueList each time this is called."""
 
-        self.app.notify(
-            "Fetching tracks from queue. ",
-            severity="warning",
-        )
-
         self.full_rows = []
 
         try:
@@ -196,3 +191,6 @@ class QueueDataTable(Static):
         self.populate()
         self.redraw_rows()
         self.main_table.focus()
+
+    def on_hide(self) -> None:
+        self.main_table.clear()
