@@ -159,7 +159,7 @@ class TracksDataTable(Static):
 
         if method == "reset":
             self._sort_col, self._sort_desc = None, False
-            self.populate()
+            self.populate(self.search.value)
             self.redraw_rows()
             return
 
@@ -171,7 +171,7 @@ class TracksDataTable(Static):
         # column sort: toggle direction only when re-selecting the same column
         self._sort_desc = not self._sort_desc if self._sort_col == method else False
         self._sort_col = method
-        self.populate()  # re-queries the DB in the new order
+        self.populate(self.search.value)  # re-queries the DB in the new order
         self.redraw_rows()
 
     def redraw_rows(self) -> None:
@@ -190,11 +190,6 @@ class TracksDataTable(Static):
         album, and title
         """
 
-        self.app.notify(
-            "Fetching tracks. " + (f"[i]{tracks_term}[/i]" if tracks_term else ""),
-            severity="warning",
-        )
-
         self.full_rows = []
 
         if tracks_term and ":" not in tracks_term and "=" not in tracks_term:
@@ -212,7 +207,7 @@ class TracksDataTable(Static):
                 order_by=self._sort_col,
                 descending=self._sort_desc,
             )
-            self.app.notify(f"Recieved {len(tracks)} tracks.")
+            self.app.notify(f"Fetched {len(tracks)} tracks.")
         except ValueError as e:
             self.app.notify(str(e), severity="error")
             return
@@ -272,6 +267,9 @@ class TracksDataTable(Static):
         self.populate(self.search.value)
         self.redraw_rows()
         self.main_table.focus()
+
+    def on_hide(self) -> None:
+        self.main_table.clear()
 
 
 class SortTracksPopup(ModalScreen[str]):
