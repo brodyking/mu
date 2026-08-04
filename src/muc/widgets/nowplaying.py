@@ -1,8 +1,30 @@
-from textual.containers import Horizontal
+from textual import on
+from textual.containers import Horizontal, Vertical
+from textual.events import Click
 from textual.message import Message
-from textual.widgets import Label, Static
+from textual.widgets import Label, ProgressBar, Static
+from typer import progressbar
 
 from muc.player import Player
+
+
+class NowPlayingProgressBar(ProgressBar):
+    def __init__(self, *args, **kwargs):
+        super().__init__(
+            total=0, show_percentage=False, show_eta=False, *args, **kwargs
+        )
+
+    class Clicked(Message):
+        def __init__(self, percentage: float, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            self.percentage = percentage
+
+        pass
+
+    @on(Click)
+    def clicked(self, event: Click) -> None:
+        percentage = event.x / self.size.width
+        self.post_message(self.Clicked(percentage))
 
 
 class NowPlaying(Static):
@@ -21,14 +43,18 @@ class NowPlaying(Static):
         self.artist_label = Label(classes="metadata-value")
         self.album_label = Label(classes="metadata-value")
 
+        self.progressbar = NowPlayingProgressBar()
+
     def compose(self):
-        with Horizontal():
-            yield Label(" 󰈣 ", classes="metadata-icon")
-            yield self.title_label
-            yield Label(" 󰠃 ", classes="metadata-icon")
-            yield self.artist_label
-            yield Label(" 󱍙 ", classes="metadata-icon")
-            yield self.album_label
+        with Vertical():
+            with Horizontal():
+                yield Label(" 󰈣 ", classes="metadata-icon")
+                yield self.title_label
+                yield Label(" 󰠃 ", classes="metadata-icon")
+                yield self.artist_label
+                yield Label(" 󱍙 ", classes="metadata-icon")
+                yield self.album_label
+            yield self.progressbar
 
     def on_mount(self) -> None:
         self._timer = self.set_interval(0.25, self._tick)  # NOT in __init__
@@ -45,6 +71,8 @@ class NowPlaying(Static):
             self.album_label.update(current.album[:20] if current else "")
             # Update queue table
             self.post_message(self.TrackChanged())
+        self.progressbar.update(total=self.player.duration, progress=self.player.pos)
 
-        # pct = self.player.pos / self.player.duration * 100
-        # self.query_one("#progress", ProgressBar).update(progress=pct)
+    @on(NowPlayingProgressBar.Clicked)
+    def progressbar_clicked(self, event: NowPlayingProgressBar.Clicked):
+        self.player.seek(event.percentage * self.player.duration)
