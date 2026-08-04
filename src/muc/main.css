@@ -1,98 +1,107 @@
 Tabs {
-    border: none;
-    height:1;
-    background: $panel;
+ border: none;
+ height:1;
+ background: $panel;
 }
 Tab.-active {
-    background: $primary;
-    color: $text
+ background: $primary;
+ color: $text 
 }
 Tabs > Underline {
-    display: none;
+ display: none;
 }
 TabPane {
-  height: 1fr;
+ height: 1fr;
 }
 Underline > .underline--bar {
-    color: transparent;
-    background: transparent;
+ color: transparent;
+ background: transparent;
 }
-
 Tabs:focus .underline--bar {
-    background: transparent;
+ background: transparent;
 }
-
 VimDataTable {
-    width: auto;
-    padding: 0;
-    margin: 0;
+ width: auto;
+ padding: 0;
+ margin: 0;
 }
-
 InspectRowPopup {
-    align: center middle;
-    background: transparent;
+ align: center middle;
+ background: transparent;
 }
 InspectRowPopup > VimDataTable {
-    min-width: 50;
-    max-width: 70;
-    height: auto;
-    border: heavy $primary;
-    padding: 0 0;
-    align: center middle;
-    overflow:hidden;
+ min-width: 50;
+ max-width: 70;
+ height: auto;
+ border: heavy $primary;
+ padding: 0 0;
+ align: center middle;
+ overflow:hidden;
 }
-
 TracksDataTable {
-    width: 1fr;
-    height: 1fr;
+ width: 1fr;
+ height: 1fr;
 }
 TracksDataTable > Vertical > Horizontal {
-    height: 1;
+ height: 1;
 }
 TracksDataTable > Vertical > Horizontal > Input {
-    width: 1fr;
+ width: 1fr;
 }
 #tracks-sort-button, #tracks-addto-button {
-    width: 8;
-    max-width: 8;
+ width: 8;
+ max-width: 8;
 }
-
 SortTracksPopup {
-    align: center middle;
-    background: transparent;
+ align: center middle;
+ background: transparent;
 }
-
 SortTracksPopup > VimDataTable {
-    width: 35;
-    height: auto;
-    border: heavy $primary;
-    padding: 0 0;
-    align: center middle;
-    overflow:hidden;
+ width: 35;
+ height: auto;
+ border: heavy $primary;
+ padding: 0 0;
+ align: center middle;
+ overflow:hidden;
 }
-
 AddToPopup {
-    align: center middle;
-    background: transparent;
+ align: center middle;
+ background: transparent;
 }
 AddToPopup > VimDataTable {
-    width: 30;
-    height: auto;
-    border: heavy $primary;
-    padding: 0 0;
-    align: center middle;
-    overflow:hidden;
+ width: 30;
+ height: auto;
+ border: heavy $primary;
+ padding: 0 0;
+ align: center middle;
+ overflow:hidden;
 }
 ToastRack {
-  dock: top;
-  align: right top;      /* was 'left top' */
-  margin: 0;
-  overflow-y: hidden;    /* removes the reserved scrollbar column */
+ dock: top;
+ align: right top;
+/* was 'left top' */
+ margin: 0;
+ overflow-y: hidden;
+/* removes the reserved scrollbar column */
 }
 Toast {
-    padding: 0;
-    margin: 0;
-    width: 30;
-    background: $background;
+ padding: 0;
+ margin: 0;
+ width: 30;
+ background: $background;
+}
+NowPlaying {
+ height:1;
+}
+Label {
+ background: $surface 
+}
+NowPlaying .metadata-icon {
+ background: $primary;
+ color: $background;
+}
+NowPlaying .metadata-value {
+ padding-left: 1;
+ padding-right: 1;
 }
 

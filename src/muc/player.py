@@ -61,3 +61,7 @@ class Player:
     @property
     def pos(self) -> float:
         return self._audio.curr_pos
+
+    @property
+    def duration(self) -> float:
+        return self._audio.duration
