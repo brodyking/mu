@@ -8,7 +8,6 @@
 """
 
 from mu.track import Track
-
 from muc.client.widgets.tracksdatatable import TracksDataTable
 
 

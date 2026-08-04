@@ -10,6 +10,8 @@
 from muc.client.queuelist import QueueList
 from muc.client.widgets.mufooter import MuFooter
 from muc.client.widgets.nowplaying import NowPlaying, NowPlayingProgressBar
+from muc.client.widgets.tracksdatatable import AddToPopup, TracksDataTable
+from muc.player.player import Player
 from textual import events, on
 from textual.app import App, ComposeResult
 from textual.containers import Vertical
@@ -19,8 +21,6 @@ from textual.widgets import DataTable, TabbedContent, TabPane
 
 from mu.api import Api
 from mu.models import Track
-from muc.client.widgets.tracksdatatable import AddToPopup, TracksDataTable
-from muc.player.player import Player
 
 
 class Client(App):

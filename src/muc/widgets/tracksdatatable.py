@@ -19,7 +19,8 @@ from textual.widgets import DataTable, Input, Static
 
 from mu.api import Api
 from mu.models import Track
-from muc.client.widgets.vimdatatable import VimDataTable
+from muc.player import Player
+from muc.widgets.vimdatatable import VimDataTable
 
 
 class TracksDataTable(Static):
@@ -50,14 +51,18 @@ class TracksDataTable(Static):
     }
 
     def __init__(
-        self, api: Api, show_filter: bool = True, only_favorites: bool = False
+        self,
+        api: Api,
+        player: Player,
+        show_filter: bool = True,
+        only_favorites: bool = False,
     ):
         super().__init__()
 
         self.api = api
+        self.player: Player = player
         self.only_favorites = only_favorites
 
-        self.tids: list[int] = []
         self.full_rows: list = []
         self.show_filter = show_filter
 
@@ -109,6 +114,11 @@ class TracksDataTable(Static):
         self.populate(event.value)
         self.redraw_rows()
         self.main_table.focus()
+
+    @on(VimDataTable.RowSelected)
+    def start_queue(self, event: VimDataTable.RowSelected) -> None:
+        tids = [row[0] for row in self.full_rows]
+        self.player.play_now(tids, event.cursor_row)
 
     def action_favorite_track(self) -> None:
         """

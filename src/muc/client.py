@@ -13,7 +13,9 @@ from textual.theme import Theme
 from textual.widgets import Footer, TabbedContent, TabPane
 
 from mu.api import Api
-from muc.client.widgets.tracksdatatable import TracksDataTable
+from muc.player import Player
+from muc.widgets.queuedatatable import QueueDataTable
+from muc.widgets.tracksdatatable import TracksDataTable
 
 
 class Client(App):
@@ -22,14 +24,17 @@ class Client(App):
 
     BINDINGS = (
         ("q", "quit", "Quit"),
-        # Tabs
+        # Cycling tabs
         ("H", "cycle_tab(-1)", "Previous Tab"),
         ("L", "cycle_tab(1)", "Next Tab"),
-        ("T", "goto_tab(0)", "Tracks"),
-        ("F", "goto_tab(1)", "Favorites"),
+        # Goto specific tab
+        ("Q", "goto_tab(0)", "Queue"),
+        ("T", "goto_tab(1)", "Tracks"),
+        ("F", "goto_tab(2)", "Favorites"),
     )  # type:ignore
 
     TAB_IDS = [
+        "queue-tab",
         "tracks-tab",
         "favorites-tab",
     ]
@@ -37,6 +42,7 @@ class Client(App):
     def __init__(self) -> None:
         super().__init__()
         self.api = Api()
+        self.player = Player(self.api)
 
         self.register_theme(
             theme=Theme(
@@ -61,14 +67,17 @@ class Client(App):
 
         self.tabs = TabbedContent(id="tabs")
 
-        self.tracks_data_table = TracksDataTable(self.api)
+        self.queue_data_table: QueueDataTable = QueueDataTable(self.api, self.player)
+        self.tracks_data_table = TracksDataTable(self.api, self.player)
         self.favorite_tracks_data_table: TracksDataTable = TracksDataTable(
-            self.api, only_favorites=True
+            self.api, self.player, only_favorites=True
         )
 
     def compose(self) -> ComposeResult:
         with Horizontal():
             with self.tabs:
+                with TabPane(title="Queue (Q)", id="queue-tab"):
+                    yield self.queue_data_table
                 with TabPane(title="Tracks (T)", id="tracks-tab"):
                     yield self.tracks_data_table
                 with TabPane(title="Favorites (F)", id="favorites-tab"):

@@ -91,6 +91,26 @@ class Api:
             rows: list = self.db.query(select + where + ordering)
         return {t.id: t for t in (Track(row) for row in rows)}
 
+    def get_tracks_by_ids(self, ids: list[int]) -> dict[int, Track]:
+        """
+        Returns the requested tracks keyed by id, batched with IN (...) so an
+        arbitrarily long id list can't overflow SQLite's expression-depth or
+        parameter limits. Order is not guaranteed — the caller reorders if needed.
+        """
+        result: dict[int, Track] = {}
+        unique = list(dict.fromkeys(ids))
+        chunk_max = 900
+        for i in range(0, len(unique), chunk_max):
+            chunk = unique[i : i + chunk_max]
+            placeholders = ",".join("?" * len(chunk))
+            rows = self.db.query(
+                f"SELECT * FROM tracks WHERE id IN ({placeholders})", tuple(chunk)
+            )
+            for row in rows:
+                track = Track(row)
+                result[track.id] = track
+        return result
+
     def get_albums(self, tracks_term: str | None = None) -> dict[tuple, Album]:
         """
         Returns every album mapped to its tracks.

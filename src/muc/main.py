@@ -7,7 +7,7 @@
 
 """
 
-from muc.client.client import Client
+from muc.client import Client
 
 
 def main():

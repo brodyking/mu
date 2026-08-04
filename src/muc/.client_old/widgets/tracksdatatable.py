@@ -10,6 +10,7 @@
 from typing import Literal
 
 from mu.track import Track
+from muc.client.widgets.vimdatatable import VimDataTable
 from textual import on
 from textual.app import ComposeResult
 from textual.containers import Horizontal, Vertical
@@ -17,8 +18,6 @@ from textual.coordinate import Coordinate
 from textual.message import Message
 from textual.screen import ModalScreen
 from textual.widgets import Button, DataTable, Input, Static
-
-from muc.client.widgets.vimdatatable import VimDataTable
 
 
 class TracksDataTable(Static):

@@ -50,10 +50,10 @@ class QueueList:
         else:
             return None
 
-    def start_queue(self, track_ids: list) -> Track | None:
+    def start_queue(self, track_ids: list, start_pos: int = 0) -> Track | None:
         """Initializes the list of tracks, and returns the first one"""
         self.queue = [int(id) for id in track_ids]
-        self.pos = 0
+        self.pos = start_pos
 
         return self.get_current_track()
 
@@ -68,9 +68,8 @@ class QueueList:
         tids: list[int] = self.queue[self.pos + offset :]
         if not tids:
             return []
-        term: str = "+".join(f"id={tid}" for tid in tids)
-        tracks: dict[int, Track] = self.api.get_tracks(term)  # ONE query
-        return [tracks[tid] for tid in tids if tid in tracks]  # preserve queue order
+        tracks: dict[int, Track] = self.api.get_tracks_by_ids(tids)
+        return [tracks[tid] for tid in tids if tid in tracks]
 
     def skip_track(self, offset: int = 1) -> Track | None:
         """

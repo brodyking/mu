@@ -11,12 +11,11 @@ from mu.playlist import Playlist
 from mu.track import Track
 from muc.client.widgets.nowplaying import Horizontal
 from muc.client.widgets.playlistsdatatable import PlaylistsDataTable
+from muc.client.widgets.tracksdatatable import TracksDataTable
 from textual import on
 from textual.app import ComposeResult
 from textual.coordinate import Coordinate
 from textual.widgets import DataTable, Static
-
-from muc.client.widgets.tracksdatatable import TracksDataTable
 
 
 class PlaylistSplit(Static):
