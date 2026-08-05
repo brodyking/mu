@@ -1,4 +1,5 @@
 from textual import on
+from textual.app import ComposeResult
 from textual.containers import Horizontal, Vertical
 from textual.events import Click
 from textual.message import Message
@@ -44,10 +45,10 @@ class NowPlaying(Static):
 
         self.progressbar = NowPlayingProgressBar()
 
-        self.progressbar_pos = Label()
-        self.progressbar_duration = Label()
+        self.progressbar_pos = Label(classes="progress-label")
+        self.progressbar_duration = Label(classes="progress-label")
 
-    def compose(self):
+    def compose(self) -> ComposeResult:
         with Vertical():
             with Horizontal():
                 yield Label(" 󰈣 ", classes="metadata-icon")
