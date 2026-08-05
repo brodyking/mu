@@ -67,6 +67,8 @@ class NowPlaying(Static):
 
     @staticmethod
     def format_secs(secs: float) -> str:
+        if secs <= 0:
+            return "?:??"
         mins, secs = divmod(int(secs), 60)
         return f"{mins}:{secs:02d}"
 
