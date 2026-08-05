@@ -122,11 +122,17 @@ class Client(App):
         self.queue_data_table.redraw_rows()
 
     def action_player_next(self) -> None:
-        self.player.next()
+        try:
+            self.player.next()
+        except ValueError as e:
+            self.notify(str(e), severity="error", timeout=0.25)
 
     def action_player_prev(self) -> None:
         if self.player.pos < 3:
-            self.player.prev()
+            try:
+                self.player.prev()
+            except ValueError as e:
+                self.notify(str(e), severity="error", timeout=0.25)
         else:
             self.player.seek(0)
 
