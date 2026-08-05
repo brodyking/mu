@@ -73,7 +73,7 @@ class Client(App):
 
         self.nowplaying = NowPlaying(self.player)
 
-        self.tabs = TabbedContent(id="tabs")
+        self.tabs = TabbedContent(id="tabs", initial="tracks-tab")
 
         self.queue_data_table: QueueDataTable = QueueDataTable(self.api, self.player)
         self.tracks_data_table = TracksDataTable(self.api, self.player)
