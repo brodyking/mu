@@ -45,8 +45,8 @@ class NowPlaying(Static):
 
         self.progressbar = NowPlayingProgressBar()
 
-        self.progressbar_pos = Label(classes="progress-label")
-        self.progressbar_duration = Label(classes="progress-label")
+        self.progressbar_pos = Label(classes="")
+        self.progressbar_duration = Label(classes="")
 
     def compose(self) -> ComposeResult:
         with Vertical():
