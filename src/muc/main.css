@@ -44,11 +44,17 @@ VimDataTable {
  margin: 0;
 }
 
-TracksDataTable, AlbumsDataTable, QueueDataTable {
+TracksDataTable,
+AlbumsDataTable,
+ArtistsDataTable,
+QueueDataTable {
  width: 1fr;
  height: 1fr;
 }
-TracksDataTable VimDataTable, AlbumsDataTable VimDataTable, QueueDataTable VimDataTable {
+TracksDataTable VimDataTable,
+AlbumsDataTable VimDataTable,
+ArtistsDataTable VimDataTable,
+QueueDataTable VimDataTable {
   width: 1fr;
   height: 100%;
   overflow: hidden scroll

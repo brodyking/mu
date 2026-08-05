@@ -16,6 +16,7 @@ from textual.widgets import TabPane, TabbedContent
 from mu.api import Api
 from muc.player import Player
 from muc.widgets.albumsdatatable import AlbumsDataTable
+from muc.widgets.artistsdatatable import ArtistsDataTable
 from muc.widgets.footer import Footer
 from muc.widgets.nowplaying import NowPlaying
 from muc.widgets.queuedatatable import QueueDataTable
@@ -36,13 +37,14 @@ class Client(App):
         ("F", "goto_tab(1)", "Favorites"),
         ("T", "goto_tab(2)", "Tracks"),
         ("A", "goto_tab(3)", "Albums"),
+        ("R", "goto_tab(4)", "Artists"),
         # Media keys
         ("h", "player_prev", "Previous"),
         ("l", "player_next", "Next"),
         ("space", "player_toggle", "Toggle Playback"),
     )  # type:ignore
 
-    TAB_IDS = ["queue-tab", "favorites-tab", "tracks-tab", "albums-tab"]
+    TAB_IDS = ["queue-tab", "favorites-tab", "tracks-tab", "albums-tab", "artists-tab"]
 
     def __init__(self) -> None:
         super().__init__()
@@ -80,6 +82,7 @@ class Client(App):
             self.api, self.player, only_favorites=True
         )
         self.albumsdatatable: AlbumsDataTable = AlbumsDataTable(self.api)
+        self.artistsdatatable: ArtistsDataTable = ArtistsDataTable(self.api)
 
     def compose(self) -> ComposeResult:
         with Vertical():
@@ -94,7 +97,9 @@ class Client(App):
                         yield self.tracks_data_table
                     with TabPane(title="Albums (A)", id="albums-tab"):
                         yield self.albumsdatatable
-        yield self.footer
+                    with TabPane(title="Artists (R)", id="artists-tab"):
+                        yield self.artistsdatatable
+                yield self.footer
 
     def action_goto_tab(self, tabid: int) -> None:
         """Switches to a dedicated tab."""
@@ -131,11 +136,16 @@ class Client(App):
         self.tracks_data_table.search.value = (
             f"album={event.album.title}&albumartist={event.album.albumartist}"
         )
-        self.tracks_data_table.populate(
-            f"album={event.album.title}&albumartist={event.album.albumartist}"
-        )
-        self.tracks_data_table.redraw_rows()
         self.action_goto_tab(2)
+
+    @on(ArtistsDataTable.ArtistClicked)
+    def artist_clicked(self, event: ArtistsDataTable.ArtistClicked) -> None:
+        """
+        Searches for an album's tracks in the tracks tab, then switches tab.
+        Message sent from AlbumsDataTable
+        """
+        self.albumsdatatable.search.value = f"albumartist={event.artist.name}"
+        self.action_goto_tab(3)
 
     def action_player_next(self) -> None:
         """
