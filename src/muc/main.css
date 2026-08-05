@@ -112,11 +112,38 @@ NowPlaying ProgressBar Label {
   width: auto;
 }
 NowPlaying Bar {
-    width: 1fr;
-    height: 1;
+  width: 1fr;
+  height: 1;
+  margin: 0 1 0 1;
 }
 NowPlaying Bar > .bar--bar {
-    color: $primary;
-    background: $panel;
+  color: $primary;
+  background: $panel;
 }
-
+Footer {
+  height: 1;
+  dock: bottom;
+  background: $panel;
+  color: $text;
+  layout: horizontal;
+}
+Footer #version {
+  width: auto;
+  height: 1;
+  padding: 0 1;
+  background: $primary;
+  color: $background;
+}
+Footer #footer-left{
+  width: 1fr;
+  height: 1;
+  padding: 0 1;
+}
+Footer #footer-right {
+  dock: right;
+  width: auto;
+  height: 1;
+  padding: 0 1;
+  background: $primary;
+  color: $surface;
+}
