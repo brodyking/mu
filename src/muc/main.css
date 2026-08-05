@@ -82,6 +82,7 @@ ToastRack {
 /* was 'left top' */
  margin: 0;
  overflow-y: hidden;
+ margin-top: 2;
 /* removes the reserved scrollbar column */
 }
 Toast {
@@ -91,7 +92,7 @@ Toast {
  background: $background;
 }
 NowPlaying {
- height:1;
+ height:2;
 }
 Label {
  background: $surface 
@@ -103,5 +104,19 @@ NowPlaying .metadata-icon {
 NowPlaying .metadata-value {
  padding-left: 1;
  padding-right: 1;
+}
+NowPlaying ProgressBar {
+  width: 1fr;
+}
+NowPlaying ProgressBar Label {
+  width: auto;
+}
+NowPlaying Bar {
+    width: 1fr;
+    height: 1;
+}
+NowPlaying Bar > .bar--bar {
+    color: $primary;
+    background: $panel;
 }
 

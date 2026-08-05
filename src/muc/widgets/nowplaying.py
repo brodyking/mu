@@ -3,9 +3,7 @@ from textual.containers import Horizontal, Vertical
 from textual.events import Click
 from textual.message import Message
 from textual.widgets import Label, ProgressBar, Static
-from typer import progressbar
 
-from mu.models import Track
 from muc.player import Player
 
 

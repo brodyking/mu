@@ -15,9 +15,9 @@ from textual.widgets import Footer, TabbedContent, TabPane
 
 from mu.api import Api
 from muc.player import Player
+from muc.widgets.nowplaying import NowPlaying
 from muc.widgets.queuedatatable import QueueDataTable
 from muc.widgets.tracksdatatable import TracksDataTable
-from muc.widgets.nowplaying import NowPlaying
 
 
 class Client(App):
