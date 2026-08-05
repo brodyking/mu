@@ -36,7 +36,7 @@ class Footer(Widget):
         return "  ".join(parts)
 
     def compose(self) -> ComposeResult:
-        left = "[b]µ[/b]/[b]mµc[/b]"
+        left = "[b]µ[/b]/[i]mµc[/i]"
         yield Label(left, id="version")
         yield Label(self._bindings_text(), id="footer-left")
         yield Label(f"v{self.APP_VERSION}", id="footer-right")
