@@ -5,6 +5,7 @@ from textual.message import Message
 from textual.widgets import Label, ProgressBar, Static
 from typer import progressbar
 
+from mu.models import Track
 from muc.player import Player
 
 
@@ -45,6 +46,9 @@ class NowPlaying(Static):
 
         self.progressbar = NowPlayingProgressBar()
 
+        self.progressbar_pos = Label()
+        self.progressbar_duration = Label()
+
     def compose(self):
         with Vertical():
             with Horizontal():
@@ -54,10 +58,18 @@ class NowPlaying(Static):
                 yield self.artist_label
                 yield Label(" 󱍙 ", classes="metadata-icon")
                 yield self.album_label
-            yield self.progressbar
+            with Horizontal():
+                yield self.progressbar_pos
+                yield self.progressbar
+                yield self.progressbar_duration
 
     def on_mount(self) -> None:
         self._timer = self.set_interval(0.25, self._tick)  # NOT in __init__
+
+    @staticmethod
+    def format_secs(secs: float) -> str:
+        mins, secs = divmod(int(secs), 60)
+        return f"{mins}:{secs:02d}"
 
     def _tick(self) -> None:
         # Detects if track is finished, skips to next if its the case.
@@ -72,6 +84,8 @@ class NowPlaying(Static):
             # Update queue table
             self.post_message(self.TrackChanged())
         self.progressbar.update(total=self.player.duration, progress=self.player.pos)
+        self.progressbar_pos.update(self.format_secs(self.player.pos))
+        self.progressbar_duration.update(str(current.time) if current else "?:??")
 
     @on(NowPlayingProgressBar.Clicked)
     def progressbar_clicked(self, event: NowPlayingProgressBar.Clicked):
