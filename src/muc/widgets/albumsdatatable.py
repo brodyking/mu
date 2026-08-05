@@ -73,10 +73,10 @@ class AlbumsDataTable(Static):
         albums_term: str | None = None,
     ) -> None:
         """
-        Clears and repopulates the table with tracks. Calls the database
+        Clears and repopulates the table with albums. Calls the database
         each time this is called. Also supports search queries with standard
-        mu search syntax. If no prefix is given, it searches artist, albumartist,
-        album, and title
+        mu search syntax. If no prefix is given, it searches albumartist
+        and album.
         """
 
         self.full_rows = []

@@ -75,7 +75,7 @@ class ArtistsDataTable(Static):
         """
         Clears and repopulates the table with artsits. Calls the database
         each time this is called. Also supports search queries with standard
-        mu search syntax. If no prefix is given, it searches artist."""
+        mu search syntax. If no prefix is given, it searches artist and albumartist."""
 
         self.full_rows = []
 
