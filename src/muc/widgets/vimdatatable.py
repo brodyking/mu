@@ -39,10 +39,13 @@ class VimDataTable(DataTable):
         return row_dict
 
     def action_yank_row(self) -> None:
-        row_index = self.cursor_row
-        row = self.export_row_as_dict(row_index)
-        self.app.copy_to_clipboard(repr(row))
-        self.app.notify("Row copied to clipboard", timeout=0.25)
+        try:
+            row_index = self.cursor_row
+            row = self.export_row_as_dict(row_index)
+            self.app.copy_to_clipboard(repr(row))
+            self.app.notify("Row copied to clipboard", timeout=0.25)
+        except CellDoesNotExist:
+            self.app.notify("No row is selected", severity="error", timeout=0.25)
 
     def action_inspect(self) -> None:
 

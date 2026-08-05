@@ -1,3 +1,16 @@
+/*
+_   _
+| | | | muc client
+| |_| | (c) 2026 all rights reserved
+| ._,_| https://github.com/brodyking/mu
+|_|
+
+*/
+
+/*
+ * Tabs
+ */
+
 Tabs {
  border: none;
  height:1;
@@ -20,12 +33,33 @@ Underline > .underline--bar {
 Tabs:focus .underline--bar {
  background: transparent;
 }
+
+/*
+ * Data Tables
+ */
+
 VimDataTable {
  width: auto;
  padding: 0;
  margin: 0;
 }
-InspectRowPopup {
+
+TracksDataTable, AlbumsDataTable, QueueDataTable {
+ width: 1fr;
+ height: 1fr;
+}
+TracksDataTable VimDataTable, AlbumsDataTable VimDataTable, QueueDataTable VimDataTable {
+  width: 1fr;
+  height: 100%;
+  overflow: hidden scroll
+}
+
+
+/*
+ * Popups
+ */
+
+InspectRowPopup,SortTracksPopup,AddToPopup {
  align: center middle;
  background: transparent;
 }
@@ -38,24 +72,6 @@ InspectRowPopup > VimDataTable {
  align: center middle;
  overflow:hidden;
 }
-TracksDataTable {
- width: 1fr;
- height: 1fr;
-}
-TracksDataTable > Vertical > Horizontal {
- height: 1;
-}
-TracksDataTable > Vertical > Horizontal > Input {
- width: 1fr;
-}
-#tracks-sort-button, #tracks-addto-button {
- width: 8;
- max-width: 8;
-}
-SortTracksPopup {
- align: center middle;
- background: transparent;
-}
 SortTracksPopup > VimDataTable {
  width: 35;
  height: auto;
@@ -63,11 +79,7 @@ SortTracksPopup > VimDataTable {
  padding: 0 0;
  align: center middle;
  overflow:hidden;
-}
-AddToPopup {
- align: center middle;
- background: transparent;
-}
+ }
 AddToPopup > VimDataTable {
  width: 30;
  height: auto;
@@ -76,6 +88,11 @@ AddToPopup > VimDataTable {
  align: center middle;
  overflow:hidden;
 }
+
+/*
+ * Notifications
+ */
+
 ToastRack {
  dock: top;
  align: right top;
@@ -91,6 +108,11 @@ Toast {
  width: 30;
  background: $background;
 }
+
+/*
+ * NowPlaying
+ */
+
 NowPlaying {
  height:2;
 }
@@ -120,6 +142,11 @@ NowPlaying Bar > .bar--bar {
   color: $primary;
   background: $panel;
 }
+
+/*
+ * Footer
+ */
+
 Footer {
   height: 1;
   dock: bottom;

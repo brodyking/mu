@@ -11,14 +11,15 @@ from textual import on
 from textual.app import App, ComposeResult
 from textual.containers import Horizontal, Vertical
 from textual.theme import Theme
-from textual.widgets import TabbedContent, TabPane
+from textual.widgets import TabPane, TabbedContent
 
 from mu.api import Api
 from muc.player import Player
+from muc.widgets.albumsdatatable import AlbumsDataTable
+from muc.widgets.footer import Footer
 from muc.widgets.nowplaying import NowPlaying
 from muc.widgets.queuedatatable import QueueDataTable
 from muc.widgets.tracksdatatable import TracksDataTable
-from muc.widgets.footer import Footer
 
 
 class Client(App):
@@ -32,19 +33,16 @@ class Client(App):
         ("L", "cycle_tab(1)", "Next Tab"),
         # Goto specific tab
         ("Q", "goto_tab(0)", "Queue"),
-        ("T", "goto_tab(1)", "Tracks"),
-        ("F", "goto_tab(2)", "Favorites"),
+        ("F", "goto_tab(1)", "Favorites"),
+        ("T", "goto_tab(2)", "Tracks"),
+        ("A", "goto_tab(3)", "Albums"),
         # Media keys
         ("h", "player_prev", "Previous"),
         ("l", "player_next", "Next"),
         ("space", "player_toggle", "Toggle Playback"),
     )  # type:ignore
 
-    TAB_IDS = [
-        "queue-tab",
-        "tracks-tab",
-        "favorites-tab",
-    ]
+    TAB_IDS = ["queue-tab", "favorites-tab", "tracks-tab", "albums-tab"]
 
     def __init__(self) -> None:
         super().__init__()
@@ -81,6 +79,7 @@ class Client(App):
         self.favorite_tracks_data_table: TracksDataTable = TracksDataTable(
             self.api, self.player, only_favorites=True
         )
+        self.albumsdatatable: AlbumsDataTable = AlbumsDataTable(self.api)
 
     def compose(self) -> ComposeResult:
         with Vertical():
@@ -89,10 +88,12 @@ class Client(App):
                 with self.tabs:
                     with TabPane(title="Queue (Q)", id="queue-tab"):
                         yield self.queue_data_table
-                    with TabPane(title="Tracks (T)", id="tracks-tab"):
-                        yield self.tracks_data_table
                     with TabPane(title="Favorites (F)", id="favorites-tab"):
                         yield self.favorite_tracks_data_table
+                    with TabPane(title="Tracks (T)", id="tracks-tab"):
+                        yield self.tracks_data_table
+                    with TabPane(title="Albums (A)", id="albums-tab"):
+                        yield self.albumsdatatable
         yield self.footer
 
     def action_goto_tab(self, tabid: int) -> None:
@@ -121,13 +122,35 @@ class Client(App):
         self.queue_data_table.populate()
         self.queue_data_table.redraw_rows()
 
+    @on(AlbumsDataTable.AlbumClicked)
+    def album_clicked(self, event: AlbumsDataTable.AlbumClicked) -> None:
+        """
+        Searches for an album's tracks in the tracks tab, then switches tab.
+        Message sent from AlbumsDataTable
+        """
+        self.tracks_data_table.search.value = (
+            f"album={event.album.title}&albumartist={event.album.albumartist}"
+        )
+        self.tracks_data_table.populate(
+            f"album={event.album.title}&albumartist={event.album.albumartist}"
+        )
+        self.tracks_data_table.redraw_rows()
+        self.action_goto_tab(2)
+
     def action_player_next(self) -> None:
+        """
+        Skips to the next track
+        """
         try:
             self.player.next()
         except ValueError as e:
             self.notify(str(e), severity="error", timeout=0.25)
 
     def action_player_prev(self) -> None:
+        """
+        Skips to the previous track if pos is under 3 seconds.
+        If over, it restarts the track
+        """
         if self.player.pos < 3:
             try:
                 self.player.prev()
@@ -137,4 +160,7 @@ class Client(App):
             self.player.seek(0)
 
     def action_player_toggle(self) -> None:
+        """
+        Toggles playback, used for pause/play.
+        """
         self.player.toggle()
