@@ -11,13 +11,14 @@ from textual import on
 from textual.app import App, ComposeResult
 from textual.containers import Horizontal, Vertical
 from textual.theme import Theme
-from textual.widgets import Footer, TabbedContent, TabPane
+from textual.widgets import TabbedContent, TabPane
 
 from mu.api import Api
 from muc.player import Player
 from muc.widgets.nowplaying import NowPlaying
 from muc.widgets.queuedatatable import QueueDataTable
 from muc.widgets.tracksdatatable import TracksDataTable
+from muc.widgets.footer import Footer
 
 
 class Client(App):
@@ -72,7 +73,7 @@ class Client(App):
         self.animation_level = "none"
 
         self.nowplaying = NowPlaying(self.player)
-
+        self.footer = Footer()
         self.tabs = TabbedContent(id="tabs", initial="tracks-tab")
 
         self.queue_data_table: QueueDataTable = QueueDataTable(self.api, self.player)
@@ -92,7 +93,7 @@ class Client(App):
                         yield self.tracks_data_table
                     with TabPane(title="Favorites (F)", id="favorites-tab"):
                         yield self.favorite_tracks_data_table
-                yield Footer()
+        yield self.footer
 
     def action_goto_tab(self, tabid: int) -> None:
         """Switches to a dedicated tab."""
