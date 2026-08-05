@@ -22,7 +22,6 @@ from muc.widgets.vimdatatable import VimDataTable
 
 class QueueDataTable(Static):
     BINDINGS = [
-        ("/", "focus_search", "Search"),
         ("f", "favorite_track", "Favorite"),
     ]
 
@@ -78,7 +77,7 @@ class QueueDataTable(Static):
             )
             self.populate()
         except Exception as e:
-            self.app.notify(f"Couldn't favorite: {e}", severity="error")
+            self.app.notify(f"Couldn't favorite: {e}", severity="error", timeout=0.25)
 
     def sort(
         self,
@@ -132,7 +131,6 @@ class QueueDataTable(Static):
 
         try:
             tracks: list[Track] = self.player.queue.get_queue()
-            self.app.notify(f"Recieved {len(tracks)} tracks.")
         except ValueError as e:
             self.app.notify(str(e), severity="error")
             return

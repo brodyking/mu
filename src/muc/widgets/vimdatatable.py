@@ -42,7 +42,7 @@ class VimDataTable(DataTable):
         row_index = self.cursor_row
         row = self.export_row_as_dict(row_index)
         self.app.copy_to_clipboard(repr(row))
-        self.app.notify("Row copied to clipboard")
+        self.app.notify("Row copied to clipboard", timeout=0.25)
 
     def action_inspect(self) -> None:
 
@@ -54,7 +54,7 @@ class VimDataTable(DataTable):
             popup = InspectRowPopup(row_dict)
             self.app.push_screen(popup)  # type:ignore
         except CellDoesNotExist:
-            self.notify("No row is selected", severity="error")
+            self.notify("No row is selected", severity="error", timeout=0.25)
 
 
 class InspectRowPopup(ModalScreen[str]):

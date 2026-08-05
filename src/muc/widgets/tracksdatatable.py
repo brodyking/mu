@@ -134,7 +134,7 @@ class TracksDataTable(Static):
             )
             self.populate()
         except Exception as e:
-            self.app.notify(f"Couldn't favorite: {e}", severity="error")
+            self.app.notify(f"Couldn't favorite: {e}", severity="error", timeout=0.25)
 
     def sort(
         self,
@@ -207,9 +207,8 @@ class TracksDataTable(Static):
                 order_by=self._sort_col,
                 descending=self._sort_desc,
             )
-            self.app.notify(f"Fetched {len(tracks)} tracks.")
         except ValueError as e:
-            self.app.notify(str(e), severity="error")
+            self.app.notify(str(e), severity="error", timeout=0.25)
             return
 
         for tid in tracks:
