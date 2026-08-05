@@ -56,8 +56,12 @@ class AlbumsDataTable(Static):
     @on(VimDataTable.RowSelected)
     def album_clicked(self, event: VimDataTable.RowSelected) -> None:
         row = self.main_table.export_row_as_dict(event.cursor_row)
-        album = list(self.api.get_albums(f"album={row['album']}").values())[0]
-        self.post_message(self.AlbumClicked(album))
+        response = list(self.api.get_albums(f"album={row['album']}").values())
+        if len(response) > 0:
+            album = response[0]
+            self.post_message(self.AlbumClicked(album))
+        else:
+            self.notify("Album not found", severity="error")
 
     def redraw_rows(self) -> None:
         self.main_table.clear()
@@ -90,7 +94,7 @@ class AlbumsDataTable(Static):
 
         for aid in albums:
             album = albums[aid]
-            row_tuple = (album.title, album.albumartist)
+            row_tuple = (album.title, album.albumartist, str(len(album.tracks)))
             self.full_rows.append(row_tuple)
 
     def on_mount(self) -> None:
@@ -100,6 +104,7 @@ class AlbumsDataTable(Static):
         columns = [
             ("Album", "album", 15),
             ("Album Artist", "albumartist", 15),
+            ("Tracks", "tracks", 10),
         ]
 
         # Use the max_width argument in add_column
