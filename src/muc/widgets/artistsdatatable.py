@@ -65,8 +65,8 @@ class ArtistsDataTable(Static):
 
     def redraw_rows(self) -> None:
         self.main_table.clear()
-        for row in self.full_rows:
-            self.main_table.add_row(*row, key=str(row))
+        for i, row in enumerate(self.full_rows):
+            self.main_table.add_row(*row, key=str(i))
 
     def populate(
         self,
@@ -75,7 +75,8 @@ class ArtistsDataTable(Static):
         """
         Clears and repopulates the table with artsits. Calls the database
         each time this is called. Also supports search queries with standard
-        mu search syntax. If no prefix is given, it searches artist and albumartist."""
+        mu search syntax. If no prefix is given, it searches artist and albumartist.
+        """
 
         self.full_rows = []
 

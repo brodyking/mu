@@ -65,8 +65,8 @@ class AlbumsDataTable(Static):
 
     def redraw_rows(self) -> None:
         self.main_table.clear()
-        for row in self.full_rows:
-            self.main_table.add_row(*row, key=str(row))
+        for i, row in enumerate(self.full_rows):
+            self.main_table.add_row(*row, key=str(i))
 
     def populate(
         self,
