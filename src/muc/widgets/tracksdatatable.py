@@ -7,7 +7,6 @@
 
 """
 
-from ast import Add
 import random
 from typing import Literal
 
@@ -15,7 +14,6 @@ from textual import on
 from textual.app import ComposeResult
 from textual.containers import Horizontal, Vertical
 from textual.coordinate import Coordinate
-from textual.message import Message
 from textual.screen import ModalScreen
 from textual.widgets import DataTable, Input, Static
 
@@ -86,16 +84,6 @@ class SortTracksPopup(ModalScreen[str]):
 
 
 class AddToPopup(ModalScreen[str]):
-    class QueueLast(Message):
-        def __init__(self, tid: int, *args, **kwargs) -> None:
-            super().__init__(*args, **kwargs)
-            self.tid = tid
-
-    class QueueNext(Message):
-        def __init__(self, tid: int, *args, **kwargs) -> None:
-            super().__init__(*args, **kwargs)
-            self.tid = tid
-
     TABLE = [
         ("l", "Queue Last"),
         ("n", "Queue Next"),
@@ -109,10 +97,11 @@ class AddToPopup(ModalScreen[str]):
         ("n", "dismiss_msg('next')", "Queue Next"),
     ]
 
-    def __init__(self, tid, *args, **kwargs) -> None:
+    def __init__(self, player: Player, tid, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.main_table = VimDataTable(show_inspect=False, cursor_type="row")
 
+        self.player = player
         self.tid = tid
 
     def compose(self) -> ComposeResult:
@@ -141,9 +130,17 @@ class AddToPopup(ModalScreen[str]):
     def action_dismiss_msg(self, message: str):
         match message:
             case "last":
-                self.post_message(self.QueueLast(self.tid))
+                self.player.queue.queue_tracks_last(
+                    [
+                        self.tid,
+                    ]
+                )
             case "next":
-                self.post_message(self.QueueNext(self.tid))
+                self.player.queue.queue_tracks_next(
+                    [
+                        self.tid,
+                    ]
+                )
         self.dismiss(message)
 
 
@@ -227,7 +224,7 @@ class TracksDataTable(Static):
         row_dict = self.main_table.export_row_as_dict(row_index)
         tid = int(row_dict["id"])
         if tid:
-            popup = AddToPopup(tid)
+            popup = AddToPopup(player=self.player, tid=tid)
             self.app.push_screen(popup)  # type:ignore
 
     def action_focus_search(self) -> None:
@@ -254,7 +251,7 @@ class TracksDataTable(Static):
             tid: int = int(self.main_table.export_row_as_dict(row_index)["id"])
             track: Track = self.api.favorite_tracks(f"id={tid}")[tid]
             self.main_table.update_cell(
-                str(row_index), "favorite", "❤" if track.favorite else " "
+                str(row_index), "favorite", "󰋑" if track.favorite else " "
             )
             self.populate()
         except Exception as e:
@@ -337,7 +334,7 @@ class TracksDataTable(Static):
 
         for tid in tracks:
             track = tracks[tid]
-            favorite = "❤" if track.favorite else " "
+            favorite = "󰋑" if track.favorite else " "
 
             row_tuple = (
                 track.id,

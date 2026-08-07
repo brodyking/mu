@@ -10,6 +10,7 @@
 import random
 from typing import Literal
 
+from rich.text import Text
 from textual import on
 from textual.app import ComposeResult
 from textual.widgets import Static
@@ -73,7 +74,7 @@ class QueueDataTable(Static):
             tid: int = int(self.main_table.export_row_as_dict(row_index)["id"])
             track: Track = self.api.favorite_tracks(f"id={tid}")[tid]
             self.main_table.update_cell(
-                str(row_index), "favorite", "❤" if track.favorite else " "
+                str(row_index), "favorite", "󰋑" if track.favorite else " "
             )
             self.populate()
         except Exception as e:
@@ -136,7 +137,8 @@ class QueueDataTable(Static):
             return
 
         for track in tracks:
-            favorite = "❤" if track.favorite else " "
+            # 1. Safely parse the TCSS variable name into a usable Rich style
+            favorite = "󰋑" if track.favorite else " "
 
             row_tuple = (
                 track.id,

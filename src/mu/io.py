@@ -104,7 +104,7 @@ def mu_print(
         else ""
     )
     favorited: str = (
-        Color.red("❤ ")
+        Color.red("󰋑 ")
         if track is not None and track.favorite
         else Color.light_gray("♥ ")
     )

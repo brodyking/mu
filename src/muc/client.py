@@ -127,22 +127,6 @@ class Client(App):
         self.queue_data_table.populate()
         self.queue_data_table.redraw_rows()
 
-    @on(AddToPopup.QueueLast)
-    def queue_last(self, event: AddToPopup.QueueLast) -> None:
-        self.player.queue.queue_tracks_last(
-            [
-                event.tid,
-            ]
-        )
-
-    @on(AddToPopup.QueueNext)
-    def queue_next(self, event: AddToPopup.QueueLast) -> None:
-        self.player.queue.queue_tracks_next(
-            [
-                event.tid,
-            ]
-        )
-
     @on(AlbumsDataTable.AlbumClicked)
     def album_clicked(self, event: AlbumsDataTable.AlbumClicked) -> None:
         """
