@@ -73,7 +73,7 @@ class QueueDataTable(Static):
             tid: int = int(self.main_table.export_row_as_dict(row_index)["id"])
             track: Track = self.api.favorite_tracks(f"id={tid}")[tid]
             self.main_table.update_cell(
-                str(tid), "favorite", "❤" if track.favorite else " "
+                str(row_index), "favorite", "❤" if track.favorite else " "
             )
             self.populate()
         except Exception as e:
@@ -119,8 +119,8 @@ class QueueDataTable(Static):
 
     def redraw_rows(self) -> None:
         self.main_table.clear()
-        for row in self.full_rows:
-            self.main_table.add_row(*row, key=str(row[0]))
+        for i, row in enumerate(self.full_rows):
+            self.main_table.add_row(*row, key=str(i))
 
     def populate(self) -> None:
         """

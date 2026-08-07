@@ -20,7 +20,7 @@ from muc.widgets.artistsdatatable import ArtistsDataTable
 from muc.widgets.footer import Footer
 from muc.widgets.nowplaying import NowPlaying
 from muc.widgets.queuedatatable import QueueDataTable
-from muc.widgets.tracksdatatable import TracksDataTable
+from muc.widgets.tracksdatatable import AddToPopup, TracksDataTable
 
 
 class Client(App):
@@ -126,6 +126,22 @@ class Client(App):
         """
         self.queue_data_table.populate()
         self.queue_data_table.redraw_rows()
+
+    @on(AddToPopup.QueueLast)
+    def queue_last(self, event: AddToPopup.QueueLast) -> None:
+        self.player.queue.queue_tracks_last(
+            [
+                event.tid,
+            ]
+        )
+
+    @on(AddToPopup.QueueNext)
+    def queue_next(self, event: AddToPopup.QueueLast) -> None:
+        self.player.queue.queue_tracks_next(
+            [
+                event.tid,
+            ]
+        )
 
     @on(AlbumsDataTable.AlbumClicked)
     def album_clicked(self, event: AlbumsDataTable.AlbumClicked) -> None:

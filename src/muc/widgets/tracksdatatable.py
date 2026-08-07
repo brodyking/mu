@@ -7,6 +7,7 @@
 
 """
 
+from ast import Add
 import random
 from typing import Literal
 
@@ -14,6 +15,7 @@ from textual import on
 from textual.app import ComposeResult
 from textual.containers import Horizontal, Vertical
 from textual.coordinate import Coordinate
+from textual.message import Message
 from textual.screen import ModalScreen
 from textual.widgets import DataTable, Input, Static
 
@@ -21,6 +23,128 @@ from mu.api import Api
 from mu.models import Track
 from muc.player import Player
 from muc.widgets.vimdatatable import VimDataTable
+
+
+class SortTracksPopup(ModalScreen[str]):
+    TABLE = [
+        ("A", "Sort by Artist"),
+        ("a", "Sort by Album"),
+        ("D", "Sort by Date"),
+        ("d", "Sort by Date Added"),
+        ("g", "Sort by Genre"),
+        ("i", "Sort by Id"),
+        ("p", "Sort by Plays"),
+        ("s", "Sort by Shuffle"),
+        ("t", "Sort by Title"),
+        ("T", "Sort by Time"),
+        ("r", "Reset"),
+        ("esc", "Cancel"),
+    ]
+
+    BINDINGS = [
+        ("enter", "option_selected", "Select Option"),
+        ("escape", "dismiss_msg('cancel')", "Close"),
+        ("i", "dismiss_msg('id')", "Id"),
+        ("T", "dismiss_msg('time')", "Time"),
+        ("t", "dismiss_msg('title')", "Title"),
+        ("A", "dismiss_msg('artist')", "Artist"),
+        ("a", "dismiss_msg('album')", "Album"),
+        ("p", "dismiss_msg('plays')", "Plays"),
+        ("d", "dismiss_msg('dateadded')", "Dateadded"),
+        ("g", "dismiss_msg('genre')", "Genre"),
+        ("s", "dismiss_msg('shuffle')", "Shuffle"),
+        ("D", "dismiss_msg('date')", "Date"),
+        ("r", "dismiss_msg('reset')", "Reset"),
+    ]
+
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self.main_table = VimDataTable(show_inspect=False, cursor_type="row")
+
+    def compose(self) -> ComposeResult:
+        yield self.main_table
+
+    def on_mount(self) -> None:
+
+        self.main_table.add_column("Bind", key="bind", width=4)
+        self.main_table.add_column("Sorting Options", key="sorting-options", width=100)
+
+        for row in self.TABLE:
+            self.main_table.add_row(row[0], row[1])
+
+    def action_dismiss_msg(self, message: str):
+        self.dismiss(message)
+
+    @on(DataTable.RowSelected)
+    def action_option_selected(self, event: DataTable.RowSelected):
+        row = event.cursor_row
+        value = self.main_table.get_cell_at(Coordinate(row, 1))
+        if value and "Sort by" in value:
+            self.action_dismiss_msg(value[7:].lower().replace(" ", ""))
+        else:
+            self.action_dismiss_msg(value.lower())
+
+
+class AddToPopup(ModalScreen[str]):
+    class QueueLast(Message):
+        def __init__(self, tid: int, *args, **kwargs) -> None:
+            super().__init__(*args, **kwargs)
+            self.tid = tid
+
+    class QueueNext(Message):
+        def __init__(self, tid: int, *args, **kwargs) -> None:
+            super().__init__(*args, **kwargs)
+            self.tid = tid
+
+    TABLE = [
+        ("l", "Queue Last"),
+        ("n", "Queue Next"),
+        ("esc", "Cancel"),
+    ]
+
+    BINDINGS = [
+        ("enter", "option_selected", "Select Option"),
+        ("escape", "dismiss_msg('cancel')", "Close"),
+        ("l", "dismiss_msg('last')", "Queue Last"),
+        ("n", "dismiss_msg('next')", "Queue Next"),
+    ]
+
+    def __init__(self, tid, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self.main_table = VimDataTable(show_inspect=False, cursor_type="row")
+
+        self.tid = tid
+
+    def compose(self) -> ComposeResult:
+        yield self.main_table
+
+    def on_mount(self) -> None:
+
+        self.main_table.add_column("Bind", key="bind", width=4)
+        self.main_table.add_column("Add Options", key="add-options", width=100)
+
+        for row in self.TABLE:
+            self.main_table.add_row(row[0], row[1])
+
+    @on(DataTable.RowSelected)
+    def action_option_selected(self, event: DataTable.RowSelected):
+        row = event.cursor_row
+        value = self.main_table.get_cell_at(Coordinate(row, 1))
+        match value:
+            case "Queue Last":
+                self.action_dismiss_msg("last")
+            case "Queue Next":
+                self.action_dismiss_msg("next")
+            case _:
+                self.action_dismiss_msg("cancel")
+
+    def action_dismiss_msg(self, message: str):
+        match message:
+            case "last":
+                self.post_message(self.QueueLast(self.tid))
+            case "next":
+                self.post_message(self.QueueNext(self.tid))
+        self.dismiss(message)
 
 
 class TracksDataTable(Static):
@@ -130,7 +254,7 @@ class TracksDataTable(Static):
             tid: int = int(self.main_table.export_row_as_dict(row_index)["id"])
             track: Track = self.api.favorite_tracks(f"id={tid}")[tid]
             self.main_table.update_cell(
-                str(tid), "favorite", "❤" if track.favorite else " "
+                str(row_index), "favorite", "❤" if track.favorite else " "
             )
             self.populate()
         except Exception as e:
@@ -176,8 +300,8 @@ class TracksDataTable(Static):
 
     def redraw_rows(self) -> None:
         self.main_table.clear()
-        for row in self.full_rows:
-            self.main_table.add_row(*row, key=str(row[0]))
+        for i, row in enumerate(self.full_rows):
+            self.main_table.add_row(*row, key=str(i))
 
     def populate(
         self,
@@ -269,115 +393,3 @@ class TracksDataTable(Static):
 
     def on_hide(self) -> None:
         self.main_table.clear()
-
-
-class SortTracksPopup(ModalScreen[str]):
-    TABLE = [
-        ("A", "Sort by Artist"),
-        ("a", "Sort by Album"),
-        ("D", "Sort by Date"),
-        ("d", "Sort by Date Added"),
-        ("g", "Sort by Genre"),
-        ("i", "Sort by Id"),
-        ("p", "Sort by Plays"),
-        ("s", "Sort by Shuffle"),
-        ("t", "Sort by Title"),
-        ("T", "Sort by Time"),
-        ("r", "Reset"),
-        ("esc", "Cancel"),
-    ]
-
-    BINDINGS = [
-        ("enter", "option_selected", "Select Option"),
-        ("escape", "dismiss_msg('cancel')", "Close"),
-        ("i", "dismiss_msg('id')", "Id"),
-        ("T", "dismiss_msg('time')", "Time"),
-        ("t", "dismiss_msg('title')", "Title"),
-        ("A", "dismiss_msg('artist')", "Artist"),
-        ("a", "dismiss_msg('album')", "Album"),
-        ("p", "dismiss_msg('plays')", "Plays"),
-        ("d", "dismiss_msg('dateadded')", "Dateadded"),
-        ("g", "dismiss_msg('genre')", "Genre"),
-        ("s", "dismiss_msg('shuffle')", "Shuffle"),
-        ("D", "dismiss_msg('date')", "Date"),
-        ("r", "dismiss_msg('reset')", "Reset"),
-    ]
-
-    def __init__(self, *args, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
-        self.main_table = VimDataTable(show_inspect=False, cursor_type="row")
-
-    def compose(self) -> ComposeResult:
-        yield self.main_table
-
-    def on_mount(self) -> None:
-
-        self.main_table.add_column("Bind", key="bind", width=4)
-        self.main_table.add_column("Sorting Options", key="sorting-options", width=100)
-
-        for row in self.TABLE:
-            self.main_table.add_row(row[0], row[1])
-
-    def action_dismiss_msg(self, message: str):
-        self.dismiss(message)
-
-    @on(DataTable.RowSelected)
-    def action_option_selected(self, event: DataTable.RowSelected):
-        row = event.cursor_row
-        value = self.main_table.get_cell_at(Coordinate(row, 1))
-        if value and "Sort by" in value:
-            self.action_dismiss_msg(value[7:].lower().replace(" ", ""))
-        else:
-            self.action_dismiss_msg(value.lower())
-
-
-class AddToPopup(ModalScreen[str]):
-    TABLE = [
-        ("l", "Queue Last"),
-        ("n", "Queue Next"),
-        ("esc", "Cancel"),
-    ]
-
-    BINDINGS = [
-        ("enter", "option_selected", "Select Option"),
-        ("escape", "dismiss_msg('cancel')", "Close"),
-        ("l", "dismiss_msg('last')", "Queue Last"),
-        ("n", "dismiss_msg('next')", "Queue Next"),
-    ]
-
-    def __init__(self, tid, *args, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
-        self.main_table = VimDataTable(show_inspect=False, cursor_type="row")
-
-        self.tid = tid
-
-    def compose(self) -> ComposeResult:
-        yield self.main_table
-
-    def on_mount(self) -> None:
-
-        self.main_table.add_column("Bind", key="bind", width=4)
-        self.main_table.add_column("Add Options", key="add-options", width=100)
-
-        for row in self.TABLE:
-            self.main_table.add_row(row[0], row[1])
-
-    @on(DataTable.RowSelected)
-    def action_option_selected(self, event: DataTable.RowSelected):
-        row = event.cursor_row
-        value = self.main_table.get_cell_at(Coordinate(row, 1))
-        match value:
-            case "Queue Last":
-                self.action_dismiss_msg("last")
-            case "Queue Next":
-                self.action_dismiss_msg("next")
-            case _:
-                self.action_dismiss_msg("cancel")
-
-    def action_dismiss_msg(self, message: str):
-        match message:
-            case "last":
-                pass
-            case "next":
-                pass
-        self.dismiss(message)

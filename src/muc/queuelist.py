@@ -17,30 +17,15 @@ class QueueList:
         self.queue: list[int] = []  # List of track Ids in the queue (full of ints)
         self.pos = 0  # Position in the queue
 
-    def queue_tracks_next(self, track_ids: list[int]) -> list:
-        """
-        Inserts tracks at the current position (right after pos), removing
-        any existing occurrences of those track_ids first. Returns the queue.
-        """
-
-        # Remove track_ids that already exist in the queue
-        to_move = set(track_ids)
+    def queue_tracks_next(self, track_ids: list[int]) -> None:
+        """Inserts tracks at the current position (right after pos)"""
         before = self.queue[: self.pos + 1]
         after = self.queue[self.pos + 1 :]
-
-        before = [t for t in before if t not in to_move]
-        after = [t for t in after if t not in to_move]
         self.queue = [*before, *track_ids, *after]
-        return self.queue
 
-    def queue_tracks_last(self, track_ids: list[int]) -> list:
-        """
-        Adds tracks to the end of the queue, removing any existing
-        occurrences of those track_ids first. Returns the queue.
-        """
-        existing = set(track_ids)
-        self.queue = [t for t in self.queue if t not in existing] + track_ids
-        return self.queue
+    def queue_tracks_last(self, track_ids: list[int]) -> None:
+        """Adds tracks to the end of the queue"""
+        self.queue = [*self.queue, *track_ids]
 
     def get_current_track(self) -> Track | None:
         """Returns the currently selected track"""
