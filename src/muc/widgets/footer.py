@@ -1,11 +1,9 @@
-from datetime import datetime
 from importlib.metadata import version
 
 from textual.app import ComposeResult
 from textual.reactive import reactive
 from textual.widget import Widget
 from textual.widgets import Label
-from textual import events
 
 
 class Footer(Widget):

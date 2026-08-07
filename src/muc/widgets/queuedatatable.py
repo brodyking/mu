@@ -10,7 +10,6 @@
 import random
 from typing import Literal
 
-from rich.text import Text
 from textual import on
 from textual.app import ComposeResult
 from textual.widgets import Static
