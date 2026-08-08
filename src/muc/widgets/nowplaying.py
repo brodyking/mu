@@ -39,24 +39,18 @@ class NowPlaying(Static):
 
         self._shown: object = object()
 
-        self.title_label = Label(classes="metadata-value")
-        self.artist_label = Label(classes="metadata-value")
-        self.album_label = Label(classes="metadata-value")
+        self.track_metadata = Label(classes="metadata-value")
 
         self.progressbar = NowPlayingProgressBar()
 
-        self.progressbar_pos = Label(classes="")
-        self.progressbar_duration = Label(classes="")
+        self.progressbar_pos = Label(classes="metadata-icon")
+        self.progressbar_duration = Label(classes="metadata-icon")
 
     def compose(self) -> ComposeResult:
         with Vertical():
             with Horizontal():
-                yield Label(" 󰈣 ", classes="metadata-icon")
-                yield self.title_label
-                yield Label(" 󰠃 ", classes="metadata-icon")
-                yield self.artist_label
-                yield Label(" 󱍙 ", classes="metadata-icon")
-                yield self.album_label
+                yield Label("Now Playing:", classes="metadata-icon")
+                yield self.track_metadata
             with Horizontal():
                 yield self.progressbar_pos
                 yield self.progressbar
@@ -76,14 +70,21 @@ class NowPlaying(Static):
         # Detects if track is finished, skips to next if its the case.
         self.player.tick()
         current = self.player.cached_current_track
-        if current is not self._shown:
+        if current is not self._shown and current is not None:
             self._shown = current
             # Update nowplaying
-            self.title_label.update(current.title[:20] if current else "")
-            self.artist_label.update(current.artist[:20] if current else "")
-            self.album_label.update(current.album[:20] if current else "")
+            favorited: str = "[$error] 󰋑 [/]" if current.favorite else "[gray] ♥ [/]"
+            self.track_metadata.update(
+                f"[gray]#{str(current.id or '').rjust(4, '0')}[/]"
+                f"{favorited}"
+                f"[$error] 󰈣 {(current.title or '')[:25]} [/]"
+                f"[$primary] 󰠃 {(current.artist or '')[:20]} [/]"
+                f"[$accent] 󱍙 {(current.album or '')[:25]} [/]"
+            )
             # Update queue table
             self.post_message(self.TrackChanged())
+        elif not current:
+            self.track_metadata.update("")
         self.progressbar.update(total=self.player.duration, progress=self.player.pos)
         self.progressbar_pos.update(self.format_secs(self.player.pos))
         self.progressbar_duration.update(str(current.time) if current else "?:??")

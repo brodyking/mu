@@ -14,6 +14,7 @@ from textual.theme import Theme
 from textual.widgets import TabbedContent, TabPane
 
 from mu.api import Api
+from mu.models import Track
 from muc.player import Player
 from muc.widgets.albumsdatatable import AlbumsDataTable
 from muc.widgets.artistsdatatable import ArtistsDataTable
@@ -112,7 +113,7 @@ class Client(App):
                         yield self.artists_data_table
                     with TabPane(title="Playlists (P)", id="playlists-tab"):
                         yield self.playlists_split
-                yield self.footer
+            yield self.footer
 
     def action_goto_tab(self, tabid: int) -> None:
         """Switches to a dedicated tab."""
@@ -159,6 +160,19 @@ class Client(App):
         """
         self.albums_data_table.search.value = f"albumartist={event.artist.name}"
         self.action_goto_tab(3)
+
+    @on(TracksDataTable.FavoriteTrack)
+    def favorite_track(self, event: TracksDataTable.FavoriteTrack) -> None:
+        """
+        Toggles a tracks favorite icon
+        """
+        try:
+            tid = event.tid
+            self.api.favorite_tracks(f"id={tid}")[tid]
+            self.player.recache_current_track()
+
+        except Exception as e:
+            self.app.notify(f"Couldn't favorite: {e}", severity="error", timeout=0.25)
 
     def action_player_next(self) -> None:
         """

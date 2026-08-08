@@ -51,6 +51,14 @@ QueueDataTable {
  width: 1fr;
  height: 1fr;
 }
+TracksDataTable Input,
+AlbumsDataTable Input,
+ArtistsDataTable Input,
+PlaylistsSplit Input,
+PlaylistsSplit Input,
+QueueDataTable Input {
+  width: 1fr;
+}
 TracksDataTable VimDataTable,
 AlbumsDataTable VimDataTable,
 ArtistsDataTable VimDataTable,
@@ -58,9 +66,10 @@ PlaylistsSplit PlaylistsDataTable VimDataTable,
 PlaylistsSplit PlaylistTracksDataTable VimDataTable,
 QueueDataTable VimDataTable {
   width: 1fr;
-  height: 100%;
+  height: 1fr;
   overflow: hidden scroll
 }
+
 
 
 
@@ -148,6 +157,7 @@ NowPlaying .metadata-icon {
 NowPlaying .metadata-value {
  padding-left: 1;
  padding-right: 1;
+ width: 1fr;
 }
 NowPlaying ProgressBar {
   width: 1fr;
@@ -171,7 +181,7 @@ NowPlaying Bar > .bar--bar {
 
 Footer {
   height: 1;
-  dock: bottom;
+  /* dock: bottom; */
   background: $panel;
   color: $text;
   layout: horizontal;

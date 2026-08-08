@@ -49,6 +49,9 @@ class Player:
         if self._loaded and not self._audio.active:
             self.next()
 
+    def recache_current_track(self) -> None:
+        self.cached_current_track = self.queue.get_current_track()
+
     def _play(self, track: Track | None) -> None:
         self.cached_current_track = track
         if track is None:
