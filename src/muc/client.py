@@ -11,7 +11,7 @@ from textual import on
 from textual.app import App, ComposeResult
 from textual.containers import Horizontal, Vertical
 from textual.theme import Theme
-from textual.widgets import TabPane, TabbedContent
+from textual.widgets import TabbedContent, TabPane
 
 from mu.api import Api
 from muc.player import Player
@@ -19,8 +19,9 @@ from muc.widgets.albumsdatatable import AlbumsDataTable
 from muc.widgets.artistsdatatable import ArtistsDataTable
 from muc.widgets.footer import Footer
 from muc.widgets.nowplaying import NowPlaying
+from muc.widgets.playlistssplit import PlaylistsSplit
 from muc.widgets.queuedatatable import QueueDataTable
-from muc.widgets.tracksdatatable import AddToPopup, TracksDataTable
+from muc.widgets.tracksdatatable import TracksDataTable
 
 
 class Client(App):
@@ -38,13 +39,21 @@ class Client(App):
         ("T", "goto_tab(2)", "Tracks"),
         ("A", "goto_tab(3)", "Albums"),
         ("R", "goto_tab(4)", "Artists"),
+        ("P", "goto_tab(5)", "Playlists"),
         # Media keys
         ("h", "player_prev", "Previous"),
         ("l", "player_next", "Next"),
         ("space", "player_toggle", "Toggle Playback"),
     )  # type:ignore
 
-    TAB_IDS = ["queue-tab", "favorites-tab", "tracks-tab", "albums-tab", "artists-tab"]
+    TAB_IDS = [
+        "queue-tab",
+        "favorites-tab",
+        "tracks-tab",
+        "albums-tab",
+        "artists-tab",
+        "playlists-tab",
+    ]
 
     def __init__(self) -> None:
         super().__init__()
@@ -81,8 +90,10 @@ class Client(App):
         self.favorite_tracks_data_table: TracksDataTable = TracksDataTable(
             self.api, self.player, only_favorites=True
         )
-        self.albumsdatatable: AlbumsDataTable = AlbumsDataTable(self.api)
-        self.artistsdatatable: ArtistsDataTable = ArtistsDataTable(self.api)
+        self.albums_data_table: AlbumsDataTable = AlbumsDataTable(self.api)
+        self.artists_data_table: ArtistsDataTable = ArtistsDataTable(self.api)
+
+        self.playlists_split = PlaylistsSplit(self.api, self.player)
 
     def compose(self) -> ComposeResult:
         with Vertical():
@@ -96,9 +107,11 @@ class Client(App):
                     with TabPane(title="Tracks (T)", id="tracks-tab"):
                         yield self.tracks_data_table
                     with TabPane(title="Albums (A)", id="albums-tab"):
-                        yield self.albumsdatatable
+                        yield self.albums_data_table
                     with TabPane(title="Artists (R)", id="artists-tab"):
-                        yield self.artistsdatatable
+                        yield self.artists_data_table
+                    with TabPane(title="Playlists (P)", id="playlists-tab"):
+                        yield self.playlists_split
                 yield self.footer
 
     def action_goto_tab(self, tabid: int) -> None:
@@ -144,7 +157,7 @@ class Client(App):
         Searches for an album's tracks in the tracks tab, then switches tab.
         Message sent from AlbumsDataTable
         """
-        self.albumsdatatable.search.value = f"albumartist={event.artist.name}"
+        self.albums_data_table.search.value = f"albumartist={event.artist.name}"
         self.action_goto_tab(3)
 
     def action_player_next(self) -> None:
