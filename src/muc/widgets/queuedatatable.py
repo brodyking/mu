@@ -17,11 +17,13 @@ from textual.widgets import Static
 from mu.api import Api
 from mu.models import Track
 from muc.player import Player
+from muc.widgets.tracksdatatable import AddToPopup
 from muc.widgets.vimdatatable import VimDataTable
 
 
 class QueueDataTable(Static):
     BINDINGS = [
+        (".", "open_addto", "Add to"),
         ("f", "favorite_track", "Favorite"),
     ]
 
@@ -55,6 +57,14 @@ class QueueDataTable(Static):
 
     def compose(self) -> ComposeResult:
         yield self.main_table
+
+    def action_open_addto(self) -> None:
+        row_index = self.main_table.cursor_row
+        row_dict = self.main_table.export_row_as_dict(row_index)
+        tid = int(row_dict["id"])
+        if tid:
+            popup = AddToPopup(tid=tid)
+            self.app.push_screen(popup)  # type:ignore
 
     @on(VimDataTable.RowSelected)
     def start_queue(self, event: VimDataTable.RowSelected) -> None:

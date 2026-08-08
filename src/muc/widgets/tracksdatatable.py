@@ -85,6 +85,12 @@ class SortTracksPopup(ModalScreen[str]):
 
 
 class AddToPopup(ModalScreen[str]):
+    class QueueTrack(Message):
+        def __init__(self, tid: int, queue_next: bool, *args, **kwargs) -> None:
+            super().__init__(*args, **kwargs)
+            self.tid = tid
+            self.queue_next = queue_next
+
     TABLE = [
         ("l", "Queue Last"),
         ("n", "Queue Next"),
@@ -94,15 +100,14 @@ class AddToPopup(ModalScreen[str]):
     BINDINGS = [
         ("enter", "option_selected", "Select Option"),
         ("escape", "dismiss_msg('cancel')", "Close"),
-        ("l", "dismiss_msg('last')", "Queue Last"),
-        ("n", "dismiss_msg('next')", "Queue Next"),
+        ("l", "dismiss_msg(False)", "Queue Last"),
+        ("n", "dismiss_msg(True)", "Queue Next"),
     ]
 
-    def __init__(self, player: Player, tid, *args, **kwargs) -> None:
+    def __init__(self, tid, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.main_table = VimDataTable(show_inspect=False, cursor_type="row")
 
-        self.player = player
         self.tid = tid
 
     def compose(self) -> ComposeResult:
@@ -122,27 +127,14 @@ class AddToPopup(ModalScreen[str]):
         value = self.main_table.get_cell_at(Coordinate(row, 1))
         match value:
             case "Queue Last":
-                self.action_dismiss_msg("last")
+                self.action_dismiss_msg(False)
             case "Queue Next":
-                self.action_dismiss_msg("next")
-            case _:
-                self.action_dismiss_msg("cancel")
+                self.action_dismiss_msg(True)
+        self.dismiss()
 
-    def action_dismiss_msg(self, message: str):
-        match message:
-            case "last":
-                self.player.queue.queue_tracks_last(
-                    [
-                        self.tid,
-                    ]
-                )
-            case "next":
-                self.player.queue.queue_tracks_next(
-                    [
-                        self.tid,
-                    ]
-                )
-        self.dismiss(message)
+    def action_dismiss_msg(self, queue_next: bool):
+        self.post_message(self.QueueTrack(self.tid, queue_next))
+        self.dismiss()
 
 
 class TracksDataTable(Static):
@@ -229,7 +221,7 @@ class TracksDataTable(Static):
         row_dict = self.main_table.export_row_as_dict(row_index)
         tid = int(row_dict["id"])
         if tid:
-            popup = AddToPopup(player=self.player, tid=tid)
+            popup = AddToPopup(tid=tid)
             self.app.push_screen(popup)  # type:ignore
 
     def action_focus_search(self) -> None:

@@ -22,7 +22,7 @@ from muc.widgets.footer import Footer
 from muc.widgets.nowplaying import NowPlaying
 from muc.widgets.playlistssplit import PlaylistsSplit
 from muc.widgets.queuedatatable import QueueDataTable
-from muc.widgets.tracksdatatable import TracksDataTable
+from muc.widgets.tracksdatatable import AddToPopup, TracksDataTable
 
 
 class Client(App):
@@ -173,6 +173,23 @@ class Client(App):
 
         except Exception as e:
             self.app.notify(f"Couldn't favorite: {e}", severity="error", timeout=0.25)
+
+    @on(AddToPopup.QueueTrack)
+    def queue_track(self, event: AddToPopup.QueueTrack) -> None:
+        if event.queue_next:
+            self.player.queue.queue_tracks_next(
+                [
+                    event.tid,
+                ]
+            )
+        else:
+            self.player.queue.queue_tracks_last(
+                [
+                    event.tid,
+                ]
+            )
+        if self.focused == self.queue_data_table.main_table:
+            self.queue_data_table.on_show()
 
     def action_player_next(self) -> None:
         """
