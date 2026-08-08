@@ -14,6 +14,7 @@ from textual import on
 from textual.app import ComposeResult
 from textual.containers import Horizontal, Vertical
 from textual.coordinate import Coordinate
+from textual.message import Message
 from textual.screen import ModalScreen
 from textual.widgets import DataTable, Input, Static
 
@@ -145,6 +146,11 @@ class AddToPopup(ModalScreen[str]):
 
 
 class TracksDataTable(Static):
+    class FavoriteTrack(Message):
+        def __init__(self, tid: int, *args, **kwargs) -> None:
+            super().__init__(*args, **kwargs)
+            self.tid = tid
+
     BINDINGS = [
         ("/", "focus_search", "Search"),
         ("comma", "open_sort", "Sort"),
@@ -211,8 +217,7 @@ class TracksDataTable(Static):
 
     def compose(self) -> ComposeResult:
         with Vertical():
-            with Horizontal():
-                yield self.search
+            yield self.search
             yield self.main_table
 
     def action_open_sort(self) -> None:
@@ -244,14 +249,13 @@ class TracksDataTable(Static):
     def action_favorite_track(self) -> None:
         """
         Toggles a tracks favorite icon
-        TODO: Make it not refresh all rows when updating
         """
         try:
             row_index: int = self.main_table.cursor_row
-            tid: int = int(self.main_table.export_row_as_dict(row_index)["id"])
-            track: Track = self.api.favorite_tracks(f"id={tid}")[tid]
+            row: dict = self.main_table.export_row_as_dict(row_index)
+            self.post_message(self.FavoriteTrack(int(row["id"])))
             self.main_table.update_cell(
-                str(row_index), "favorite", "󰋑" if track.favorite else " "
+                str(row_index), "favorite", " " if row["favorite"] == "󰋑" else "󰋑"
             )
             self.populate()
         except Exception as e:

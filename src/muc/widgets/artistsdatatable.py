@@ -40,8 +40,7 @@ class ArtistsDataTable(Static):
 
     def compose(self) -> ComposeResult:
         with Vertical():
-            with Horizontal():
-                yield self.search
+            yield self.search
             yield self.main_table
 
     def action_focus_search(self) -> None:
