@@ -49,7 +49,7 @@ class NowPlaying(Static):
     def compose(self) -> ComposeResult:
         with Vertical():
             with Horizontal():
-                yield Label("Now Playing:", classes="metadata-icon")
+                yield Label(" Now Playing ", classes="metadata-icon")
                 yield self.track_metadata
             with Horizontal():
                 yield self.progressbar_pos
