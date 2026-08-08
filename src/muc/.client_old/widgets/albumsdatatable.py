@@ -7,11 +7,10 @@
 
 """
 
+from muc.client.widgets.vimdatatable import VimDataTable
 from textual import on
 from textual.app import ComposeResult
 from textual.widgets import Input, Static
-
-from muc.client.widgets.vimdatatable import VimDataTable
 
 
 class AlbumsDataTable(Static):
