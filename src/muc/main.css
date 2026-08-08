@@ -54,12 +54,28 @@ QueueDataTable {
 TracksDataTable VimDataTable,
 AlbumsDataTable VimDataTable,
 ArtistsDataTable VimDataTable,
+PlaylistsSplit PlaylistsDataTable VimDataTable,
+PlaylistsSplit PlaylistTracksDataTable VimDataTable,
 QueueDataTable VimDataTable {
   width: 1fr;
   height: 100%;
   overflow: hidden scroll
 }
 
+
+
+
+PlaylistsSplit PlaylistsDataTable,
+PlaylistsSplit PlaylistTracksDataTable {
+  height: 100%;
+  overflow: hidden hidden;
+}
+PlaylistsSplit PlaylistsDataTable {
+  width: 30%;
+}
+PlaylistsSplit PlaylistTracksDataTable {
+  width: 1fr;
+}
 
 /*
  * Popups
