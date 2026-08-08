@@ -9,7 +9,8 @@
 
 from textual import on
 from textual.app import ComposeResult
-from textual.widgets import Static
+from textual.containers import Vertical
+from textual.widgets import Label, Static
 
 from mu.api import Api
 from mu.models import Playlist, Track
@@ -56,10 +57,13 @@ class PlaylistTracksDataTable(Static):
 
         self.full_rows: list = []
 
+        self.playlist_metadata = Label()
         self.main_table = VimDataTable(cursor_type="row", id="tracks-main-table")
 
     def compose(self) -> ComposeResult:
-        yield self.main_table
+        with Vertical():
+            yield self.playlist_metadata
+            yield self.main_table
 
     def action_open_addto(self) -> None:
         row_index = self.main_table.cursor_row
@@ -94,6 +98,15 @@ class PlaylistTracksDataTable(Static):
         self.main_table.clear()
         for i, row in enumerate(self.full_rows):
             self.main_table.add_row(*row, key=str(i))
+
+    def redraw_metadata(self) -> None:
+        if self.playlist:
+            self.playlist_metadata.update(
+                f"[grey] #{self.playlist.id}[/]"
+                f"[$success] 󱝟 {self.playlist.title}[/]"
+                f" {self.playlist.description}"
+                f"[$error] 󰈣 {len(self.playlist.tracks)}[/$error]"
+            )
 
     def populate(
         self,
@@ -159,6 +172,7 @@ class PlaylistTracksDataTable(Static):
     def on_show(self) -> None:
         self.populate()
         self.redraw_rows()
+        self.redraw_metadata()
         self.main_table.focus()
 
     def on_hide(self) -> None:

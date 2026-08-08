@@ -8,7 +8,7 @@
 """
 
 from textual import on
-from textual.containers import Horizontal, Vertical
+from textual.containers import Horizontal
 from textual.widgets import Static
 
 from mu.api import Api
@@ -38,6 +38,7 @@ class PlaylistsSplit(Static):
         self.tracks_data_table.playlist = event.playlist
         self.tracks_data_table.populate()
         self.tracks_data_table.redraw_rows()
+        self.tracks_data_table.redraw_metadata()
         self.tracks_data_table.main_table.focus()
 
     def action_focus_table(self, table: int):
