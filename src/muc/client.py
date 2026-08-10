@@ -83,6 +83,7 @@ class Client(App):
         self.animation_level = "none"
 
         self.nowplaying = NowPlaying(self.player)
+        self.nowplaying.border_title = "Now Playing"
         self.footer = Footer()
         self.tabs = TabbedContent(id="tabs", initial="tracks-tab")
 

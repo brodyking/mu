@@ -12,7 +12,6 @@ _   _
  */
 
 Tabs {
- border: none;
  height:1;
  background: $panel;
 }
@@ -25,6 +24,7 @@ Tabs > Underline {
 }
 TabPane {
  height: 1fr;
+
 }
 Underline > .underline--bar {
  color: transparent;
@@ -67,7 +67,6 @@ PlaylistsSplit PlaylistTracksDataTable VimDataTable,
 QueueDataTable VimDataTable {
   width: 1fr;
   height: 1fr;
-  overflow: hidden scroll
 }
 
 
@@ -145,19 +144,12 @@ Toast {
  */
 
 NowPlaying {
- height:2;
-}
-Label {
- background: $surface 
-}
-NowPlaying .metadata-icon {
- background: $primary;
- color: $background;
-}
-NowPlaying .metadata-value {
- padding-left: 1;
- padding-right: 1;
- width: 1fr;
+ height:4;
+ border: double $panel;
+ border-title-color: $secondary;
+  border-title-align: right;
+ background: $surface;
+ padding: 0 1 0 1
 }
 NowPlaying ProgressBar {
   width: 1fr;

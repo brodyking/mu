@@ -43,13 +43,12 @@ class NowPlaying(Static):
 
         self.progressbar = NowPlayingProgressBar()
 
-        self.progressbar_pos = Label(classes="metadata-icon")
-        self.progressbar_duration = Label(classes="metadata-icon")
+        self.progressbar_pos = Label()
+        self.progressbar_duration = Label()
 
     def compose(self) -> ComposeResult:
         with Vertical():
             with Horizontal():
-                yield Label(" Now Playing ", classes="metadata-icon")
                 yield self.track_metadata
             with Horizontal():
                 yield self.progressbar_pos
