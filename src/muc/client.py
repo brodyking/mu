@@ -86,6 +86,7 @@ class Client(App):
         self.nowplaying.border_title = "Now Playing"
         self.footer = Footer()
         self.tabs = TabbedContent(id="tabs", initial="tracks-tab")
+        self.tabs.can_focus_children = False
 
         self.queue_data_table: QueueDataTable = QueueDataTable(self.api, self.player)
         self.tracks_data_table = TracksDataTable(self.api, self.player)
