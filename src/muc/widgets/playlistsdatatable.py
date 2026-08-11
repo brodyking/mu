@@ -104,7 +104,7 @@ class PlaylistsDataTable(Static):
         # Add the maximum width to your column metadata definition
         columns = [
             ("Id", "id", None),
-            ("Title", "title", 10),
+            ("Title", "title", 20),
             ("Description", "description", 10),
             ("Tracks", "tracks", 10),
         ]
