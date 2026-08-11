@@ -17,6 +17,10 @@ class QueueList:
         self.queue: list[int] = []  # List of track Ids in the queue (full of ints)
         self.pos = 0  # Position in the queue
 
+    def increment_current_track_playcount(self) -> Track:
+        tid = self.queue[self.pos]
+        return self.api.increment_playcount_tracks(f"id={tid}", amount=1)[tid]
+
     def queue_tracks_next(self, track_ids: list[int]) -> None:
         """Inserts tracks at the current position (right after pos)"""
         before = self.queue[: self.pos + 1]

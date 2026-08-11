@@ -45,8 +45,12 @@ class Player:
         self._loaded = False
 
     def tick(self) -> None:
-        """Advance when the current track finishes. Call from a UI timer."""
+        """
+        Update playcount of current track and advance when the current track finishes.
+        Called from a UI timer.
+        """
         if self._loaded and not self._audio.active:
+            self.queue.increment_current_track_playcount()
             self.next()
 
     def recache_current_track(self) -> None:
