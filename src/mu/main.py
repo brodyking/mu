@@ -70,21 +70,6 @@ def print_version() -> None:
     mu_print_version(VERSION, api.db.SCHEMA)
 
 
-@parser.command("i", hidden=True)
-@parser.command("import", help="import media (alias: i)")
-def import_tracks(
-    path: Annotated[str, typer.Argument(help="directory/location of track(s)")],
-) -> None:
-    """Imports all files from the specified directory"""
-    for response in api.import_media(path):
-        mu_print(
-            "",
-            url=response["filename"],
-            count=(response["count"] + 1, response["total"]),
-            ok=response["ok"],
-        )
-
-
 @parser.command("it", hidden=True)
 @parser.command("itunes", help="import an itunes library xml (alias: it)")
 def itunes_import(
@@ -121,6 +106,21 @@ def track_remove(
 ) -> None:
     response: dict[int, tuple[Track, bool]] = api.remove_tracks(tracks_term)
     mu_print_tracks_deletion(response)
+
+
+@track_parser.command("i", hidden=True)
+@track_parser.command("import", help="import media (alias: i)")
+def import_tracks(
+    path: Annotated[str, typer.Argument(help="directory/location of track(s)")],
+) -> None:
+    """Imports all files from the specified directory"""
+    for response in api.import_media(path):
+        mu_print(
+            "",
+            url=response["filename"],
+            count=(response["count"] + 1, response["total"]),
+            ok=response["ok"],
+        )
 
 
 @list_parser.command("t", hidden=True)
