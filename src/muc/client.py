@@ -103,17 +103,17 @@ class Client(App):
             yield self.nowplaying
             with Horizontal():
                 with self.tabs:
-                    with TabPane(title="Queue (Q)", id="queue-tab"):
+                    with TabPane(title="󰲸 Queue (Q)", id="queue-tab"):
                         yield self.queue_data_table
-                    with TabPane(title="Favorites (F)", id="favorites-tab"):
+                    with TabPane(title="󰋑 Favorites (F)", id="favorites-tab"):
                         yield self.favorite_tracks_data_table
-                    with TabPane(title="Tracks (T)", id="tracks-tab"):
+                    with TabPane(title="󰎇 Tracks (T)", id="tracks-tab"):
                         yield self.tracks_data_table
-                    with TabPane(title="Albums (A)", id="albums-tab"):
+                    with TabPane(title="󱍙 Albums (A)", id="albums-tab"):
                         yield self.albums_data_table
-                    with TabPane(title="Artists (R)", id="artists-tab"):
+                    with TabPane(title="󰠃 Artists (R)", id="artists-tab"):
                         yield self.artists_data_table
-                    with TabPane(title="Playlists (P)", id="playlists-tab"):
+                    with TabPane(title="󱝟 Playlists (P)", id="playlists-tab"):
                         yield self.playlists_split
             yield self.footer
 
