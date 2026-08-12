@@ -1,10 +1,12 @@
+import os
+
 from textual import on
 from textual.containers import Horizontal
 from textual.coordinate import Coordinate
 from textual.widgets import Static
-import os
-from mu.io import mu_print, mu_input_str
+
 from mu.api import Api
+from mu.io import mu_input_str, mu_print
 from muc.widgets.vimdatatable import VimDataTable
 
 

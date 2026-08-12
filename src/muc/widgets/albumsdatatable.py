@@ -9,7 +9,7 @@
 
 from textual import on
 from textual.app import ComposeResult
-from textual.containers import Horizontal, Vertical
+from textual.containers import Vertical
 from textual.message import Message
 from textual.widgets import Input, Static
 

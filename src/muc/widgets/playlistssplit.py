@@ -10,14 +10,13 @@
 from textual import on
 from textual.app import ComposeResult
 from textual.containers import Horizontal, Vertical
-from textual.message import Message
-from textual.widgets import Input, Label, Static
+from textual.widgets import Label, Static
 
 from mu.api import Api
 from mu.models import Playlist, Track
 from muc.player import Player
-from muc.widgets.tracksdatatable import AddToPopup
 from muc.widgets.playlistsdatatable import PlaylistsDataTable
+from muc.widgets.tracksdatatable import AddToPopup
 from muc.widgets.vimdatatable import VimDataTable
 
 
