@@ -20,7 +20,7 @@ from muc.widgets.artistsdatatable import ArtistsDataTable
 from muc.widgets.footer import Footer
 from muc.widgets.nowplaying import NowPlaying
 from muc.widgets.optionssplit import OptionsSplit
-from muc.widgets.playlistssplit import PlaylistTracksDataTable, PlaylistsSplit
+from muc.widgets.playlistssplit import PlaylistsSplit, PlaylistTracksDataTable
 from muc.widgets.queuedatatable import QueueDataTable
 from muc.widgets.tracksdatatable import AddToPlaylistPopup, AddToPopup, TracksDataTable
 
