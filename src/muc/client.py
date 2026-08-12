@@ -22,7 +22,7 @@ from muc.widgets.nowplaying import NowPlaying
 from muc.widgets.optionssplit import OptionsSplit
 from muc.widgets.playlistssplit import PlaylistsSplit
 from muc.widgets.queuedatatable import QueueDataTable
-from muc.widgets.tracksdatatable import AddToPopup, TracksDataTable
+from muc.widgets.tracksdatatable import AddToPlaylistPopup, AddToPopup, TracksDataTable
 
 
 class Client(App):
@@ -198,6 +198,16 @@ class Client(App):
             )
         if self.focused == self.queue_data_table.main_table:
             self.queue_data_table.on_show()
+
+    @on(AddToPlaylistPopup.AppendTrackToPlaylist)
+    def append_track_to_playlist(
+        self, event: AddToPlaylistPopup.AppendTrackToPlaylist
+    ) -> None:
+        if event.tid and event.pid:
+            response = self.api.append_playlists(f"id={event.pid}", f"id={event.tid}")
+            self.notify(
+                f"Added track to {str(len(response))} playlist(s).", timeout=0.25
+            )
 
     def action_player_next(self) -> None:
         """

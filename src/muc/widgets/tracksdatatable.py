@@ -12,7 +12,7 @@ from typing import Literal
 
 from textual import on
 from textual.app import ComposeResult
-from textual.containers import Horizontal, Vertical
+from textual.containers import Vertical
 from textual.coordinate import Coordinate
 from textual.message import Message
 from textual.screen import ModalScreen
@@ -21,6 +21,7 @@ from textual.widgets import DataTable, Input, Static
 from mu.api import Api
 from mu.models import Track
 from muc.player import Player
+from muc.widgets.playlistsdatatable import PlaylistsDataTable
 from muc.widgets.vimdatatable import VimDataTable
 
 
@@ -84,6 +85,33 @@ class SortTracksPopup(ModalScreen[str]):
             self.action_dismiss_msg(value.lower())
 
 
+class AddToPlaylistPopup(ModalScreen[str]):
+    class AppendTrackToPlaylist(Message):
+        def __init__(self, tid: int, pid: int, *args, **kwargs) -> None:
+            super().__init__(*args, **kwargs)
+            self.tid = tid
+            self.pid = pid
+
+    BINDINGS = [
+        ("escape", "dismiss()", "Close"),
+    ]
+
+    def __init__(self, api: Api, tid: int, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self.api = api
+        self.tid = tid
+
+        self.main_table = PlaylistsDataTable(self.api)
+
+    def compose(self) -> ComposeResult:
+        yield self.main_table
+
+    @on(PlaylistsDataTable.PlaylistClicked)
+    def playlist_selected(self, event: PlaylistsDataTable.PlaylistClicked) -> None:
+        self.post_message(self.AppendTrackToPlaylist(self.tid, event.playlist.id))
+        self.dismiss()
+
+
 class AddToPopup(ModalScreen[str]):
     class QueueTrack(Message):
         def __init__(self, tid: int, queue_next: bool, *args, **kwargs) -> None:
@@ -94,20 +122,22 @@ class AddToPopup(ModalScreen[str]):
     TABLE = [
         ("l", "Queue Last"),
         ("n", "Queue Next"),
+        ("p", "Add to Playlist"),
         ("esc", "Cancel"),
     ]
 
     BINDINGS = [
         ("enter", "option_selected", "Select Option"),
-        ("escape", "dismiss_msg('cancel')", "Close"),
-        ("l", "dismiss_msg(False)", "Queue Last"),
-        ("n", "dismiss_msg(True)", "Queue Next"),
+        ("escape", "dismiss()", "Close"),
+        ("l", "queue_track(False)", "Queue Last"),
+        ("n", "queue_track(True)", "Queue Next"),
+        ("p", "add_track_to_playlist", "Add to Playlist"),
     ]
 
-    def __init__(self, tid, *args, **kwargs) -> None:
+    def __init__(self, api: Api, tid: int, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.main_table = VimDataTable(show_inspect=False, cursor_type="row")
-
+        self.api = api
         self.tid = tid
 
     def compose(self) -> ComposeResult:
@@ -127,14 +157,19 @@ class AddToPopup(ModalScreen[str]):
         value = self.main_table.get_cell_at(Coordinate(row, 1))
         match value:
             case "Queue Last":
-                self.action_dismiss_msg(False)
+                self.action_queue_track(False)
             case "Queue Next":
-                self.action_dismiss_msg(True)
-        self.dismiss()
+                self.action_queue_track(True)
+            case "Add to Playlist":
+                self.action_add_track_to_playlist()
 
-    def action_dismiss_msg(self, queue_next: bool):
-        self.post_message(self.QueueTrack(self.tid, queue_next))
+    def action_queue_track(self, queue_next: bool) -> None:
         self.dismiss()
+        self.post_message(self.QueueTrack(self.tid, queue_next))
+
+    def action_add_track_to_playlist(self) -> None:
+        self.dismiss()
+        self.app.push_screen(AddToPlaylistPopup(self.api, self.tid))
 
 
 class TracksDataTable(Static):
@@ -221,7 +256,7 @@ class TracksDataTable(Static):
         row_dict = self.main_table.export_row_as_dict(row_index)
         tid = int(row_dict["id"])
         if tid:
-            popup = AddToPopup(tid=tid)
+            popup = AddToPopup(self.api, tid)
             self.app.push_screen(popup)  # type:ignore
 
     def action_focus_search(self) -> None:

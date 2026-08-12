@@ -63,7 +63,7 @@ class QueueDataTable(Static):
         row_dict = self.main_table.export_row_as_dict(row_index)
         tid = int(row_dict["id"])
         if tid:
-            popup = AddToPopup(tid=tid)
+            popup = AddToPopup(self.api, tid)
             self.app.push_screen(popup)  # type:ignore
 
     @on(VimDataTable.RowSelected)

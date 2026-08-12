@@ -62,8 +62,8 @@ QueueDataTable Input {
 TracksDataTable VimDataTable,
 AlbumsDataTable VimDataTable,
 ArtistsDataTable VimDataTable,
-PlaylistsSplit PlaylistsDataTable VimDataTable,
-PlaylistsSplit PlaylistTracksDataTable VimDataTable,
+PlaylistsDataTable VimDataTable,
+PlaylistTracksDataTable VimDataTable,
 QueueDataTable VimDataTable {
   width: 1fr;
   height: 1fr;
@@ -89,14 +89,19 @@ PlaylistsSplit PlaylistTracksDataTable {
  * Popups
  */
 
-InspectRowPopup,SortTracksPopup,AddToPopup {
+InspectRowPopup,SortTracksPopup,AddToPopup, AddToPlaylistPopup {
  align: center middle;
  background: transparent;
 }
-InspectRowPopup > VimDataTable {
+AddToPlaylistPopup Input {
+  width: 1fr;
+  height: 1;
+}
+InspectRowPopup > VimDataTable, AddToPlaylistPopup > PlaylistsDataTable{
  min-width: 50;
  max-width: 70;
  height: auto;
+ max-height: 30;
  border: heavy $primary;
  padding: 0 0;
  align: center middle;
