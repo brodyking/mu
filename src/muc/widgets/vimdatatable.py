@@ -32,6 +32,8 @@ class VimDataTable(DataTable):
         self.show_inspect = show_inspect
 
     def export_row_as_dict(self, row: int) -> dict[str, Any]:
+        if row >= len(self.rows):
+            return {}
         row_dict = {}
         col_labels = [col.value for col in self.columns]
         for i, col_label in enumerate(col_labels):
