@@ -237,7 +237,7 @@ def mu_input_bool(content: str) -> bool:
             return False
 
 
-def mu_input_str(content: str) -> bool:
+def mu_input_str(content: str) -> str:
     """Prompts with an str as the input"""
     while True:
         response = typer.prompt(f"{Color.yellow('[]')} {content}")
