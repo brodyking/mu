@@ -179,8 +179,8 @@ class Client(App):
             self.api.favorite_tracks(f"id={tid}")[tid]
             self.player.recache_current_track()
 
-        except Exception as e:
-            self.app.notify(f"Couldn't favorite: {e}", severity="error", timeout=0.25)
+        except Exception:
+            self.app.notify("Couldn't favorite track", severity="error", timeout=0.25)
 
     @on(AddToPopup.QueueTrack)
     def queue_track(self, event: AddToPopup.QueueTrack) -> None:
