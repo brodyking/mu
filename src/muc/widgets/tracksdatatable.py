@@ -254,7 +254,7 @@ class TracksDataTable(Static):
     def action_open_addto(self) -> None:
         row_index = self.main_table.cursor_row
         row_dict = self.main_table.export_row_as_dict(row_index)
-        tid = int(row_dict["id"])
+        tid = int(row_dict["id"]) if "id" in row_dict else None
         if tid:
             popup = AddToPopup(self.api, tid)
             self.app.push_screen(popup)  # type:ignore
