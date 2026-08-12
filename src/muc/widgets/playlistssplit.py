@@ -10,6 +10,7 @@
 from textual import on
 from textual.app import ComposeResult
 from textual.containers import Horizontal, Vertical
+from textual.message import Message
 from textual.widgets import Label, Static
 
 from mu.api import Api
@@ -21,9 +22,16 @@ from muc.widgets.vimdatatable import VimDataTable
 
 
 class PlaylistTracksDataTable(Static):
+    class RemoveTrackFromPlaylist(Message):
+        def __init__(self, tid: int, pid: int, *args, **kwargs) -> None:
+            super().__init__(*args, **kwargs)
+            self.tid = tid
+            self.pid = pid
+
     BINDINGS = [
         (".", "open_addto", "Add to"),
         ("f", "favorite_track", "Favorite"),
+        ("d", "remove_track", "Remove"),
     ]
 
     COL_INDEXES: dict[str, int] = {
@@ -92,6 +100,17 @@ class PlaylistTracksDataTable(Static):
                 str(row_index), "favorite", "󰋑" if track.favorite else " "
             )
             self.populate()
+        except Exception as e:
+            self.app.notify(f"Couldn't favorite: {e}", severity="error", timeout=0.25)
+
+    def action_remove_track(self) -> None:
+        try:
+            row_index: int = self.main_table.cursor_row
+            tid: int = int(self.main_table.export_row_as_dict(row_index)["id"])
+            if self.playlist:
+                self.post_message(self.RemoveTrackFromPlaylist(tid, self.playlist.id))
+            else:
+                self.app.notify("No playlist selected", severity="error", timeout=0.25)
         except Exception as e:
             self.app.notify(f"Couldn't favorite: {e}", severity="error", timeout=0.25)
 

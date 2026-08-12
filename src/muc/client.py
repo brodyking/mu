@@ -20,7 +20,7 @@ from muc.widgets.artistsdatatable import ArtistsDataTable
 from muc.widgets.footer import Footer
 from muc.widgets.nowplaying import NowPlaying
 from muc.widgets.optionssplit import OptionsSplit
-from muc.widgets.playlistssplit import PlaylistsSplit
+from muc.widgets.playlistssplit import PlaylistTracksDataTable, PlaylistsSplit
 from muc.widgets.queuedatatable import QueueDataTable
 from muc.widgets.tracksdatatable import AddToPlaylistPopup, AddToPopup, TracksDataTable
 
@@ -205,9 +205,26 @@ class Client(App):
     ) -> None:
         if event.tid and event.pid:
             response = self.api.append_playlists(f"id={event.pid}", f"id={event.tid}")
-            self.notify(
-                f"Added track to {str(len(response))} playlist(s).", timeout=0.25
-            )
+            if len(response) > 1:
+                self.notify("Added track to playlist.", timeout=0.25)
+            else:
+                self.notify("Playlist not found", severity="error")
+
+    @on(PlaylistTracksDataTable.RemoveTrackFromPlaylist)
+    def remove_track_from_playlist(
+        self, event: PlaylistTracksDataTable.RemoveTrackFromPlaylist
+    ) -> None:
+        response = self.api.remove_from_playlist(f"id={event.pid}", f"id={event.tid}")
+        if len(response) < 1:
+            self.notify("Playlist not found", severity="error")
+            return
+        self.notify("Removed track from playlist")
+        if self.focused == self.playlists_split.tracks_data_table.main_table:
+            self.playlists_split.tracks_data_table.playlist = self.api.get_playlists(
+                f"id={event.pid}"
+            )[event.pid]
+            self.playlists_split.tracks_data_table.populate()
+            self.playlists_split.tracks_data_table.redraw_rows()
 
     def action_player_next(self) -> None:
         """
