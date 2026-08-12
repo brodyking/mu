@@ -25,6 +25,7 @@ class QueueDataTable(Static):
     BINDINGS = [
         (".", "open_addto", "Add to"),
         ("f", "favorite_track", "Favorite"),
+        ("d", "remove_track", "Remove"),
     ]
 
     COL_INDEXES: dict[str, int] = {
@@ -70,6 +71,16 @@ class QueueDataTable(Static):
     def start_queue(self, event: VimDataTable.RowSelected) -> None:
         tids = [row[0] for row in self.full_rows]
         self.player.play_now(tids, event.cursor_row)
+        self.populate()
+        self.redraw_rows()
+
+    def action_remove_track(self) -> None:
+        pos = (self.main_table.cursor_row + 1) + self.player.queue.pos
+        track = self.player.queue.remove_track(pos)
+        if track:
+            self.notify(f"Removed {track.title} from the queue.")
+        else:
+            self.notify("Could not remove track from queue", severity="error")
         self.populate()
         self.redraw_rows()
 

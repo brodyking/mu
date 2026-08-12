@@ -73,3 +73,15 @@ class QueueList:
             self.pos = new_pos
             return self.get_current_track()
         return None  # off either end → caller can stop playback
+
+    def remove_track(self, pos: int) -> Track | None:
+        """
+        Removes the track at specified pos, returns the track removed.
+        """
+        if pos > len(self.queue):
+            return None
+        tid = self.queue.pop(pos)
+        response = self.api.get_tracks(f"id={tid}")
+        if tid in response:
+            return response[tid]
+        return None
