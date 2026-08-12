@@ -14,12 +14,12 @@ from textual.theme import Theme
 from textual.widgets import TabbedContent, TabPane
 
 from mu.api import Api
-from mu.models import Track
 from muc.player import Player
 from muc.widgets.albumsdatatable import AlbumsDataTable
 from muc.widgets.artistsdatatable import ArtistsDataTable
 from muc.widgets.footer import Footer
 from muc.widgets.nowplaying import NowPlaying
+from muc.widgets.optionssplit import OptionsSplit
 from muc.widgets.playlistssplit import PlaylistsSplit
 from muc.widgets.queuedatatable import QueueDataTable
 from muc.widgets.tracksdatatable import AddToPopup, TracksDataTable
@@ -41,6 +41,7 @@ class Client(App):
         ("A", "goto_tab(3)", "Albums"),
         ("R", "goto_tab(4)", "Artists"),
         ("P", "goto_tab(5)", "Playlists"),
+        ("O", "goto_tab(6)", "Options"),
         # Media keys
         ("h", "player_prev", "Previous"),
         ("l", "player_next", "Next"),
@@ -54,6 +55,7 @@ class Client(App):
         "albums-tab",
         "artists-tab",
         "playlists-tab",
+        "options-tab",
     ]
 
     def __init__(self) -> None:
@@ -98,6 +100,8 @@ class Client(App):
 
         self.playlists_split = PlaylistsSplit(self.api, self.player)
 
+        self.options_split = OptionsSplit(self.api)
+
     def compose(self) -> ComposeResult:
         with Vertical():
             yield self.nowplaying
@@ -115,6 +119,8 @@ class Client(App):
                         yield self.artists_data_table
                     with TabPane(title="󱝟 Playlists (P)", id="playlists-tab"):
                         yield self.playlists_split
+                    with TabPane(title=" Options (O)", id="options-tab"):
+                        yield self.options_split
             yield self.footer
 
     def action_goto_tab(self, tabid: int) -> None:
