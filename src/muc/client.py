@@ -18,7 +18,11 @@ from muc.player import Player
 from muc.widgets.albumsdatatable import AlbumsDataTable
 from muc.widgets.artistsdatatable import ArtistsDataTable
 from muc.widgets.footer import Footer
-from muc.widgets.nowplaying import NowPlaying
+from muc.widgets.nowplaying import (
+    NowPlaying,
+    NowPlayingProgressBar,
+    NowPlayingVolumeBar,
+)
 from muc.widgets.optionssplit import OptionsSplit
 from muc.widgets.playlistssplit import (
     PlaylistsSplit,
@@ -49,6 +53,8 @@ class Client(App):
         ("h", "player_prev", "Previous"),
         ("l", "player_next", "Next"),
         ("space", "player_toggle", "Toggle Playback"),
+        ("+", "increase_volume", "Increase Volume"),
+        ("_", "decrease_volume", "Decrease Volume"),
     )  # type:ignore
 
     TAB_IDS = [
@@ -228,6 +234,24 @@ class Client(App):
             )[event.pid]
             self.playlists_split.tracks_data_table.populate()
             self.playlists_split.tracks_data_table.redraw_rows()
+
+    @on(NowPlayingProgressBar.Clicked)
+    def progressbar_clicked(self, event: NowPlayingProgressBar.Clicked):
+        self.player.seek(event.percentage * self.player.duration)
+
+    @on(NowPlayingVolumeBar.Clicked)
+    def volumebar_clicked(self, event: NowPlayingVolumeBar.Clicked):
+        self.player.set_volume(event.percentage)
+
+    def action_increase_volume(self) -> None:
+        newvol = self.player.volume + 0.05
+        newvol = newvol if newvol <= 1 else 1
+        self.player.set_volume(newvol)
+
+    def action_decrease_volume(self) -> None:
+        newvol = self.player.volume - 0.05
+        newvol = newvol if newvol >= 0 else 0
+        self.player.set_volume(newvol)
 
     def action_player_next(self) -> None:
         """

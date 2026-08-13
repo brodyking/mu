@@ -117,11 +117,3 @@ class NowPlaying(Static):
         volume = self.player.volume
         self.volumebar.update(total=1, progress=volume)
         self.voluembar_amount.update(str(int(volume * 100)) + "%")
-
-    @on(NowPlayingProgressBar.Clicked)
-    def progressbar_clicked(self, event: NowPlayingProgressBar.Clicked):
-        self.player.seek(event.percentage * self.player.duration)
-
-    @on(NowPlayingVolumeBar.Clicked)
-    def volumebar_clicked(self, event: NowPlayingVolumeBar.Clicked):
-        self.player.set_volume(event.percentage)
