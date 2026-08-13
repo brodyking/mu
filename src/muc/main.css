@@ -165,6 +165,12 @@ NowPlaying {
  background: $surface;
  padding: 0 1 0 1
 }
+NowPlaying #now-playing-volume {
+  width: 25%;
+}
+NowPlaying #now-playing-progress {
+  width: 1fr;
+}
 NowPlaying ProgressBar {
   width: 1fr;
 }

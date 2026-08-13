@@ -27,6 +27,25 @@ class NowPlayingProgressBar(ProgressBar):
         self.post_message(self.Clicked(percentage))
 
 
+class NowPlayingVolumeBar(ProgressBar):
+    def __init__(self, *args, **kwargs):
+        super().__init__(
+            total=0, show_percentage=False, show_eta=False, *args, **kwargs
+        )
+
+    class Clicked(Message):
+        def __init__(self, percentage: float, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            self.percentage = percentage
+
+        pass
+
+    @on(Click)
+    def clicked(self, event: Click) -> None:
+        percentage = event.x / self.size.width
+        self.post_message(self.Clicked(percentage))
+
+
 class NowPlaying(Static):
     class TrackChanged(Message):
         def __init__(self) -> None:
@@ -42,18 +61,25 @@ class NowPlaying(Static):
         self.track_metadata = Label(classes="metadata-value")
 
         self.progressbar = NowPlayingProgressBar()
+        self.volumebar = NowPlayingVolumeBar()
 
         self.progressbar_pos = Label()
         self.progressbar_duration = Label()
+
+        self.voluembar_amount = Label()
 
     def compose(self) -> ComposeResult:
         with Vertical():
             with Horizontal():
                 yield self.track_metadata
             with Horizontal():
-                yield self.progressbar_pos
-                yield self.progressbar
-                yield self.progressbar_duration
+                with Horizontal(id="now-playing-progress"):
+                    yield self.progressbar_pos
+                    yield self.progressbar
+                    yield self.progressbar_duration
+                with Horizontal(id="now-playing-volume"):
+                    yield self.volumebar
+                    yield self.voluembar_amount
 
     def on_mount(self) -> None:
         self._timer = self.set_interval(0.25, self._tick)  # NOT in __init__
@@ -88,6 +114,14 @@ class NowPlaying(Static):
         self.progressbar_pos.update(self.format_secs(self.player.pos))
         self.progressbar_duration.update(str(current.time) if current else "?:??")
 
+        volume = self.player.volume
+        self.volumebar.update(total=1, progress=volume)
+        self.voluembar_amount.update(str(int(volume * 100)) + "%")
+
     @on(NowPlayingProgressBar.Clicked)
     def progressbar_clicked(self, event: NowPlayingProgressBar.Clicked):
         self.player.seek(event.percentage * self.player.duration)
+
+    @on(NowPlayingVolumeBar.Clicked)
+    def volumebar_clicked(self, event: NowPlayingVolumeBar.Clicked):
+        self.player.set_volume(event.percentage)

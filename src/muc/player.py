@@ -40,6 +40,9 @@ class Player:
     def seek(self, seconds: float) -> None:
         self._audio.seek(seconds)
 
+    def set_volume(self, volume: float) -> None:
+        self._audio.set_volume(volume)
+
     def stop(self) -> None:
         self._audio.stop()
         self._loaded = False
@@ -72,3 +75,7 @@ class Player:
     @property
     def duration(self) -> float:
         return self._audio.duration
+
+    @property
+    def volume(self) -> float:
+        return self._audio.volume
