@@ -3,6 +3,7 @@ import os
 from textual import on
 from textual.containers import Horizontal
 from textual.coordinate import Coordinate
+from textual.theme import Theme
 from textual.widgets import Static
 
 from mu.api import Api
@@ -16,6 +17,7 @@ class OptionsDataTable(VimDataTable):
         ("iTunes", "import an itunes library xml"),
         ("Playlist", "modify playlists"),
         ("Track", "modify tracks"),
+        ("Theme", "change the theme"),
     ]
     COLUMNS = [
         ("Command", "command", 10),
@@ -133,37 +135,59 @@ class TrackOptionsDataTable(VimDataTable):
         self.run_command(command)
 
 
+class ThemeOptionsDataTable(VimDataTable):
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(cursor_type="row")
+        self.styles.display = "none"
+        self.themes: dict[str, Theme] = {}
+
+    def on_mount(self) -> None:
+        self.add_column("Theme")
+        self.themes = self.app.available_themes
+        for theme in self.themes:
+            self.add_row(theme)
+
+    @on(VimDataTable.RowSelected)
+    def change_theme(self, event: VimDataTable.RowSelected) -> None:
+        self.app.theme = self.get_cell_at(Coordinate(self.cursor_row, 0))
+
+
 class OptionsSplit(Static):
     BINDINGS = [
-        ("ctrl+h", "focus_table(0)", "Focus Playlists"),
-        ("ctrl+l", "focus_table(1)", "Focus Tracks"),
+        ("ctrl+h", "focus_left_table", "Focus Left"),
+        ("ctrl+l", "focus_right_table", "Focus Right"),
     ]
 
     def __init__(self, api: Api, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.api = api
         self.options_data_table = OptionsDataTable()
+
         self.playlist_options_data_table = PlaylistOptionsDataTable()
         self.track_options_data_table = TrackOptionsDataTable()
+        self.theme_options_data_table = ThemeOptionsDataTable()
 
     def compose(self):
         with Horizontal():
             yield self.options_data_table
             yield self.playlist_options_data_table
             yield self.track_options_data_table
+            yield self.theme_options_data_table
 
     def on_show(self):
         self.options_data_table.focus()
 
-    def action_focus_table(self, table: int):
+    def action_focus_left_table(self):
+        self.options_data_table.focus()
+
+    def action_focus_right_table(self):
         """Focuses different tables. 0: Playlists, 1: Playlist Tracks"""
-        if table == 0:
-            self.options_data_table.focus()
+        if self.playlist_options_data_table.styles.display == "block":
+            self.playlist_options_data_table.focus()
+        elif self.track_options_data_table.styles.display == "block":
+            self.track_options_data_table.focus()
         else:
-            if self.playlist_options_data_table.styles.display == "block":
-                self.playlist_options_data_table.focus()
-            else:
-                self.track_options_data_table.focus()
+            self.theme_options_data_table.focus()
 
     def run_command(self, command: str) -> None:
         with self.app.suspend():
@@ -184,11 +208,14 @@ class OptionsSplit(Static):
         command = self.options_data_table.get_cell_at(Coordinate(table.cursor_row, 0))
         self.playlist_options_data_table.styles.display = "none"
         self.track_options_data_table.styles.display = "none"
+        self.theme_options_data_table.styles.display = "none"
         match command:
             case "Playlist":
                 table = self.playlist_options_data_table
             case "Track":
                 table = self.track_options_data_table
+            case "Theme":
+                table = self.theme_options_data_table
             case _:
                 self.run_command(command)
 

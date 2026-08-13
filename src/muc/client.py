@@ -34,6 +34,7 @@ from muc.widgets.tracksdatatable import AddToPlaylistPopup, AddToPopup, TracksDa
 
 class Client(App):
     CSS_PATH = "main.css"
+
     ENABLE_COMMAND_PALETTE = False
 
     BINDINGS = (
@@ -74,7 +75,7 @@ class Client(App):
 
         self.register_theme(
             theme=Theme(
-                name="tokyonight-moon",
+                name="tokyonight-moon (default)",
                 primary="#82AAFFFF",  # blue
                 secondary="#394B70FF",  # blue7
                 accent="#C099FFFF",  # magenta
@@ -90,7 +91,7 @@ class Client(App):
             )
         )
 
-        self.theme = "tokyonight-moon"
+        self.theme = "tokyonight-moon (default)"
         self.animation_level = "none"
 
         self.nowplaying = NowPlaying(self.player)
