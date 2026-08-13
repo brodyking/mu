@@ -20,7 +20,11 @@ from muc.widgets.artistsdatatable import ArtistsDataTable
 from muc.widgets.footer import Footer
 from muc.widgets.nowplaying import NowPlaying
 from muc.widgets.optionssplit import OptionsSplit
-from muc.widgets.playlistssplit import PlaylistsSplit, PlaylistTracksDataTable
+from muc.widgets.playlistssplit import (
+    PlaylistsSplit,
+    PlaylistTracksDataTable,
+    RemoveTrackFromPlaylistPopup,
+)
 from muc.widgets.queuedatatable import QueueDataTable
 from muc.widgets.tracksdatatable import AddToPlaylistPopup, AddToPopup, TracksDataTable
 
@@ -210,9 +214,9 @@ class Client(App):
             else:
                 self.notify("Playlist not found", severity="error")
 
-    @on(PlaylistTracksDataTable.RemoveTrackFromPlaylist)
+    @on(RemoveTrackFromPlaylistPopup.RemoveTrackFromPlaylist)
     def remove_track_from_playlist(
-        self, event: PlaylistTracksDataTable.RemoveTrackFromPlaylist
+        self, event: RemoveTrackFromPlaylistPopup.RemoveTrackFromPlaylist
     ) -> None:
         response = self.api.remove_from_playlist(f"id={event.pid}", f"id={event.tid}")
         if len(response) < 1:

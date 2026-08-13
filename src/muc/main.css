@@ -89,13 +89,22 @@ PlaylistsSplit PlaylistTracksDataTable {
  * Popups
  */
 
-InspectRowPopup,SortTracksPopup,AddToPopup, AddToPlaylistPopup {
+InspectRowPopup,SortTracksPopup,AddToPopup, AddToPlaylistPopup,RemoveTrackFromPlaylistPopup  {
  align: center middle;
  background: transparent;
 }
 AddToPlaylistPopup Input {
   width: 1fr;
   height: 1;
+}
+RemoveTrackFromPlaylistPopup > Vertical {
+  width: auto;
+  border: heavy $primary;
+  max-height: 4;
+  max-width: 45;
+}
+RemoveTrackFromPlaylistPopup  Label{
+  text-align: center;
 }
 InspectRowPopup > VimDataTable, AddToPlaylistPopup > PlaylistsDataTable{
  min-width: 50;

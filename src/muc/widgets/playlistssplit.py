@@ -11,7 +11,8 @@ from textual import on
 from textual.app import ComposeResult
 from textual.containers import Horizontal, Vertical
 from textual.message import Message
-from textual.widgets import Label, Static
+from textual.screen import ModalScreen
+from textual.widgets import Button, Label, Static
 
 from mu.api import Api
 from mu.models import Playlist, Track
@@ -21,13 +22,31 @@ from muc.widgets.tracksdatatable import AddToPopup
 from muc.widgets.vimdatatable import VimDataTable
 
 
-class PlaylistTracksDataTable(Static):
+class RemoveTrackFromPlaylistPopup(ModalScreen[str]):
+    BINDINGS = [("escape", "dismiss", "Close"), ("enter", "confirm", "Confirm")]
+
     class RemoveTrackFromPlaylist(Message):
         def __init__(self, tid: int, pid: int, *args, **kwargs) -> None:
             super().__init__(*args, **kwargs)
             self.tid = tid
             self.pid = pid
 
+    def __init__(self, tid: int, pid: int, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self.tid = tid
+        self.pid = pid
+
+    def compose(self) -> ComposeResult:
+        with Vertical():
+            yield Label("Are you sure you want to remove this track?")
+            yield Label("Yes (enter) / Cancel (esc)", expand=True)
+
+    def action_confirm(self) -> None:
+        self.post_message(self.RemoveTrackFromPlaylist(self.tid, self.pid))
+        self.dismiss()
+
+
+class PlaylistTracksDataTable(Static):
     BINDINGS = [
         (".", "open_addto", "Add to"),
         ("f", "favorite_track", "Favorite"),
@@ -108,7 +127,9 @@ class PlaylistTracksDataTable(Static):
             row_index: int = self.main_table.cursor_row
             tid: int = int(self.main_table.export_row_as_dict(row_index)["id"])
             if self.playlist:
-                self.post_message(self.RemoveTrackFromPlaylist(tid, self.playlist.id))
+                self.app.push_screen(
+                    RemoveTrackFromPlaylistPopup(tid, self.playlist.id)
+                )
             else:
                 self.app.notify("No playlist selected", severity="error", timeout=0.25)
         except Exception as e:

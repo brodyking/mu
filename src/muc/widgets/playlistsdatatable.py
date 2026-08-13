@@ -11,6 +11,7 @@ from textual import on
 from textual.app import ComposeResult
 from textual.containers import Vertical
 from textual.message import Message
+from textual.screen import ModalScreen
 from textual.widgets import Input, Static
 
 from mu.api import Api
