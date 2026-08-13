@@ -3,7 +3,6 @@ import os
 from textual import on
 from textual.containers import Horizontal
 from textual.coordinate import Coordinate
-from textual.theme import Theme
 from textual.widgets import Static
 
 from mu.api import Api
