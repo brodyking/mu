@@ -87,7 +87,7 @@ class ArtistsDataTable(Static):
                 artists_term, only_albumartists=True
             )
         except ValueError as e:
-            self.app.notify(str(e), severity="error", timeout=0.25)
+            self.app.notify(str(e), severity="error")
             return
 
         for artist_name in artists:

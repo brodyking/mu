@@ -11,7 +11,6 @@ from textual import on
 from textual.app import ComposeResult
 from textual.containers import Vertical
 from textual.message import Message
-from textual.screen import ModalScreen
 from textual.widgets import Input, Static
 
 from mu.api import Api
@@ -86,7 +85,7 @@ class PlaylistsDataTable(Static):
         try:
             playlists: dict[int, Playlist] = self.api.get_playlists(playlists_term)
         except ValueError as e:
-            self.app.notify(str(e), severity="error", timeout=0.25)
+            self.app.notify(str(e), severity="error")
             return
 
         for pid in playlists:

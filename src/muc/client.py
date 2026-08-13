@@ -22,7 +22,6 @@ from muc.widgets.nowplaying import NowPlaying
 from muc.widgets.optionssplit import OptionsSplit
 from muc.widgets.playlistssplit import (
     PlaylistsSplit,
-    PlaylistTracksDataTable,
     RemoveTrackFromPlaylistPopup,
 )
 from muc.widgets.queuedatatable import QueueDataTable
@@ -184,7 +183,7 @@ class Client(App):
             self.player.recache_current_track()
 
         except Exception:
-            self.app.notify("Couldn't favorite track", severity="error", timeout=0.25)
+            self.app.notify("Couldn't favorite track", severity="error")
 
     @on(AddToPopup.QueueTrack)
     def queue_track(self, event: AddToPopup.QueueTrack) -> None:
@@ -209,17 +208,17 @@ class Client(App):
     ) -> None:
         if event.tid and event.pid:
             response = self.api.append_playlists(f"id={event.pid}", f"id={event.tid}")
-            if len(response) > 1:
-                self.notify("Added track to playlist.", timeout=0.25)
-            else:
+            if len(response) == 0:
                 self.notify("Playlist not found", severity="error")
+            else:
+                self.notify("Added track to playlist.")
 
     @on(RemoveTrackFromPlaylistPopup.RemoveTrackFromPlaylist)
     def remove_track_from_playlist(
         self, event: RemoveTrackFromPlaylistPopup.RemoveTrackFromPlaylist
     ) -> None:
         response = self.api.remove_from_playlist(f"id={event.pid}", f"id={event.tid}")
-        if len(response) < 1:
+        if len(response) == 0:
             self.notify("Playlist not found", severity="error")
             return
         self.notify("Removed track from playlist")
@@ -237,7 +236,7 @@ class Client(App):
         try:
             self.player.next()
         except ValueError as e:
-            self.notify(str(e), severity="error", timeout=0.25)
+            self.notify(str(e), severity="error")
 
     def action_player_prev(self) -> None:
         """
@@ -248,7 +247,7 @@ class Client(App):
             try:
                 self.player.prev()
             except ValueError as e:
-                self.notify(str(e), severity="error", timeout=0.25)
+                self.notify(str(e), severity="error")
         else:
             self.player.seek(0)
 

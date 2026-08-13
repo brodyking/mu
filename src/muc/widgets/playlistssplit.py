@@ -12,7 +12,7 @@ from textual.app import ComposeResult
 from textual.containers import Horizontal, Vertical
 from textual.message import Message
 from textual.screen import ModalScreen
-from textual.widgets import Button, Label, Static
+from textual.widgets import Label, Static
 
 from mu.api import Api
 from mu.models import Playlist, Track
@@ -120,7 +120,7 @@ class PlaylistTracksDataTable(Static):
             )
             self.populate()
         except Exception as e:
-            self.app.notify(f"Couldn't favorite: {e}", severity="error", timeout=0.25)
+            self.app.notify(f"Couldn't favorite: {e}", severity="error")
 
     def action_remove_track(self) -> None:
         try:
@@ -131,9 +131,9 @@ class PlaylistTracksDataTable(Static):
                     RemoveTrackFromPlaylistPopup(tid, self.playlist.id)
                 )
             else:
-                self.app.notify("No playlist selected", severity="error", timeout=0.25)
+                self.app.notify("No playlist selected", severity="error")
         except Exception as e:
-            self.app.notify(f"Couldn't favorite: {e}", severity="error", timeout=0.25)
+            self.app.notify(f"Couldn't favorite: {e}", severity="error")
 
     def redraw_rows(self) -> None:
         self.main_table.clear()

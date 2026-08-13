@@ -88,7 +88,7 @@ class AlbumsDataTable(Static):
                 albums_term,
             )
         except ValueError as e:
-            self.app.notify(str(e), severity="error", timeout=0.25)
+            self.app.notify(str(e), severity="error")
             return
 
         for aid in albums:
