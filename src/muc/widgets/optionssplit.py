@@ -139,12 +139,11 @@ class ThemeOptionsDataTable(VimDataTable):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(cursor_type="row")
         self.styles.display = "none"
-        self.themes: dict[str, Theme] = {}
 
     def on_mount(self) -> None:
         self.add_column("Theme")
-        self.themes = self.app.available_themes
-        for theme in self.themes:
+        themes = sorted(list(self.app.available_themes.keys()))
+        for theme in themes:
             self.add_row(theme)
 
     @on(VimDataTable.RowSelected)
