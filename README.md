@@ -229,7 +229,7 @@ Searching for playlists supports these prefixes.
 
 ### Removing and favoriting tracks
 
-To toggle the favorite status of a track, use the `track` subparser with the `favorite` (alias `f` ) and µ Query Syntax to select the song.
+To toggle the favorite status of a track, use the `track` subparser with the `favorite` (alias `f`) command and µ Query Syntax to select the song.
 
 ```
 mu track favorite "id=1"
