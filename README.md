@@ -2,7 +2,7 @@
 <h1>µ - your personal music library</h1>
 <br><img src="./.github/banner.png" height="220px"><br><br>
 <p>
-  μ (<code>mu</code>) is an opinionated MacOS and Linux music library management tool designed to be <b>backup friendly</b> and <b>programmable</b>. All music is stored in a hierarchical format, and the internal database is a simple SQLite file.</p>
+  μ (<code>mu</code>) is an opinionated, MacOS and Linux, mp3 only, music library management tool designed to be <b>backup friendly</b> and <b>programmable</b>. All music is stored in a hierarchical format, and the internal database is a simple SQLite file.</p>
 
 <img src="./.github/screenshot.png" alt="Screenshot of muc" width="100%">
 
@@ -100,7 +100,6 @@ The two basic CLI commands that µ come with are `mu` and `muc`.
 - `mu` allows you to interact with µ through the CLI. Almost all operations that are supported by the api are supported through the CLI.
 - `muc` starts the tui client for µ. It is currently the only way to interact with µ. Support for mobile/web is planned.
 
-Chapter 2 will only discuss `mu`.
 
 ## µ Basic Commands
 
@@ -194,7 +193,7 @@ The above query would return all tracks by *Pink Floyd* and all tracks by *David
 
 ### Removing and favoriting tracks
 
-To favorite a track, use the `track` subparser with the `favorite` (alias `f`) and µ Query Syntax to select the song.
+To toggle the favorite status of a track, use the `track` subparser with the `favorite` (alias `f`) and µ Query Syntax to select the song.
 
 ```
 mu track favorite "id=1"
@@ -303,13 +302,15 @@ Press `,` to open the sort popup.
 
 Press `.` to open the add-to popup. From there, you can add a track to the queue or to a playlist.
 
+Press `f` to favorite/unfavorite a track.
+
 #### Playback/Media Keys
 
 To pause/play playback, use the spacebar. 
 
 To go to the next/previous track, use `h`/`l`.
 
-To increase/decrease volume, use `+`/`-`.
+To increase/decrease volume, use `+`/`_`.
 
 #### Playlist/Queue Table Navigation
 In both the `Playlist` and `Queue`, you can remove tracks with the `d` key. 
