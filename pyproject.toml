@@ -23,4 +23,4 @@ name = "mu"
 version = "0.2.0"
 requires-python = ">=3.12.13"
 description = "your personal music library"
-dependencies = ["mutagen", "textual", "textual-image", "pillow", "python-vlc"]
+dependencies = ["mutagen", "textual", "textual-image", "pillow", "just_playback","typer"]

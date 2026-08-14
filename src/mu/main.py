@@ -7,358 +7,272 @@
 
 """
 
-import argparse
 from importlib.metadata import version
+from typing import Annotated, Literal
 
-from mu.database import Database
+import typer
+
+from mu.api import Api
+from mu.io import (
+    mu_print,
+    mu_print_albums,
+    mu_print_artists,
+    mu_print_playlist_deletion,
+    mu_print_playlist_tracks,
+    mu_print_playlists,
+    mu_print_tracks,
+    mu_print_tracks_deletion,
+    mu_print_version,
+)
 from mu.itunesimport import ITunesImport
-from mu.schemaerror import SchemaError
-from mu.util import Interface
+from mu.models import Playlist, Track
 
-VERSION = version("mu")
+VERSION: str = version("mu")
+
+parser = typer.Typer(
+    name="mu",
+    no_args_is_help=True,
+    help="your personal music library",
+    epilog="created and maintained by brody king at https://github.com/brodyking/mu",
+)
+list_parser = typer.Typer(no_args_is_help=True)
+playlist_parser = typer.Typer(no_args_is_help=True)
+track_parser = typer.Typer(no_args_is_help=True)
+parser.add_typer(
+    list_parser, name="list", help="list different parts of your library (alias: ls)"
+)
+parser.add_typer(list_parser, name="ls", hidden=True)
+
+parser.add_typer(playlist_parser, name="playlist", help="modify playlists (alias: p)")
+parser.add_typer(playlist_parser, name="p", hidden=True)
+
+parser.add_typer(track_parser, name="t", hidden=True)
+parser.add_typer(track_parser, name="track", help="modify tracks (alias: t)")
 
 
-def cmd_scan(db: Database):
+@parser.command("s", hidden=True)
+@parser.command("scan", help="refresh metadata (alias: s)")
+def scan() -> None:
     """Scans the source folder"""
-    for response in db.scan_source_folder():
-        Interface.print(
-            response["filename"],
-            count=[response["count"] + 1, response["total"]],
+    for response in api.scan_source_folder():
+        mu_print(
+            "",
+            url=response["filename"],
+            count=(response["count"] + 1, response["total"]),
             ok=response["ok"],
         )
 
 
-def cmd_version(db: Database):
+@parser.command("v", hidden=True)
+@parser.command("version", help="get version (alias: v)")
+def print_version() -> None:
     """Prints the version of mu+muc+db"""
-    Interface.print_version(VERSION, db.DATABASE_SCHEMA)
+    mu_print_version(VERSION, api.db.SCHEMA)
 
 
-def cmd_reset(db: Database, skip_confirmation=False):
-    """Asks for confirmation from the user, resets the DB"""
-    if skip_confirmation or Interface.prompt_bool(
-        "Are you sure you want to erase the database file? "
-        "This action cannot be undone."
-    ):
-        db.reset_db()
-        Interface.print(
-            "Database has been reset. "
-            'Your files are still in ~/mu/source/. Type "mu scan" to rebuild.'
+@parser.command("it", hidden=True)
+@parser.command("itunes", help="import an itunes library xml (alias: it)")
+def itunes_import(
+    path: Annotated[str, typer.Argument(help="path to iTunes Library.xml")],
+) -> None:
+    for r in ITunesImport(api, path).run():
+        mu_print(
+            "",
+            url=r["name"],
+            count=(r["count"], r["total"]),
+            ok=r["ok"],
+            track=r["track"],
+            playlist=r["playlist"],
         )
 
 
-def cmd_list_tracks(db: Database, only_favorited: bool = False):
-    """Prints all tracks in the database"""
-    tracks = db.list_library_tracks(only_favorited=only_favorited)
-    for track_id in tracks:
-        Interface.print("", track=tracks[track_id])
-
-
-def cmd_list_albums(db: Database):
-    """Prints all albums in the database"""
-    albums = db.list_library_albums()
-    total = len(albums)
-    for i, album in enumerate(albums):
-        Interface.print("", album=album, count=[i + 1, total])
-
-
-def cmd_list_artists(db: Database, album_artist: bool = False):
-    """Prints all the artists in the database"""
-    artists = db.list_library_artists(album_artist=album_artist)
-    total = len(artists)
-    for i, artist in enumerate(artists):
-        Interface.print("", artist=artist[0], count=[i + 1, total])
-
-
-def cmd_list_playlists(db: Database):
-    """Prints all the playlists in the database"""
-    playlists = db.list_playlists()
-    for playlist_id in playlists:
-        Interface.print("", playlist=playlists[playlist_id])
-
-
-def cmd_list_playlist(db: Database, term: str):
-    try:
-        playlist = db.get_playlist(term)
-        for i, track in enumerate(playlist.tracks):
-            Interface.print("", track=track, count=[i + 1, len(playlist.tracks)])
-    except ValueError as e:
-        Interface.print(str(e), ok=False)
-
-
-def cmd_playlist_create(db: Database, title: str, description: str):
-    """Creates a playlist, prints it once created."""
-    playlist = db.create_playlist(title, description=description)
-    Interface.print("", playlist=playlist)
-
-
-def cmd_playlist_append(db: Database, playlist_term: str, tracks_term: str):
-    try:
-        playlist = db.append_playlist(playlist_term, tracks_term)
-        if playlist is not None:
-            for i, track in enumerate(playlist.tracks):
-                Interface.print("", track=track, count=[i + 1, len(playlist.tracks)])
-    except ValueError as e:
-        Interface.print(str(e), ok=False)
-
-
-def cmd_playlist_remove(db: Database, playlist_term: str, tracks_term: str):
-    try:
-        playlist = db.remove_from_playlist(playlist_term, tracks_term)
-        if playlist is not None:
-            for i, track in enumerate(playlist.tracks):
-                Interface.print("", track=track, count=[i + 1, len(playlist.tracks)])
-    except ValueError as e:
-        Interface.print(str(e), ok=False)
-
-
-def cmd_playlist_delete(db: Database, playlist_term: str):
-    try:
-        db.delete_playlist(playlist_term)
-        Interface.print("Playlist deleted")
-    except ValueError as e:
-        Interface.print(str(e), ok=False)
-
-
-def cmd_playlist_insert(
-    db: Database, playlist_term: str, tracks_term: str, position: int
-):
-    try:
-        playlist = db.insert_into_playlist(playlist_term, tracks_term, int(position))
-        for i, track in enumerate(playlist.tracks):
-            Interface.print("", track=track, count=[i + 1, len(playlist.tracks)])
-    except ValueError as e:
-        Interface.print(str(e), ok=False)
-
-
-def cmd_import(db: Database, path: str, itunes: bool):
-    """Imports all files from the specified directory"""
-    if itunes:
-        importer = ITunesImport(db, path)
-        importer.start()
-        return
-    for response in db.import_media(path):
-        Interface.print(
-            response["filename"],
-            count=[response["count"] + 1, response["total"]],
-            ok=response["ok"],
-        )
-
-
-def cmd_favorite(db: Database, term: str):
+@track_parser.command("f", hidden=True)
+@track_parser.command("favorite", help="favorite track(s) (alias: f)")
+def track_favorite(
+    tracks_term: Annotated[str, typer.Argument(help="tracks search term")],
+) -> None:
     """Favorite track(s)"""
     try:
-        tracks = db.favorite(term)
-        total = len(tracks)
-        for i, track in enumerate(tracks):
-            Interface.print("", track=track, count=[i + 1, total])
+        tracks: dict[int, Track] = api.favorite_tracks(tracks_term)
+        mu_print_tracks(tracks)
     except ValueError as e:
-        Interface.print(str(e), ok=False)
+        mu_print(str(e), ok=False)
 
 
-def cmd_search(db: Database, term: str):
-    """Search the database"""
-    try:
-        tracks = db.search(term)
-        total = len(tracks)
-        for i, track in enumerate(tracks):
-            Interface.print("", track=track, count=[i + 1, total])
-    except ValueError as e:
-        Interface.print(str(e), ok=False)
+@track_parser.command("rm", hidden=True)
+@track_parser.command("remove", help="remove track(s) (alias: rm)")
+def track_remove(
+    tracks_term: Annotated[str, typer.Argument(help="tracks search term")],
+) -> None:
+    response: dict[int, tuple[Track, bool]] = api.remove_tracks(tracks_term)
+    mu_print_tracks_deletion(response)
 
 
-def build_parser(db: Database) -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(
-        prog="mu",
-        description="your personal music library",
-        epilog="Created and maintained by Brody King. https://github.com/brodyking/mu",
-    )
-    subparsers = parser.add_subparsers(
-        dest="action", help="options for library", required=True
-    )
-
-    _add_list_parser(db, subparsers)
-    _add_playlist_parser(db, subparsers)
-    _add_scan_parser(db, subparsers)
-    _add_version_parser(db, subparsers)
-    _add_reset_parser(db, subparsers)
-    _add_favorite_parser(db, subparsers)
-    _add_import_parser(db, subparsers)
-    _add_search_parser(db, subparsers)
-
-    return parser
-
-
-def _add_list_parser(db: Database, subparsers) -> None:
-    list_parser = subparsers.add_parser(
-        "list", help="list different parts of your library"
-    )
-    list_subparsers = list_parser.add_subparsers(
-        dest="list_type", required=True, help="what to list"
-    )
-
-    # tracks
-    tracks = list_subparsers.add_parser("tracks", help="list all tracks in the library")
-    tracks.add_argument(
-        "-f", "--favorited", action="store_true", help="list only your favorite tracks"
-    )
-    tracks.set_defaults(
-        func=lambda args: cmd_list_tracks(db, only_favorited=args.favorited)
-    )
-
-    # albums
-    list_subparsers.add_parser(
-        "albums", help="list all albums in the library"
-    ).set_defaults(func=lambda _: cmd_list_albums(db))
-
-    # artists
-    artists = list_subparsers.add_parser(
-        "artists", help="list all artists in the library"
-    )
-    artists.add_argument(
-        "-a", "--albums", action="store_true", help="list only album artists"
-    )
-    artists.set_defaults(func=lambda args: cmd_list_artists(db, args.albums))
-
-    # playlists
-    list_subparsers.add_parser(
-        "playlists", help="list all playlists in the library"
-    ).set_defaults(func=lambda _: cmd_list_playlists(db))
-
-    playlist = list_subparsers.add_parser(
-        "playlist", help="list all tracks in a playlist"
-    )
-    playlist.add_argument(
-        "term",
-        help=(
-            "the name of the playlist you are searching for."
-            "supports prefixes (id:, title:)"
-        ),
-    )
-    playlist.set_defaults(func=lambda args: cmd_list_playlist(db, args.term))
-
-
-def _add_playlist_parser(db: Database, subparsers) -> None:
-    playlist_parser = subparsers.add_parser(
-        "playlist",
-        help="crud operations for playlists",
-    )
-    playlist_subparsers = playlist_parser.add_subparsers(
-        dest="action", required=True, help="operation"
-    )
-
-    create = playlist_subparsers.add_parser("create", help="create a new playlist")
-    create.add_argument("title", help="title of playlist")
-    create.add_argument("-d", "--description", help="description of the playlist")
-    create.set_defaults(
-        func=lambda args: cmd_playlist_create(db, args.title, args.description)
-    )
-
-    append = playlist_subparsers.add_parser(
-        "append", help="append track(s) to a playlist"
-    )
-    append.add_argument("playlist_term", help=("the search term for the playlist"))
-    append.add_argument(
-        "tracks_term", help=("the search term for the tracks being appended")
-    )
-    append.set_defaults(
-        func=lambda args: cmd_playlist_append(db, args.playlist_term, args.tracks_term)
-    )
-
-    remove = playlist_subparsers.add_parser(
-        "remove", help="remove track(s) from a playlist"
-    )
-    remove.add_argument("playlist_term", help=("the search term for the playlist"))
-    remove.add_argument(
-        "tracks_term", help=("the search term for the tracks being remove.d")
-    )
-    remove.set_defaults(
-        func=lambda args: cmd_playlist_remove(db, args.playlist_term, args.tracks_term)
-    )
-
-    delete = playlist_subparsers.add_parser("delete", help="delete a playlist")
-    delete.add_argument("playlist_term", help=("the search term for the playlist"))
-    delete.set_defaults(func=lambda args: cmd_playlist_delete(db, args.playlist_term))
-
-    insert = playlist_subparsers.add_parser(
-        "insert", help="insert track(s) to a playlist"
-    )
-    insert.add_argument("playlist_term", help=("the search term for the playlist"))
-    insert.add_argument(
-        "tracks_term", help=("the search term for the tracks being inserted")
-    )
-    insert.add_argument(
-        "position", help=("the position where the track(s) should be inserted")
-    )
-    insert.set_defaults(
-        func=lambda args: cmd_playlist_insert(
-            db, args.playlist_term, args.tracks_term, args.position
+@track_parser.command("i", hidden=True)
+@track_parser.command("import", help="import media (alias: i)")
+def import_tracks(
+    path: Annotated[str, typer.Argument(help="directory/location of track(s)")],
+) -> None:
+    """Imports all files from the specified directory"""
+    for response in api.import_media(path):
+        mu_print(
+            "",
+            url=response["filename"],
+            count=(response["count"] + 1, response["total"]),
+            ok=response["ok"],
         )
+
+
+@list_parser.command("t", hidden=True)
+@list_parser.command("tracks", help="list all tracks (alias: t)")
+def list_tracks(
+    tracks_term: Annotated[
+        str | None, typer.Argument(help="tracks search term")
+    ] = None,
+    order_by: Annotated[
+        Literal[
+            "artist",
+            "album",
+            "date",
+            "dateadded",
+            "id",
+            "plays",
+            "genre",
+            "title",
+            "cancel",
+            "shuffle",
+            "reset",
+        ]
+        | None,
+        typer.Argument(help="order by a specified column"),
+    ] = None,
+    descending: Annotated[
+        bool, typer.Argument(help="return in descending order")
+    ] = False,
+    only_favorited: Annotated[
+        bool, typer.Option("--favorited", "-f", help="list only favorited")
+    ] = False,
+) -> None:
+    """Prints all tracks in the database"""
+    tracks: dict[int, Track] = api.get_tracks(
+        tracks_term,
+        order_by=order_by,
+        descending=descending,
+        only_favorited=only_favorited,
     )
+    mu_print_tracks(tracks)
 
 
-def _add_scan_parser(db: Database, subparsers) -> None:
-    subparsers.add_parser(
-        "scan", help="imports all files in Source folder"
-    ).set_defaults(func=lambda _: cmd_scan(db))
+@list_parser.command("al", hidden=True)
+@list_parser.command("albums", help="list all albums (alias: al)")
+def list_albums(
+    tracks_term: Annotated[
+        str | None, typer.Argument(help="tracks search term")
+    ] = None,
+) -> None:
+    """Prints all albums in the database"""
+    albums = api.get_albums(tracks_term)
+    mu_print_albums(albums)
 
 
-def _add_version_parser(db: Database, subparsers) -> None:
-    subparsers.add_parser("version", help="get current version").set_defaults(
-        func=lambda _: cmd_version(db)
-    )
+@list_parser.command("ar", hidden=True)
+@list_parser.command("artists", help="list all artists (alias: ar)")
+def list_artists(
+    tracks_term: Annotated[
+        str | None, typer.Argument(help="tracks search term")
+    ] = None,
+    only_albumartists: Annotated[
+        bool, typer.Option("--albumartists", "-a", help="list only album artists")
+    ] = False,
+) -> None:
+    """Prints all the artists in the database"""
+    artists = api.get_artists(tracks_term, only_albumartists=only_albumartists)
+    mu_print_artists(artists)
 
 
-def _add_reset_parser(db: Database, subparsers) -> None:
-    reset = subparsers.add_parser(
-        "reset", help="reset the internal database (keeps songs)"
-    )
-    reset.add_argument(
-        "-y",
-        "--skipconfirmation",
-        action="store_true",
-        help="skip confirmation and reset",
-    )
-    reset.set_defaults(
-        func=lambda args: cmd_reset(db, skip_confirmation=args.skipconfirmation)
-    )
+@list_parser.command("p", hidden=True)
+@list_parser.command("playlists", help="list all playlists (alias: p)")
+def list_playlists(
+    playlists_term: Annotated[
+        str | None, typer.Argument(help="playlists search term")
+    ] = None,
+) -> None:
+    """Prints all the playlists in the database"""
+    playlists = api.get_playlists(playlists_term)
+    mu_print_playlists(playlists)
 
 
-def _add_favorite_parser(db: Database, subparsers) -> None:
-    favorite = subparsers.add_parser("favorite", help="favorite or unfavorite track(s)")
-    favorite.add_argument(
-        "term",
-        help="the name of the track you wish to favorite (use id: to select by id)",
-    )
-    favorite.set_defaults(func=lambda args: cmd_favorite(db, args.term))
+@list_parser.command("pt", hidden=True)
+@list_parser.command("playlist", help="list a playlist's tracks (alias: pt)")
+def list_playlist_tracks(
+    playlists_term: Annotated[str, typer.Argument(help="playlists search term")],
+) -> None:
+    try:
+        playlists: dict[int, Playlist] = api.get_playlists(playlists_term)
+        mu_print_playlist_tracks(playlists)
+    except ValueError as e:
+        mu_print(str(e), ok=False)
 
 
-def _add_import_parser(db: Database, subparsers) -> None:
-    imp = subparsers.add_parser("import", help="import individual files")
-    imp.add_argument(
-        "-i", "--itunes", help="import from a itunes xml export", action="store_true"
-    )
-    imp.add_argument("filepath", help="path to the file(s) being imported")
-    imp.set_defaults(func=lambda args: cmd_import(db, args.filepath, args.itunes))
+@playlist_parser.command("a", hidden=True)
+@playlist_parser.command("append", help="append track(s) into playlist(s) (alias: a)")
+def playlist_append(
+    playlists_term: Annotated[str, typer.Argument(help="playlists search term")],
+    tracks_term: Annotated[str, typer.Argument(help="tracks search term")],
+) -> None:
+    playlists = api.append_playlists(playlists_term, tracks_term)
+    mu_print_playlists(playlists)
 
 
-def _add_search_parser(db: Database, subparsers) -> None:
-    search = subparsers.add_parser("search", help="search the library")
-    search.add_argument(
-        "term",
-        help=(
-            "the name of the item(s) you are searching for.prefixes (id:, album:, etc)"
-        ),
-    )
-    search.set_defaults(func=lambda args: cmd_search(db, args.term))
+@playlist_parser.command("c", hidden=True)
+@playlist_parser.command("create", help="create a new playlist (alias: c)")
+def playlist_create(
+    title: Annotated[str, typer.Argument(help="name of playlist")],
+    description: Annotated[str, typer.Argument(help="description of playlist")] = "",
+) -> None:
+    playlist = api.create_playlist(title, description)
+    mu_print("", playlist=playlist)
+
+
+@playlist_parser.command("d", hidden=True)
+@playlist_parser.command("delete", help="delete a playlist (alias: d)")
+def playlist_delete(
+    playlists_term: Annotated[str, typer.Argument(help="playlist search term")],
+) -> None:
+    response: dict[int, tuple[Playlist, bool]] = api.delete_playlists(playlists_term)
+    mu_print_playlist_deletion(response)
+
+
+@playlist_parser.command("i", hidden=True)
+@playlist_parser.command(
+    "insert", help="insert track(s) into playlist(s) at a specified position (alias: i)"
+)
+def playlist_insert(
+    playlists_term: Annotated[str, typer.Argument(help="playlist search term")],
+    tracks_term: Annotated[str, typer.Argument(help="tracks search term")],
+    position: Annotated[int, typer.Argument(help="position in playlist")],
+) -> None:
+    playlists = api.insert_into_playlist(playlists_term, tracks_term, position)
+    mu_print_playlists(playlists)
+
+
+@playlist_parser.command("rm", hidden=True)
+@playlist_parser.command("remove", help="remove track(s) from playlist(s) (alias: rm)")
+def playlist_remove(
+    playlists_term: Annotated[str, typer.Argument(help="playlist search term")],
+    tracks_term: Annotated[str, typer.Argument(help="tracks search term")],
+) -> None:
+    playlists = api.remove_from_playlist(playlists_term, tracks_term)
+    mu_print_playlists(playlists)
 
 
 def main():
+    global api
     try:
-        db = Database()
-        args = build_parser(db).parse_args()
-        args.func(args)
-    except SchemaError as e:
-        Interface.print_incorrect_schema(e.expected, e.found)
+        api = Api()
+        parser()
+    except ValueError as e:
+        mu_print(str(e), ok=False)
 
 
 if __name__ == "__main__":

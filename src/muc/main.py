@@ -7,35 +7,12 @@
 
 """
 
-import argparse
-
-from muc.client.client import Client
-
-
-def start_client_tui():
-    client = Client()
-    client.run()
+from muc.client import Client
 
 
 def main():
-
-    parser = argparse.ArgumentParser(
-        prog="mμc",
-        description="a tui music player for mu",
-        epilog="""
-            Created and maintained by Brody King.
-            You can find this project at https://github.com/brodyking/mu
-        """,
-    )
-
-    parser.add_argument("action", nargs="?", choices=["tui"], default="tui")
-
-    args = parser.parse_args()
-
-    actions = {"tui": start_client_tui}
-
-    if args.action in actions:
-        actions[args.action]()
+    client = Client()
+    client.run()
 
 
 if __name__ == "__main__":

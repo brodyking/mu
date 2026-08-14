@@ -1,0 +1,220 @@
+/*
+_   _
+| | | | muc client
+| |_| | (c) 2026 all rights reserved
+| ._,_| https://github.com/brodyking/mu
+|_|
+
+*/
+
+/*
+ * Tabs
+ */
+
+Tabs {
+ height:1;
+ background: $panel;
+}
+Tab.-active {
+ background: $primary;
+ color: $text 
+}
+Tabs > Underline {
+ display: none;
+}
+TabPane {
+ height: 1fr;
+
+}
+Underline > .underline--bar {
+ color: transparent;
+ background: transparent;
+}
+Tabs:focus .underline--bar {
+ background: transparent;
+}
+
+/*
+ * Data Tables
+ */
+
+VimDataTable {
+ width: auto;
+ padding: 0;
+ margin: 0;
+}
+
+TracksDataTable,
+AlbumsDataTable,
+ArtistsDataTable,
+QueueDataTable {
+ width: 1fr;
+ height: 1fr;
+}
+TracksDataTable Input,
+AlbumsDataTable Input,
+ArtistsDataTable Input,
+PlaylistsSplit Input,
+PlaylistsSplit Input,
+QueueDataTable Input {
+  width: 1fr;
+}
+TracksDataTable VimDataTable,
+AlbumsDataTable VimDataTable,
+ArtistsDataTable VimDataTable,
+PlaylistsDataTable VimDataTable,
+PlaylistTracksDataTable VimDataTable,
+QueueDataTable VimDataTable {
+  width: 1fr;
+  height: 1fr;
+}
+
+
+
+
+
+PlaylistsSplit PlaylistsDataTable,
+PlaylistsSplit PlaylistTracksDataTable {
+  height: 100%;
+  overflow: hidden hidden;
+}
+PlaylistsSplit PlaylistsDataTable {
+  max-width: 30;
+}
+PlaylistsSplit PlaylistTracksDataTable {
+  width: 1fr;
+}
+
+/*
+ * Popups
+ */
+
+InspectRowPopup,SortTracksPopup,AddToPopup, AddToPlaylistPopup,RemoveTrackFromPlaylistPopup  {
+ align: center middle;
+ background: transparent;
+}
+AddToPlaylistPopup Input {
+  width: 1fr;
+  height: 1;
+}
+RemoveTrackFromPlaylistPopup > Vertical {
+  width: auto;
+  border: heavy $primary;
+  max-height: 4;
+  max-width: 45;
+}
+RemoveTrackFromPlaylistPopup  Label{
+  text-align: center;
+}
+InspectRowPopup > VimDataTable, AddToPlaylistPopup > PlaylistsDataTable{
+ min-width: 50;
+ max-width: 70;
+ height: auto;
+ max-height: 30;
+ border: heavy $primary;
+ padding: 0 0;
+ align: center middle;
+ overflow:hidden;
+}
+SortTracksPopup > VimDataTable {
+ width: 35;
+ height: auto;
+ border: heavy $primary;
+ padding: 0 0;
+ align: center middle;
+ overflow:hidden;
+ }
+AddToPopup > VimDataTable {
+ width: 30;
+ height: auto;
+ border: heavy $primary;
+ padding: 0 0;
+ align: center middle;
+ overflow:hidden;
+}
+
+/*
+ * Notifications
+ */
+
+ToastRack {
+ dock: top;
+ align: right top;
+/* was 'left top' */
+ margin: 0;
+ overflow-y: hidden;
+ margin-top: 2;
+/* removes the reserved scrollbar column */
+}
+Toast {
+ padding: 0;
+ margin: 0;
+ width: 30;
+ background: $background;
+}
+
+/*
+ * NowPlaying
+ */
+
+NowPlaying {
+ height:4;
+ border: double $panel;
+ border-title-color: $secondary;
+  border-title-align: right;
+ background: $surface;
+ padding: 0 1 0 1
+}
+NowPlaying #now-playing-volume {
+  width: 25%;
+}
+NowPlaying #now-playing-progress {
+  width: 1fr;
+}
+NowPlaying ProgressBar {
+  width: 1fr;
+}
+NowPlaying ProgressBar Label {
+  width: auto;
+}
+NowPlaying Bar {
+  width: 1fr;
+  height: 1;
+  margin: 0 1 0 1;
+}
+NowPlaying Bar > .bar--bar {
+  color: $primary;
+  background: $panel;
+}
+
+/*
+ * Footer
+ */
+
+Footer {
+  height: 1;
+  /* dock: bottom; */
+  background: $panel;
+  color: $text;
+  layout: horizontal;
+}
+Footer #version {
+  width: auto;
+  height: 1;
+  padding: 0 1;
+  background: $primary;
+  color: $background;
+}
+Footer #footer-left{
+  width: 1fr;
+  height: 1;
+  padding: 0 1;
+}
+Footer #footer-right {
+  dock: right;
+  width: auto;
+  height: 1;
+  padding: 0 1;
+  background: $primary;
+  color: $surface;
+}

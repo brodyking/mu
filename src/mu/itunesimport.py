@@ -7,128 +7,282 @@
 
 """
 
-import sqlite3
 import xml.etree.ElementTree as ET
 from collections.abc import Iterator
 from pathlib import Path
 from urllib.parse import unquote, urlparse
 
-from mu.database import Database
-from mu.playlist import Playlist
-from mu.track import Track
-from mu.util import Interface
+from mu.api import Api
+from mu.file import copy_file_to_source
+from mu.models import Playlist
+
+# iTunes / Music generates these automatically; they are not user playlists.
+_SYSTEM_PLAYLIST_NAMES = {
+    "Library",
+    "Downloaded",
+    "Music",
+    "Movies",
+    "TV Shows",
+    "Podcasts",
+    "Audiobooks",
+    "Books",
+    "Genius",
+    "Purchased",
+    "Home Videos",
+    "Voice Memos",
+}
 
 
 class ITunesImport:
-    def __init__(self, db: Database, filepath: Path | str):
-        self.db, self.filepath = db, filepath
-        self.ids = dict()  # iTunes track id -> mu track id
-        self.tree = ET.parse(self.filepath)
-        self.root = self.tree.getroot()
+    """
+    Imports tracks and playlists from an iTunes / Music `Library.xml` into mu.
+
+    Usage:
+        for record in ITunesImport(api, "Library.xml").run():
+            ...  # record is a progress dict; let the CLI print it
+
+    Tracks are imported first (which populates the iTunes-id -> mu-id map),
+    then playlists, so playlist membership can be resolved.
+
+    Writes are batched: track upserts commit once per `batch_size`, and each
+    playlist's membership is written in a single transaction — one fsync per
+    batch/playlist instead of one per track.
+    """
+
+    def __init__(self, api: Api, filepath: Path | str) -> None:
+        self.api = api
+        self.filepath = Path(filepath)
+        self.ids: dict[int, int] = {}  # iTunes "Track ID" -> mu track id
+
+        root = ET.parse(self.filepath).getroot()
+        # The library is a single top-level <dict>; parse it once and reuse.
+        self.library: dict = self.parse_plist_dict(root[0])
+
+    # ------------------------------------------------------------------ #
+    # plist parsing
+    # ------------------------------------------------------------------ #
 
     @staticmethod
-    def parse_plist_dict(dict_element):
-        """Parse a plist <dict> element into a Python dict."""
-        result = {}
+    def parse_plist_dict(dict_element) -> dict:
+        """Parse a plist <dict> element (alternating key/value children)."""
+        result: dict = {}
         children = list(dict_element)
         for i in range(0, len(children) - 1, 2):
             key = children[i].text
-            value_elem = children[i + 1]
-            result[key] = ITunesImport.parse_plist_value(value_elem)
+            result[key] = ITunesImport.parse_plist_value(children[i + 1])
         return result
 
     @staticmethod
     def parse_plist_value(elem):
-        """Parse a plist value element into a Python type."""
+        """Parse a plist value element into the matching Python type."""
         tag = elem.tag
         if tag == "string":
             return elem.text
-        elif tag == "integer":
+        if tag == "integer":
             return int(elem.text)
-        elif tag == "real":
+        if tag == "real":
             return float(elem.text)
-        elif tag == "true":
+        if tag == "true":
             return True
-        elif tag == "false":
+        if tag == "false":
             return False
-        elif tag == "date":
-            return elem.text  # keep as string, or parse with datetime if needed
-        elif tag == "dict":
+        if tag == "date":
+            return elem.text  # ISO-8601 string; stored as-is in dateadded (TEXT)
+        if tag == "dict":
             return ITunesImport.parse_plist_dict(elem)
-        elif tag == "array":
+        if tag == "array":
             return [ITunesImport.parse_plist_value(child) for child in elem]
-        else:
-            return elem.text
+        return elem.text
 
     @staticmethod
-    def plist_url_to_path(url):
+    def plist_url_to_path(url: str) -> Path | None:
+        """A file:// Location -> local Path. Non-file (remote) tracks -> None."""
         parsed = urlparse(url)
+        if parsed.scheme != "file":
+            return None
         return Path(unquote(parsed.path))
 
-    def parse_track(self, plist_track) -> dict:
-        path = ITunesImport.plist_url_to_path(plist_track["Location"])
-        metadata = self.db.copy_file(path)
-        return metadata
+    # tracks
 
-    def parse_tracks(self) -> Iterator[tuple[dict, dict]]:
+    def import_tracks(self, batch_size: int = 100) -> Iterator[dict]:
         """
-        Yields a tuple of the plist track and the files metadata
+        Copy + upsert every importable track, yielding one record each.
+
+        File I/O (copy + metadata read) happens outside any transaction; the
+        DB writes for a whole batch are committed together.
         """
-        top_dict = self.parse_plist_dict(self.root[0])
-        tracks = top_dict.get("Tracks", {})
+        tracks: dict = self.library.get("Tracks", {})
+        total = len(tracks)
+        # each entry: (record, itunes_track, meta|None)
+        batch: list[tuple[dict, dict, dict | None]] = []
 
-        for plist_id, plist_track in tracks.items():
-            yield (plist_track, self.parse_track(plist_track))
+        def flush() -> list[dict]:
+            if not batch:
+                return []
+            try:
+                with self.api.db.write() as conn:
+                    for record, itr, meta in batch:
+                        if meta is None:
+                            continue  # file failed to read; stays a failure record
+                        self._write_track(conn, record, itr, meta)
+            except Exception as exc:
+                for record, _, meta in batch:
+                    if meta is not None:
+                        record["ok"] = False
+                        record["error"] = f"write failed: {exc}"
+                        record["track"] = None
+            records = [rec for rec, _, _ in batch]
+            batch.clear()
+            return records
 
-    def parse_playlists(self) -> Iterator[dict]:
-        """
-        Yields a dict of the plist playlist
-        """
-        top_dict = self.parse_plist_dict(self.root[0])
-        playlists = top_dict.get("Playlists", {})
-        for playlist in playlists:
-            mu_ids = []
-            if "Playlist Items" in playlist.keys():
-                for plist_track in playlist["Playlist Items"]:
-                    plist_id = plist_track["Track ID"]
-                    mu_ids.append(self.ids[plist_id])
-            yield {
-                "title": playlist["Name"],
-                "description": playlist["Description"],
-                "tracks": mu_ids,
-            }
+        for count, itr in enumerate(tracks.values(), 1):
+            record = self._blank_record("track", count, total, itr)
+            meta: dict | None = None
+            try:
+                meta = self._read_track(itr)  # slow part, kept out of the txn
+            except (ValueError, FileNotFoundError, OSError) as exc:
+                record["ok"] = False
+                record["error"] = str(exc)
+            batch.append((record, itr, meta))
+            if len(batch) >= batch_size:
+                yield from flush()
+        yield from flush()
 
-    def upsert_tracks(self, connection) -> Iterator[Track]:
-        for plist_track, metadata in self.parse_tracks():
-            keys = plist_track.keys()
-            if "Date Added" in keys:
-                metadata["dateadded"] = plist_track["Date Added"]
-            track = self.db.upsert_track(connection, metadata)
-            if "Play Count" in keys:
-                track = self.db.increment_play_count(
-                    f"id:{track.id}", plist_track["Play Count"], set=True
-                )[0]
-            if "Favorited" in keys or "Loved" in keys:
-                track = self.db.favorite(f"id:{track.id}")[0]
-            self.ids[plist_track["Track ID"]] = track.id
-            yield track
+    def _read_track(self, itunes_track: dict) -> dict:
+        """Resolve the file, copy it into source, and return its metadata."""
+        if itunes_track.get("Track ID") is None:
+            raise ValueError("track has no Track ID")
 
-    def upsert_playlists(self, connection) -> Iterator[Playlist]:
-        for playlist in self.parse_playlists():
-            mu_playlist = self.db.create_playlist(
-                playlist["title"], description=playlist["description"]
-            )
-            if mu_playlist:
-                statement = ""
-                for mu_track_id in playlist["tracks"]:
-                    statement += f"id:{mu_track_id}+"
-                if statement:
-                    self.db.append_playlist(f"id:{mu_playlist.id}", statement[:-1])
-                yield self.db.get_playlist(f"id:{mu_playlist.id}")
+        location = itunes_track.get("Location")
+        if not location:
+            raise ValueError("track has no file location")
+        src = self.plist_url_to_path(location)
+        if src is None:
+            raise ValueError("track is not a local file")
+        if not src.exists():
+            raise FileNotFoundError(f"missing file: {src}")
 
-    def start(self) -> None:
-        with sqlite3.connect(str(self.db.db_path)) as connection:
-            for track in self.upsert_tracks(connection):
-                Interface.print("iTunes Import >> Upsert Track ", track=track)
-            for playlist in self.upsert_playlists(connection):
-                Interface.print("iTunes Import >> Upsert Playlist ", playlist=playlist)
+        # One metadata read + copy into the source tree. Raises ValueError on a
+        # non-MP3 or unreadable file (mu is MP3-only).
+        return copy_file_to_source(
+            src, self.api.db.source_path, self.api.db.albumart_path
+        )
+
+    def _write_track(self, conn, record: dict, itunes_track: dict, meta: dict) -> None:
+        """Upsert one track and apply the iTunes-only fields, on `conn`."""
+        track = self.api._upsert_track(conn, meta)
+
+        dateadded = itunes_track.get("Date Added")
+        plays = itunes_track.get("Play Count")
+        loved = bool(itunes_track.get("Loved") or itunes_track.get("Favorited"))
+
+        # dateadded, plays, and a *set* (not toggle) favorite are the three
+        # iTunes fields the public Api can't express yet. COALESCE keeps existing
+        # values when iTunes omits a field and makes re-imports idempotent.
+        # Promote to an Api method (e.g. set_track_stats) to get this out of the
+        # importer.
+        conn.execute(
+            """
+            UPDATE tracks SET
+                dateadded = COALESCE(?, dateadded),
+                plays     = COALESCE(?, plays),
+                favorite  = COALESCE(?, favorite)
+            WHERE id = ?
+            """,
+            (dateadded, plays, 1 if loved else None, track.id),
+        )
+
+        # Reflect the applied fields on the returned object (no extra query).
+        if dateadded is not None:
+            track.dateadded = dateadded
+        if plays is not None:
+            track.plays = int(plays)
+        if loved:
+            track.favorite = True
+
+        self.ids[itunes_track["Track ID"]] = track.id
+        record["track"] = track
+
+    # ------------------------------------------------------------------ #
+    # playlists
+    # ------------------------------------------------------------------ #
+
+    def import_playlists(self) -> Iterator[dict]:
+        """Recreate user playlists (order preserved), yielding one record each."""
+        playlists = [p for p in self.library.get("Playlists", []) if self._wanted(p)]
+        total = len(playlists)
+        for count, itunes_pl in enumerate(playlists, 1):
+            record = self._blank_record("playlist", count, total, itunes_pl)
+            try:
+                record["playlist"] = self._ingest_playlist(itunes_pl)
+            except (ValueError, KeyError) as exc:
+                record["ok"] = False
+                record["error"] = str(exc)
+            yield record
+
+    @staticmethod
+    def _wanted(itunes_pl: dict) -> bool:
+        """Skip the master library, system playlists, and empty/folder ones."""
+        if itunes_pl.get("Master") or "Distinguished Kind" in itunes_pl:
+            return False
+        if itunes_pl.get("Name") in _SYSTEM_PLAYLIST_NAMES:
+            return False
+        return bool(itunes_pl.get("Playlist Items"))
+
+    def _ingest_playlist(self, itunes_pl: dict) -> Playlist:
+        title = itunes_pl["Name"]
+        description = itunes_pl.get("Description") or ""
+        playlist = self.api.create_playlist(title, description)
+        pid = playlist.id
+
+        # Map iTunes item order -> mu ids, dropping tracks we didn't import
+        # (non-MP3s, missing files, remote tracks).
+        ordered_tids = [
+            self.ids[item["Track ID"]]
+            for item in itunes_pl.get("Playlist Items", [])
+            if item.get("Track ID") in self.ids
+        ]
+
+        # Insert membership in ONE transaction, assigning positions in iTunes
+        # order. This is the same logic append_playlists uses internally; calling
+        # append_playlists once per track instead re-materialised the whole
+        # playlist on every call (O(n^2)) and committed per track. Promote to an
+        # Api.append_playlist_ordered(pid, tids) to get this out of the importer.
+        with self.api.db.write() as conn:
+            pos = conn.execute(
+                "SELECT COALESCE(MAX(position), -1) + 1 FROM playlist_tracks "
+                "WHERE playlist_id = ?",
+                (pid,),
+            ).fetchone()[0]
+            for tid in ordered_tids:
+                cur = conn.execute(
+                    "INSERT INTO playlist_tracks (playlist_id, track_id, position) "
+                    "VALUES (?, ?, ?) ON CONFLICT DO NOTHING",
+                    (pid, tid, pos),
+                )
+                if cur.rowcount:
+                    pos += 1
+
+        return self.api.get_playlists(f"id={pid}")[pid]
+
+    # ------------------------------------------------------------------ #
+    # driver
+    # ------------------------------------------------------------------ #
+
+    def run(self, batch_size: int = 100) -> Iterator[dict]:
+        """Import tracks (builds the id map), then playlists."""
+        yield from self.import_tracks(batch_size)
+        yield from self.import_playlists()
+
+    @staticmethod
+    def _blank_record(kind: str, count: int, total: int, source: dict) -> dict:
+        return {
+            "kind": kind,
+            "ok": True,
+            "count": count,
+            "total": total,
+            "name": source.get("Name") or "(unknown)",
+            "error": None,
+            "track": None,
+            "playlist": None,
+        }
