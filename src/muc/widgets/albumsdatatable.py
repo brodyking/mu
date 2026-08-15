@@ -20,9 +20,10 @@ from muc.widgets.vimdatatable import VimDataTable
 
 class AlbumsDataTable(Static):
     class AlbumClicked(Message):
-        def __init__(self, album: Album, *args, **kwargs) -> None:
+        def __init__(self, title: str, albumartist: str, *args, **kwargs) -> None:
             super().__init__(*args, **kwargs)
-            self.album = album
+            self.title = title
+            self.albumartist = albumartist
 
     BINDINGS = [
         ("/", "focus_search", "Search"),
@@ -55,12 +56,7 @@ class AlbumsDataTable(Static):
     @on(VimDataTable.RowSelected)
     def album_clicked(self, event: VimDataTable.RowSelected) -> None:
         row = self.main_table.export_row_as_dict(event.cursor_row)
-        response = list(self.api.get_albums(f"album={row['album']}").values())
-        if len(response) > 0:
-            album = response[0]
-            self.post_message(self.AlbumClicked(album))
-        else:
-            self.notify("Album not found", severity="error")
+        self.post_message(self.AlbumClicked(row["album"], row["albumartist"]))
 
     def redraw_rows(self) -> None:
         self.main_table.clear()
@@ -81,7 +77,7 @@ class AlbumsDataTable(Static):
         self.full_rows = []
 
         if albums_term and ":" not in albums_term and "=" not in albums_term:
-            albums_term = f"albumartist:{albums_term}+album:{albums_term}"
+            albums_term = f'albumartist:"{albums_term}",album:"{albums_term}"'
 
         try:
             albums: dict[tuple, Album] = self.api.get_albums(
@@ -101,7 +97,7 @@ class AlbumsDataTable(Static):
 
         # Add the maximum width to your column metadata definition
         columns = [
-            ("Album", "album", 15),
+            ("Album", "album", 25),
             ("Album Artist", "albumartist", 15),
             ("Tracks", "tracks", 10),
         ]

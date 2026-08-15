@@ -20,9 +20,9 @@ from muc.widgets.vimdatatable import VimDataTable
 
 class ArtistsDataTable(Static):
     class ArtistClicked(Message):
-        def __init__(self, artist: Artist, *args, **kwargs) -> None:
+        def __init__(self, name: str, *args, **kwargs) -> None:
             super().__init__(*args, **kwargs)
-            self.artist = artist
+            self.name = name
 
     BINDINGS = [
         ("/", "focus_search", "Search"),
@@ -55,12 +55,7 @@ class ArtistsDataTable(Static):
     @on(VimDataTable.RowSelected)
     def artist_clicked(self, event: VimDataTable.RowSelected) -> None:
         row = self.main_table.export_row_as_dict(event.cursor_row)
-        response = list(self.api.get_artists(f"artist={row['artist']}").values())
-        if len(response) > 0:
-            artist = response[0]
-            self.post_message(self.ArtistClicked(artist))
-        else:
-            self.notify("Artist not found", severity="error")
+        self.post_message(self.ArtistClicked(row["artist"]))
 
     def redraw_rows(self) -> None:
         self.main_table.clear()
@@ -80,7 +75,7 @@ class ArtistsDataTable(Static):
         self.full_rows = []
 
         if artists_term and ":" not in artists_term and "=" not in artists_term:
-            artists_term = f"albumartist:{artists_term}+album:{artists_term}"
+            artists_term = f'albumartist:"{artists_term}",album:"{artists_term}"'
 
         try:
             artists: dict[str, Artist] = self.api.get_artists(
@@ -100,8 +95,8 @@ class ArtistsDataTable(Static):
 
         # Add the maximum width to your column metadata definition
         columns = [
-            ("Artist", "artist", 15),
-            ("Tracks", "tracks", 10),
+            ("Artist", "artist", 25),
+            ("Tracks", "tracks", 15),
         ]
 
         # Use the max_width argument in add_column

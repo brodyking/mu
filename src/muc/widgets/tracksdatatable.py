@@ -349,10 +349,10 @@ class TracksDataTable(Static):
 
         if tracks_term and ":" not in tracks_term and "=" not in tracks_term:
             tracks_term = (
-                f"artist:{tracks_term}+"
-                f"albumartist:{tracks_term}+"
-                f"album:{tracks_term}+"
-                f"title:{tracks_term}"
+                f'artist:"{tracks_term}",'
+                f'albumartist:"{tracks_term}",'
+                f'album:"{tracks_term}",'
+                f'title:"{tracks_term}"'
             )
 
         try:

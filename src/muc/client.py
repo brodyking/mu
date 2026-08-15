@@ -166,7 +166,7 @@ class Client(App):
         Message sent from AlbumsDataTable
         """
         self.tracks_data_table.search.value = (
-            f"album={event.album.title}&albumartist={event.album.albumartist}"
+            f'album="{event.title}"&albumartist="{event.albumartist}"'
         )
         self.action_goto_tab(2)
 
@@ -176,7 +176,7 @@ class Client(App):
         Searches for an album's tracks in the tracks tab, then switches tab.
         Message sent from AlbumsDataTable
         """
-        self.albums_data_table.search.value = f"albumartist={event.artist.name}"
+        self.albums_data_table.search.value = f'albumartist="{event.name}"'
         self.action_goto_tab(3)
 
     @on(TracksDataTable.FavoriteTrack)
