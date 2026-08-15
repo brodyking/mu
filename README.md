@@ -106,7 +106,6 @@ The two basic CLI commands that µ come with are `mu` and `muc` .
 ## µ Basic Commands
 
 Upon running `mu` for the first time, an output similar to this will be shown.
-
 ```
 Usage: mu [OPTIONS] COMMAND [ARGS]...
 
@@ -473,7 +472,7 @@ The four failure modes are as followed:
 | `"bogus=x"` | Unknown of empty search field. |
 | `"title=Track: One"` | Unknown of empty search field. |
 
-Pay attention to the last one, as the parser splits on the `:` before `=`, so a value containing a colon is misread as a column name. There is currently no way to escape it, so instead match a colon-free substring instead.
+Pay attention to the last one, as the parser splits on the `:` before `=`, so a value containing a colon is misread as a column name. To escape it, use double quotes around the value.
 
 ### Importing and Scanning
 `import_media()` copies files into `source/` and adds them to the database. 
