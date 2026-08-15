@@ -55,7 +55,7 @@ class AlbumsDataTable(Static):
     @on(VimDataTable.RowSelected)
     def album_clicked(self, event: VimDataTable.RowSelected) -> None:
         row = self.main_table.export_row_as_dict(event.cursor_row)
-        response = list(self.api.get_albums(f"album={row['album']}").values())
+        response = list(self.api.get_albums(f'album="{row["album"]}"').values())
         if len(response) > 0:
             album = response[0]
             self.post_message(self.AlbumClicked(album))
@@ -81,7 +81,7 @@ class AlbumsDataTable(Static):
         self.full_rows = []
 
         if albums_term and ":" not in albums_term and "=" not in albums_term:
-            albums_term = f"albumartist:{albums_term},album:{albums_term}"
+            albums_term = f'albumartist:"{albums_term}",album:"{albums_term}"'
 
         try:
             albums: dict[tuple, Album] = self.api.get_albums(

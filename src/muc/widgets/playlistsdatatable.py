@@ -80,7 +80,7 @@ class PlaylistsDataTable(Static):
         self.full_rows = []
 
         if playlists_term and ":" not in playlists_term and "=" not in playlists_term:
-            playlists_term = f"title:{playlists_term},description:{playlists_term}"
+            playlists_term = f'title:"{playlists_term}",description:"{playlists_term}"'
 
         try:
             playlists: dict[int, Playlist] = self.api.get_playlists(playlists_term)
