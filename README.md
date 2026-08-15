@@ -73,9 +73,9 @@ To install mu, use pip and point to this repo.
 pip install git+https://github.com/brodyking/mu.git
 ```
 
-To update mu, rerun the above command with the `upgrade` and `force-reinstall` flags.
+To update mu, reinstall with the `upgrade` and `force-reinstall` flags.
 
-```
+```bash
 pip install --upgrade --force-reinstall git+https://github.com/brodyking/mu.git
 ```
 
@@ -169,13 +169,13 @@ When selecting albums, tracks, playlists, etc, you have to query for them. This 
 
 If I want to find all the tracks by *Pink Floyd* , I can query by matching the artist column.
 
-```
+```python
 "artist=Pink Floyd"
 ```
 
 The `=` operand looks for an exact match. If this is undesired, use the `:` operand.
 
-```
+```python
 "artist:Pink"
 ```
 
@@ -183,19 +183,28 @@ The query above would return tracks by *Pink Floyd*, alongside all other tracks 
 
 And operations are done with the `&` operand.
 
-```
+```python
 "artist=Pink Floyd&album=The Dark Side Of The Moon"
 ```
 
 The query above would return only tracks by *Pink Floyd* in *The Dark Side Of The Moon* .
 
-Or operations are done with the `+` operand.
+Or operations are done with the `,` operand.
 
-```
-"artist=Pink Floyd+artist=David Gilmour"
+```python
+"artist=Pink Floyd,artist=David Gilmour"
 ```
 
 The above query would return all tracks by *Pink Floyd* and all tracks by *David Gilmour* .
+
+**Note: `,`, `=`, and `&` are reserved characters that are used when parsing. To get an exact match, wrap the value around quotation marks. Apostrophes will not work.**
+
+```python
+# This will cause an error
+'title=Sexy & Candy'
+# This will run successfully
+'title="Sex & Candy"
+```
 
 #### Available columns for tracks
 Searching for tracks, albums, and artists support these prefixes.
@@ -231,7 +240,7 @@ Searching for playlists supports these prefixes.
 
 To toggle the favorite status of a track, use the `track` subparser with the `favorite` (alias `f`) command and µ Query Syntax to select the song.
 
-```
+```bash
 mu track favorite "id=1"
 ```
 
@@ -241,7 +250,7 @@ This favorites the track with the id == 1.
 
 To remove a track, use the same subparser with the `remove` command (alias `rm` )
 
-```
+```bash
 mu track remove "id=1"
 ```
 
@@ -251,7 +260,7 @@ It may be important to note that removing a track doesn't delete it, it just get
 
 The `list` (alias `ls` ) subparser is used to list tracks, albums, artists, playlists, and playlists contents, alongside searching through them.
 
-```
+```bash
 mu list tracks <query>
 mu list albums <query>
 mu list artists <query>
@@ -261,7 +270,7 @@ mu list playlist <query>
 
 You can include a search query after these commands to filter through them. This is the most efficient way to search, as it is done at the SQL level.
 
-```
+```bash
 mu list albums "artist:Pink Floyd"
 ```
 
@@ -275,7 +284,7 @@ The `playlist` (alias `p` ) subparser is used to create, modify, and delete play
 
 You can create a playlist with the `create` (alias `c` ) command.
 
-```
+```bash
 mu playlist create "Workout"
 ```
 
