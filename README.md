@@ -1,6 +1,6 @@
+<h1 align="center">µ - your personal music library</h1>
 <div align="center">
-<h1>µ - your personal music library</h1>
-<br><img src="./.github/banner.png" height="220px"><br><br>
+<img src="./.github/banner.png" height="220px"><br><br>
 <p>
   μ (<code>mu</code>) is an opinionated, MacOS and Linux, mp3 only, music library management tool designed to be <b>backup friendly</b> and <b>programmable</b>. All music is stored in a hierarchical format, and the internal database is a simple SQLite file.</p>
 
