@@ -448,37 +448,77 @@ class Api:
 
     def _build_sql_where(self, term: str, table: str) -> tuple[str, tuple]:
         """
-        Converts mu search queries into SQL where statments.
+        Builds a WHERE sql statement from mu query syntax.
         Returns a tuple of the SQL string and a tuple of values.
         """
-        groups = []
-        values = []
 
         if table not in self.db.SEARCHABLE:
             raise ValueError(f"Cannot search table {table!r}.")
 
         columns: set[str] = self.db.SEARCHABLE[table]
 
-        for query in term.split("+"):
-            conditions = []
-            for filter in query.split("&"):
-                col, sep, value = filter.partition(":")
-                if not sep:
-                    col, sep, value = filter.partition("=")
-                if not sep:
-                    raise ValueError("Filter is missing a prefix (needs ':' or '=')")
+        def split_unquoted(s, delim):
+            parts, buf, in_quotes = [], [], False
+            for ch in s:
+                if ch == '"':
+                    in_quotes = not in_quotes
+                    buf.append(ch)
+                elif ch == delim and not in_quotes:
+                    parts.append("".join(buf))
+                    buf = []
+                else:
+                    buf.append(ch)
+            parts.append("".join(buf))
+            return parts
 
-                col, value = col.strip(), value.strip()
-                if col not in columns:
-                    raise ValueError("Unknown or empty search field.")
-                if not value:
-                    raise ValueError("Filter has no value.")
-                if sep == ":":
-                    conditions.append(f"{col} LIKE ? COLLATE NOCASE")
+        def partition_filter(s: str) -> tuple[str, str, str]:
+            col, operand, value = [], [], []
+            in_col, in_quote = True, False
+
+            for ch in s:
+                if in_col:
+                    if ch in [":", "="]:
+                        in_col = False
+                        operand.append(ch)
+                    else:
+                        col.append(ch)
+                    continue
+                if ch == '"':
+                    in_quote = not in_quote
+                    continue
+                value.append(ch)
+
+            column = "".join(col)
+
+            if in_quote:
+                raise ValueError("Unterminated quote in filter.")
+
+            if not column:
+                raise ValueError("No column provided.")
+
+            if column not in columns:
+                raise ValueError("Invalid column.")
+
+            if operand == []:
+                raise ValueError("Missing =/: from filter.")
+
+            if value == []:
+                raise ValueError("Value is empty")
+
+            return ("".join(col), "".join(operand), "".join(value))
+
+        groups = []
+        values = []
+        for query in split_unquoted(term, ","):
+            conditions = []
+            for filter in split_unquoted(query, "&"):
+                col, operand, value = partition_filter(filter.strip())
+                if operand == ":":
+                    conditions.append(f"( {col} LIKE ? COLLATE NOCASE )")
                     values.append(f"%{value}%")
                 else:
-                    conditions.append(f"{col} = ?")
-                    values.append(value)
+                    conditions.append(f"( {col} = ? )")
+                    values.append(f"{value}")
             groups.append("(" + " AND ".join(conditions) + ")")
 
         sql = " WHERE " + " OR ".join(groups)
