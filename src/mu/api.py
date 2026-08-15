@@ -457,7 +457,7 @@ class Api:
 
         columns: set[str] = self.db.SEARCHABLE[table]
 
-        def split_unquoted(s, delim):
+        def split_unquoted(s: str, delim: str):
             parts, buf, in_quotes = [], [], False
             for ch in s:
                 if ch == '"':
