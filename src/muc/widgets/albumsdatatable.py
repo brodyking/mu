@@ -81,7 +81,7 @@ class AlbumsDataTable(Static):
         self.full_rows = []
 
         if albums_term and ":" not in albums_term and "=" not in albums_term:
-            albums_term = f"albumartist:{albums_term}+album:{albums_term}"
+            albums_term = f"albumartist:{albums_term},album:{albums_term}"
 
         try:
             albums: dict[tuple, Album] = self.api.get_albums(
