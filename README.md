@@ -2,7 +2,7 @@
 <div align="center">
 <img src="./.github/banner.png" height="220px"><br><br>
 <p>
-  μ (<code>mu</code>) is an opinionated, MacOS and Linux, mp3 only, music library management tool designed to be <b>backup friendly</b> and <b>programmable</b>. All music is stored in a hierarchical format, and the internal database is a simple SQLite file.</p>
+  μ (<code>mu</code>) is an opinionated, cross platform, mp3 only, music library management tool designed to be <b>backup friendly</b> and <b>programmable</b>. All music is stored in a hierarchical format, and the internal database is a simple SQLite file.</p>
 
 <img src="./.github/screenshot.png" alt="Screenshot of muc" width="100%">
 
