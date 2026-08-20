@@ -133,6 +133,18 @@ AddToPopup > VimDataTable {
  overflow:hidden;
 }
 
+
+
+CmdLine Horizontal {
+  dock: bottom;
+  width: 1fr;
+  height:1;
+}
+
+CmdLine Label {
+  color: $accent;
+}
+
 /*
  * Notifications
  */

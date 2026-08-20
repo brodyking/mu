@@ -17,6 +17,7 @@ from mu.api import Api
 from muc.player import Player
 from muc.widgets.albumsdatatable import AlbumsDataTable
 from muc.widgets.artistsdatatable import ArtistsDataTable
+from muc.widgets.cmdline import CmdLine
 from muc.widgets.footer import Footer
 from muc.widgets.nowplaying import (
     NowPlaying,
@@ -50,6 +51,8 @@ class Client(App):
         ("R", "goto_tab(4)", "Artists"),
         ("P", "goto_tab(5)", "Playlists"),
         ("O", "goto_tab(6)", "Options"),
+        # Command line
+        (":", "open_cmdline()", "Command line"),
         # Media keys
         ("h", "player_prev", "Previous"),
         ("l", "player_next", "Next"),
@@ -149,6 +152,9 @@ class Client(App):
             return
         new_index = (current_index + offset) % len(self.TAB_IDS)
         self.action_goto_tab(new_index)
+
+    def action_open_cmdline(self) -> None:
+        self.push_screen(CmdLine())
 
     @on(NowPlaying.TrackChanged)
     def on_track_changed(self) -> None:
