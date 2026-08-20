@@ -139,7 +139,7 @@ def mu_print(
     else:
         searchresult = ""
 
-    typer.echo(f"{prefix}{content}{link}{counter}{searchresult}")
+    typer.echo(f"{prefix}{content}{link}{counter}{searchresult}", color=True)
 
 
 def mu_print_playlists(playlists: dict[int, Playlist]) -> None:
