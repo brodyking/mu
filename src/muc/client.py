@@ -203,7 +203,7 @@ class Client(App):
                 else f"Track #{tid} was unfavorited."
             )
         except Exception:
-            self.app.notify("Couldn't favorite track", severity="error")
+            self.notify("Couldn't favorite track", severity="error")
 
     @on(AddToPopup.QueueTrack)
     def queue_track(self, event: AddToPopup.QueueTrack) -> None:
@@ -213,12 +213,14 @@ class Client(App):
                     event.tid,
                 ]
             )
+            self.notify(f"Queued track #{event.tid} next.")
         else:
             self.player.queue.queue_tracks_last(
                 [
                     event.tid,
                 ]
             )
+            self.notify(f"Queued track #{event.tid} last.")
         if self.focused == self.queue_data_table.main_table:
             self.queue_data_table.on_show()
 
