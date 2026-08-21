@@ -20,7 +20,6 @@ from textual.widgets import DataTable, Input, Static
 
 from mu.api import Api
 from mu.models import Track
-from muc.player import Player
 from muc.widgets.playlistsdatatable import PlaylistsDataTable
 from muc.widgets.vimdatatable import VimDataTable
 
@@ -173,6 +172,12 @@ class TrackOptionsPopup(ModalScreen[str]):
 
 
 class TracksDataTable(Static):
+    class TrackClicked(Message):
+        def __init__(self, tids: list[int], pos: int, *args, **kwargs) -> None:
+            super().__init__(*args, **kwargs)
+            self.tids = tids
+            self.pos = pos
+
     class FavoriteTrack(Message):
         def __init__(self, tid: int, *args, **kwargs) -> None:
             super().__init__(*args, **kwargs)
@@ -207,14 +212,12 @@ class TracksDataTable(Static):
     def __init__(
         self,
         api: Api,
-        player: Player,
         show_filter: bool = True,
         only_favorites: bool = False,
     ):
         super().__init__()
 
         self.api = api
-        self.player: Player = player
         self.only_favorites = only_favorites
 
         self.full_rows: list = []
@@ -271,7 +274,7 @@ class TracksDataTable(Static):
     @on(VimDataTable.RowSelected)
     def start_queue(self, event: VimDataTable.RowSelected) -> None:
         tids = [row[0] for row in self.full_rows]
-        self.player.play_now(tids, event.cursor_row)
+        self.post_message(self.TrackClicked(tids, event.cursor_row))
 
     def action_favorite_track(self) -> None:
         """

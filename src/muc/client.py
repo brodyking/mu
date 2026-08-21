@@ -109,9 +109,9 @@ class Client(App):
         self.tabs.can_focus_children = False
 
         self.queue_data_table: QueueDataTable = QueueDataTable(self.api, self.player)
-        self.tracks_data_table = TracksDataTable(self.api, self.player)
+        self.tracks_data_table = TracksDataTable(self.api)
         self.favorite_tracks_data_table: TracksDataTable = TracksDataTable(
-            self.api, self.player, only_favorites=True
+            self.api, only_favorites=True
         )
         self.albums_data_table: AlbumsDataTable = AlbumsDataTable(self.api)
         self.artists_data_table: ArtistsDataTable = ArtistsDataTable(self.api)
@@ -190,6 +190,10 @@ class Client(App):
         self.albums_data_table.search.value = f'albumartist="{event.name}"'
         self.action_goto_tab(3)
 
+    @on(TracksDataTable.TrackClicked)
+    def track_clicked(self, event: TracksDataTable.TrackClicked) -> None:
+        self.player.play_now(event.tids, event.pos)
+
     @on(TracksDataTable.FavoriteTrack)
     @on(NowPlaying.FavoriteCurrentTrack)
     def favorite_track(
@@ -203,9 +207,9 @@ class Client(App):
             track = self.api.favorite_tracks(f"id={tid}")[tid]
             self.player.recache_current_track()
             self.notify(
-                f"Track #{tid} was favorited."
+                f"Favorited [$primary]#{tid}[/]"
                 if track.favorite
-                else f"Track #{tid} was unfavorited."
+                else f"Unfavorited [$primary]#{tid}[/]"
             )
         except Exception:
             self.notify("Couldn't favorite track", severity="error")
@@ -218,14 +222,14 @@ class Client(App):
                     event.tid,
                 ]
             )
-            self.notify(f"Queued track #{event.tid} next.")
+            self.notify(f"Queued [$primary]#{event.tid}[/] next.")
         else:
             self.player.queue.queue_tracks_last(
                 [
                     event.tid,
                 ]
             )
-            self.notify(f"Queued track #{event.tid} last.")
+            self.notify(f"Queued [$primary]#{event.tid}[/] last.")
         if self.focused == self.queue_data_table.main_table:
             self.queue_data_table.on_show()
 
@@ -238,7 +242,9 @@ class Client(App):
             if len(response) == 0:
                 self.notify("Playlist not found", severity="error")
             else:
-                self.notify("Added track to playlist.")
+                self.notify(
+                    f"Added [$primary]#{event.tid}[/] to [$primary]#{event.pid}[/]."
+                )
 
     @on(RemoveTrackFromPlaylistPopup.RemoveTrackFromPlaylist)
     def remove_track_from_playlist(
@@ -248,7 +254,7 @@ class Client(App):
         if len(response) == 0:
             self.notify("Playlist not found", severity="error")
             return
-        self.notify("Removed track from playlist")
+        self.notify(f"Removed [$primary]#{event.pid}[/] from playlist")
         if self.focused == self.playlists_split.tracks_data_table.main_table:
             self.playlists_split.tracks_data_table.playlist = self.api.get_playlists(
                 f"id={event.pid}"
