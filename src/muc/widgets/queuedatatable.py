@@ -17,7 +17,7 @@ from textual.widgets import Static
 from mu.api import Api
 from mu.models import Track
 from muc.player import Player
-from muc.widgets.tracksdatatable import AddToPopup
+from muc.widgets.tracksdatatable import TrackOptionsPopup
 from muc.widgets.vimdatatable import VimDataTable
 
 
@@ -64,7 +64,7 @@ class QueueDataTable(Static):
         row_dict = self.main_table.export_row_as_dict(row_index)
         tid = int(row_dict["id"])
         if tid:
-            popup = AddToPopup(self.api, tid)
+            popup = TrackOptionsPopup(self.api, tid)
             self.app.push_screen(popup)  # type:ignore
 
     @on(VimDataTable.RowSelected)

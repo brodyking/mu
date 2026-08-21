@@ -112,7 +112,7 @@ class AddToPlaylistPopup(ModalScreen[str]):
         self.dismiss()
 
 
-class AddToPopup(ModalScreen[str]):
+class TrackOptionsPopup(ModalScreen[str]):
     class QueueTrack(Message):
         def __init__(self, tid: int, queue_next: bool, *args, **kwargs) -> None:
             super().__init__(*args, **kwargs)
@@ -146,7 +146,7 @@ class AddToPopup(ModalScreen[str]):
     def on_mount(self) -> None:
 
         self.main_table.add_column("Bind", key="bind", width=4)
-        self.main_table.add_column("Add Options", key="add-options", width=100)
+        self.main_table.add_column("Option", key="add-options", width=100)
 
         for row in self.TABLE:
             self.main_table.add_row(row[0], row[1])
@@ -181,7 +181,7 @@ class TracksDataTable(Static):
     BINDINGS = [
         ("/", "focus_search", "Search"),
         ("comma", "open_sort", "Sort"),
-        (".", "open_addto", "Add to"),
+        (".", "open_options", "Options"),
         ("f", "favorite_track", "Favorite"),
     ]
 
@@ -251,12 +251,12 @@ class TracksDataTable(Static):
         if self.show_filter:
             self.app.push_screen(SortTracksPopup(), callback=self.sort)  # type:ignore
 
-    def action_open_addto(self) -> None:
+    def action_open_options(self) -> None:
         row_index = self.main_table.cursor_row
         row_dict = self.main_table.export_row_as_dict(row_index)
         tid = int(row_dict["id"]) if "id" in row_dict else None
         if tid:
-            popup = AddToPopup(self.api, tid)
+            popup = TrackOptionsPopup(self.api, tid)
             self.app.push_screen(popup)  # type:ignore
 
     def action_focus_search(self) -> None:

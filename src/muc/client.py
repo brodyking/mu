@@ -30,7 +30,12 @@ from muc.widgets.playlistssplit import (
     RemoveTrackFromPlaylistPopup,
 )
 from muc.widgets.queuedatatable import QueueDataTable
-from muc.widgets.tracksdatatable import AddToPlaylistPopup, AddToPopup, TracksDataTable
+from muc.widgets.quitpopup import QuitPopup
+from muc.widgets.tracksdatatable import (
+    AddToPlaylistPopup,
+    TrackOptionsPopup,
+    TracksDataTable,
+)
 
 
 class Client(App):
@@ -39,7 +44,7 @@ class Client(App):
     ENABLE_COMMAND_PALETTE = False
 
     BINDINGS = (
-        ("q", "quit", "Quit"),
+        ("q", "prompt_quit", "Quit"),
         # Cycling tabs
         ("H", "cycle_tab(-1)", "Previous Tab"),
         ("L", "cycle_tab(1)", "Next Tab"),
@@ -205,8 +210,8 @@ class Client(App):
         except Exception:
             self.notify("Couldn't favorite track", severity="error")
 
-    @on(AddToPopup.QueueTrack)
-    def queue_track(self, event: AddToPopup.QueueTrack) -> None:
+    @on(TrackOptionsPopup.QueueTrack)
+    def queue_track(self, event: TrackOptionsPopup.QueueTrack) -> None:
         if event.queue_next:
             self.player.queue.queue_tracks_next(
                 [
@@ -258,6 +263,13 @@ class Client(App):
     @on(NowPlayingVolumeBar.Clicked)
     def volumebar_clicked(self, event: NowPlayingVolumeBar.Clicked):
         self.player.set_volume(event.percentage)
+
+    def action_prompt_quit(self) -> None:
+        self.push_screen(QuitPopup())
+
+    @on(QuitPopup.Confirm)
+    async def action_quit(self, *args, **kwargs) -> None:
+        await super().action_quit()
 
     def action_increase_volume(self) -> None:
         newvol = self.player.volume + 0.05

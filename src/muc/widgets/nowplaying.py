@@ -1,5 +1,4 @@
-from textual import on
-from textual import events
+from textual import events, on
 from textual.app import ComposeResult
 from textual.containers import Horizontal, Vertical
 from textual.events import Click

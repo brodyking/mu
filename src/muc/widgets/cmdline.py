@@ -7,11 +7,12 @@
 
 """
 
+import os
+
 from textual import on
 from textual.containers import Horizontal
 from textual.screen import ModalScreen
 from textual.widgets import Input, Label
-import os
 
 
 class CmdLine(ModalScreen[str]):

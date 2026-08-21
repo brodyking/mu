@@ -89,7 +89,7 @@ PlaylistsSplit PlaylistTracksDataTable {
  * Popups
  */
 
-InspectRowPopup,SortTracksPopup,AddToPopup, AddToPlaylistPopup,RemoveTrackFromPlaylistPopup  {
+InspectRowPopup,SortTracksPopup,TrackOptionsPopup, AddToPlaylistPopup,RemoveTrackFromPlaylistPopup,QuitPopup  {
  align: center middle;
  background: transparent;
 }
@@ -97,13 +97,15 @@ AddToPlaylistPopup Input {
   width: 1fr;
   height: 1;
 }
-RemoveTrackFromPlaylistPopup > Vertical {
+RemoveTrackFromPlaylistPopup > Vertical,
+QuitPopup > Vertical {
   width: auto;
   border: heavy $primary;
   max-height: 4;
   max-width: 45;
 }
-RemoveTrackFromPlaylistPopup  Label{
+RemoveTrackFromPlaylistPopup  Label,
+QuitPopup  Label {
   text-align: center;
 }
 InspectRowPopup > VimDataTable, AddToPlaylistPopup > PlaylistsDataTable{
@@ -124,7 +126,7 @@ SortTracksPopup > VimDataTable {
  align: center middle;
  overflow:hidden;
  }
-AddToPopup > VimDataTable {
+TrackOptionsPopup > VimDataTable {
  width: 30;
  height: auto;
  border: heavy $primary;
