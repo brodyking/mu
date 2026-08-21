@@ -1,3 +1,4 @@
+from cmd import Cmd
 import os
 
 from textual import on
@@ -7,6 +8,7 @@ from textual.widgets import Static
 
 from mu.api import Api
 from mu.io import mu_input_str, mu_print
+from muc.widgets.cmdline import CmdLine
 from muc.widgets.vimdatatable import VimDataTable
 
 
@@ -57,32 +59,17 @@ class PlaylistOptionsDataTable(VimDataTable):
             self.add_row(*row, key=str(i))
 
     def run_command(self, command: str) -> None:
-        with self.app.suspend():
-            os.system("cls" if os.name == "nt" else "clear")
-            match command:
-                case "Append":
-                    pt = mu_input_str("playlists_term")
-                    tt = mu_input_str("tracks_term")
-                    os.system(f'mu playlist append "{pt}" "{tt}"')
-                case "Create":
-                    title = mu_input_str("title")
-                    description = mu_input_str("description")
-                    os.system(f'mu playlist create "{title}" "{description}"')
-                case "Delete":
-                    pt = mu_input_str("playlists_term")
-                    os.system(f'mu playlist delete "{pt}"')
-                case "Insert":
-                    pt = mu_input_str("playlists_term")
-                    tt = mu_input_str("tracks_term")
-                    pos = mu_input_str("position")
-                    os.system(f'mu playlist insert "{pt}" "{tt}" "{pos}"')
-                case "Remove":
-                    pt = mu_input_str("playlists_term")
-                    tt = mu_input_str("tracks_term")
-                    os.system(f'mu playlist remove "{pt}" "{tt}"')
-                case _:
-                    mu_print("No command found", ok=False)
-            input("Press Enter to return to muc")
+        match command:
+            case "Append":
+                self.app.push_screen(CmdLine("playlist append "))
+            case "Create":
+                self.app.push_screen(CmdLine("playlist create "))
+            case "Delete":
+                self.app.push_screen(CmdLine("playlist delete "))
+            case "Insert":
+                self.app.push_screen(CmdLine("playlist insert "))
+            case "Remove":
+                self.app.push_screen(CmdLine("playlist remove "))
 
     @on(OptionsDataTable.RowSelected)
     def option_selected(self, event: OptionsDataTable.RowSelected) -> None:
@@ -112,21 +99,13 @@ class TrackOptionsDataTable(VimDataTable):
             self.add_row(*row, key=str(i))
 
     def run_command(self, command: str) -> None:
-        with self.app.suspend():
-            os.system("cls" if os.name == "nt" else "clear")
-            match command:
-                case "Favorite":
-                    tracks_term = mu_input_str("tracks_term")
-                    os.system(f'mu track favorite "{tracks_term}"')
-                case "Remove":
-                    tracks_term = mu_input_str("tracks_term")
-                    os.system(f'mu track remove "{tracks_term}"')
-                case "Import":
-                    path = mu_input_str("path")
-                    os.system(f'mu track import "{path}"')
-                case _:
-                    mu_print("No command found", ok=False)
-            input("Press Enter to return to muc")
+        match command:
+            case "Favorite":
+                self.app.push_screen(CmdLine("track favorite "))
+            case "Remove":
+                self.app.push_screen(CmdLine("track remove "))
+            case "Import":
+                self.app.push_screen(CmdLine("track import "))
 
     @on(OptionsDataTable.RowSelected)
     def option_selected(self, event: OptionsDataTable.RowSelected) -> None:
@@ -188,17 +167,11 @@ class OptionsSplit(Static):
             self.theme_options_data_table.focus()
 
     def run_command(self, command: str) -> None:
-        with self.app.suspend():
-            os.system("cls" if os.name == "nt" else "clear")
-            match command:
-                case "Scan":
-                    os.system("mu scan")
-                case "iTunes":
-                    path = mu_input_str("path")
-                    os.system(f'mu itunes "{path}"')
-                case _:
-                    mu_print("No command found", ok=False)
-            input("Press Enter to return to muc")
+        match command:
+            case "Scan":
+                self.app.push_screen(CmdLine("scan ", auto_submit=True))
+            case "iTunes":
+                self.app.push_screen(CmdLine("itunes "))
 
     @on(OptionsDataTable.RowSelected)
     def option_selected(self, event: OptionsDataTable.RowSelected) -> None:

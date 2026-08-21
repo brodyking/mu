@@ -12,15 +12,45 @@ import os
 from textual import on
 from textual.containers import Horizontal
 from textual.screen import ModalScreen
+from textual.suggester import SuggestFromList
 from textual.widgets import Input, Label
 
 
 class CmdLine(ModalScreen[str]):
     BINDINGS = [("esc", "dismiss", "Close")]
 
-    def __init__(self, *args, **kwargs) -> None:
-        self.output = Label()
-        self.search = Input(compact=True, select_on_focus=False)
+    POSSIBLE_COMMANDS = [
+        "scan",
+        "version",
+        "itunes",
+        "list",
+        "list tracks",
+        "list albums",
+        "list artists",
+        "list playlists",
+        "list playlist",
+        "playlist",
+        "playlist append",
+        "playlist create",
+        "playlist delete",
+        "playlist insert",
+        "playlist remove",
+        "track",
+        "track favorite",
+        "track remove",
+        "track import",
+    ]
+
+    def __init__(
+        self, default_value: str = "", auto_submit: bool = False, *args, **kwargs
+    ) -> None:
+        self.search = Input(
+            default_value,
+            compact=True,
+            select_on_focus=False,
+            suggester=SuggestFromList(self.POSSIBLE_COMMANDS, case_sensitive=False),
+        )
+        self.auto_submit = auto_submit
         super().__init__(*args, **kwargs)
 
     def compose(self):
@@ -29,6 +59,8 @@ class CmdLine(ModalScreen[str]):
             yield self.search
 
     def on_show(self) -> None:
+        if self.auto_submit:
+            self.on_submitted(Input.Submitted(self.search, self.search.value))
         self.search.focus()
 
     @on(Input.Submitted)
