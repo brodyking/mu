@@ -1,4 +1,5 @@
 from textual import on
+from textual import events
 from textual.app import ComposeResult
 from textual.containers import Horizontal, Vertical
 from textual.events import Click
@@ -46,10 +47,31 @@ class NowPlayingVolumeBar(ProgressBar):
         self.post_message(self.Clicked(percentage))
 
 
+class NowPlayingMetaData(Static):
+    tid = Label()
+    favorite = Label(id="now-playing-metadata-favorite")
+    title = Label()
+    artist = Label()
+    album = Label()
+
+    def compose(self):
+        with Horizontal():
+            yield self.tid
+            yield self.favorite
+            yield self.title
+            yield self.artist
+            yield self.album
+
+
 class NowPlaying(Static):
     class TrackChanged(Message):
         def __init__(self) -> None:
             super().__init__()
+
+    class FavoriteCurrentTrack(Message):
+        def __init__(self, tid, *args, **kwargs) -> None:
+            super().__init__()
+            self.tid = tid
 
     def __init__(self, player: Player, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
@@ -58,7 +80,7 @@ class NowPlaying(Static):
 
         self._shown: object = object()
 
-        self.track_metadata = Label(classes="metadata-value")
+        self.track_metadata = NowPlayingMetaData()
 
         self.progressbar = NowPlayingProgressBar()
         self.volumebar = NowPlayingVolumeBar()
@@ -84,6 +106,12 @@ class NowPlaying(Static):
     def on_mount(self) -> None:
         self._timer = self.set_interval(0.25, self._tick)  # NOT in __init__
 
+    @on(events.Click, "#now-playing-metadata-favorite")
+    def favorite_clicked(self) -> None:
+        track = self.player.cached_current_track
+        if track is not None:
+            self.post_message(self.FavoriteCurrentTrack(track.id))
+
     @staticmethod
     def format_secs(secs: float) -> str:
         if secs <= 0:
@@ -98,12 +126,19 @@ class NowPlaying(Static):
         if current is not self._shown and current is not None:
             self._shown = current
             # Update nowplaying
-            favorited: str = "[$error] 󰋑 [/]" if current.favorite else "[gray] ♥ [/]"
-            self.track_metadata.update(
+            self.track_metadata.favorite.update(
+                "[$error] 󰋑 [/]" if current.favorite else "[gray] ♥ [/]"
+            )
+            self.track_metadata.tid.update(
                 f"[gray]#{str(current.id or '').rjust(4, '0')}[/]"
-                f"{favorited}"
+            )
+            self.track_metadata.title.update(
                 f"[$error] 󰈣 {(current.title or '')[:25]} [/]"
+            )
+            self.track_metadata.artist.update(
                 f"[$primary] 󰠃 {(current.artist or '')[:20]} [/]"
+            )
+            self.track_metadata.album.update(
                 f"[$accent] 󱍙 {(current.album or '')[:25]} [/]"
             )
             # Update queue table

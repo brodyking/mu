@@ -186,15 +186,22 @@ class Client(App):
         self.action_goto_tab(3)
 
     @on(TracksDataTable.FavoriteTrack)
-    def favorite_track(self, event: TracksDataTable.FavoriteTrack) -> None:
+    @on(NowPlaying.FavoriteCurrentTrack)
+    def favorite_track(
+        self, event: TracksDataTable.FavoriteTrack | NowPlaying.FavoriteCurrentTrack
+    ) -> None:
         """
         Toggles a tracks favorite icon
         """
         try:
             tid = event.tid
-            self.api.favorite_tracks(f"id={tid}")[tid]
+            track = self.api.favorite_tracks(f"id={tid}")[tid]
             self.player.recache_current_track()
-
+            self.notify(
+                f"Track #{tid} was favorited."
+                if track.favorite
+                else f"Track #{tid} was unfavorited."
+            )
         except Exception:
             self.app.notify("Couldn't favorite track", severity="error")
 
