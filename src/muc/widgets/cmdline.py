@@ -32,7 +32,9 @@ class CmdLine(ModalScreen[str]):
     BINDINGS = [
         ("esc", "dismiss", "Close"),
         ("up", "focus_hint_previous", "Previous hint"),
+        ("ctrl+p", "focus_hint_previous", "Previous hint"),
         ("down", "focus_hint_next", "Next hint"),
+        ("ctrl+n", "focus_hint_next", "Next hint"),
         ("tab", "accept_hint", "Accept hint"),
     ]
 
@@ -42,7 +44,7 @@ class CmdLine(ModalScreen[str]):
         "itunes": [],
         "list": ["tracks", "albums", "artists", "playlists", "playlist"],
         "playlist": ["append", "insert", "remove", "create", "delete"],
-        "track": ["append", "create", "insert", "remove", "delete"],
+        "track": ["favorite", "remove", "import"],
     }
 
     def __init__(
