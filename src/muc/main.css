@@ -137,6 +137,13 @@ TrackOptionsPopup > VimDataTable {
 
 
 
+CmdLine CmdLineHintTable {
+  dock: bottom;
+  width: auto;
+  height:auto;
+  margin-bottom: 1;
+}
+
 CmdLine Horizontal {
   dock: bottom;
   width: 1fr;
