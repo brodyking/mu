@@ -11,11 +11,36 @@ from textual import on
 from textual.app import ComposeResult
 from textual.containers import Vertical
 from textual.message import Message
-from textual.widgets import Input, Static
+from textual.screen import ModalScreen
+from textual.widgets import Input, Label, Static
 
 from mu.api import Api
 from mu.models import Playlist
 from muc.widgets.vimdatatable import VimDataTable
+
+
+class DeletePlaylistPopup(ModalScreen[str]):
+    BINDINGS = [("escape", "dismiss", "Close"), ("enter", "confirm", "Confirm")]
+
+    class DeletePlaylist(Message):
+        def __init__(self, pid: int, *args, **kwargs) -> None:
+            super().__init__(*args, **kwargs)
+            self.pid = pid
+
+    def __init__(self, pid: int, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self.pid = pid
+
+    def compose(self) -> ComposeResult:
+        with Vertical():
+            yield Label("Are you sure you want to delete this playlist?")
+            yield Label(
+                "[$error]Yes (enter)[/] / [$success]Cancel (esc)[/]", expand=True
+            )
+
+    def action_confirm(self) -> None:
+        self.post_message(self.DeletePlaylist(self.pid))
+        self.dismiss()
 
 
 class PlaylistsDataTable(Static):
@@ -24,9 +49,7 @@ class PlaylistsDataTable(Static):
             super().__init__(*args, **kwargs)
             self.playlist = playlist
 
-    BINDINGS = [
-        ("/", "focus_search", "Search"),
-    ]
+    BINDINGS = [("/", "focus_search", "Search"), ("d", "delete_playlist", "Delete")]
 
     def __init__(self, api: Api):
         super().__init__()
@@ -61,6 +84,11 @@ class PlaylistsDataTable(Static):
             self.post_message(self.PlaylistClicked(playlist))
         else:
             self.notify("Playlist not found", severity="error")
+
+    def action_delete_playlist(self) -> None:
+        row_index: int = self.main_table.cursor_row
+        pid: int = int(self.main_table.export_row_as_dict(row_index)["id"])
+        self.app.push_screen(DeletePlaylistPopup(pid))
 
     def redraw_rows(self) -> None:
         self.main_table.clear()

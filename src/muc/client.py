@@ -25,6 +25,7 @@ from muc.widgets.nowplaying import (
     NowPlayingVolumeBar,
 )
 from muc.widgets.optionssplit import OptionsSplit
+from muc.widgets.playlistsdatatable import DeletePlaylistPopup
 from muc.widgets.playlistssplit import (
     PlaylistsSplit,
     RemoveTrackFromPlaylistPopup,
@@ -256,11 +257,20 @@ class Client(App):
             return
         self.notify(f"Removed [$primary]#{event.pid}[/] from playlist")
         if self.focused == self.playlists_split.tracks_data_table.main_table:
-            self.playlists_split.tracks_data_table.playlist = self.api.get_playlists(
-                f"id={event.pid}"
-            )[event.pid]
+            self.playlists_split.tracks_data_table.playlist = response[event.pid]
             self.playlists_split.tracks_data_table.populate()
             self.playlists_split.tracks_data_table.redraw_rows()
+
+    @on(DeletePlaylistPopup.DeletePlaylist)
+    def delete_playlist(self, event: DeletePlaylistPopup.DeletePlaylist) -> None:
+        response = self.api.delete_playlists(f"id={event.pid}")
+        if len(response) == 0:
+            self.notify("Playlist not found", severity="error")
+            return
+        self.notify(f"Removed [$primary]#{event.pid}[/] from playlist")
+        if self.focused == self.playlists_split.playlists_data_table.main_table:
+            self.playlists_split.playlists_data_table.populate()
+            self.playlists_split.playlists_data_table.redraw_rows()
 
     @on(NowPlayingProgressBar.Clicked)
     def progressbar_clicked(self, event: NowPlayingProgressBar.Clicked):
