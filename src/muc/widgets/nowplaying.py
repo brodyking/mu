@@ -50,8 +50,8 @@ class NowPlayingMetaData(Static):
     tid = Label()
     favorite = Label(id="now-playing-metadata-favorite")
     title = Label()
-    artist = Label()
-    album = Label()
+    artist = Label(id="now-playing-metadata-artist")
+    album = Label(id="now-playing-metadata-album")
 
     def compose(self):
         with Horizontal():
@@ -71,6 +71,17 @@ class NowPlaying(Static):
         def __init__(self, tid, *args, **kwargs) -> None:
             super().__init__()
             self.tid = tid
+
+    class AlbumClicked(Message):
+        def __init__(self, title: str, albumartist: str, *args, **kwargs) -> None:
+            super().__init__(*args, **kwargs)
+            self.title = title
+            self.albumartist = albumartist
+
+    class ArtistClicked(Message):
+        def __init__(self, name: str, *args, **kwargs) -> None:
+            super().__init__(*args, **kwargs)
+            self.name = name
 
     def __init__(self, player: Player, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
@@ -110,6 +121,18 @@ class NowPlaying(Static):
         track = self.player.cached_current_track
         if track is not None:
             self.post_message(self.FavoriteCurrentTrack(track.id))
+
+    @on(events.Click, "#now-playing-metadata-album")
+    def album_clicked(self) -> None:
+        track = self.player.cached_current_track
+        if track is not None:
+            self.post_message(self.AlbumClicked(track.album, track.albumartist))
+
+    @on(events.Click, "#now-playing-metadata-artist")
+    def artist_clicked(self) -> None:
+        track = self.player.cached_current_track
+        if track is not None:
+            self.post_message(self.ArtistClicked(track.artist))
 
     @staticmethod
     def format_secs(secs: float) -> str:

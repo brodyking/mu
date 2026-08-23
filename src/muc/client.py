@@ -172,7 +172,10 @@ class Client(App):
         self.queue_data_table.redraw_rows()
 
     @on(AlbumsDataTable.AlbumClicked)
-    def album_clicked(self, event: AlbumsDataTable.AlbumClicked) -> None:
+    @on(NowPlaying.AlbumClicked)
+    def album_clicked(
+        self, event: AlbumsDataTable.AlbumClicked | NowPlaying.AlbumClicked
+    ) -> None:
         """
         Searches for an album's tracks in the tracks tab, then switches tab.
         Message sent from AlbumsDataTable
@@ -180,15 +183,22 @@ class Client(App):
         self.tracks_data_table.search.value = (
             f'album="{event.title}"&albumartist="{event.albumartist}"'
         )
+        if isinstance(event, NowPlaying.AlbumClicked):
+            self.tracks_data_table.on_show()
         self.action_goto_tab(2)
 
     @on(ArtistsDataTable.ArtistClicked)
-    def artist_clicked(self, event: ArtistsDataTable.ArtistClicked) -> None:
+    @on(NowPlaying.ArtistClicked)
+    def artist_clicked(
+        self, event: ArtistsDataTable.ArtistClicked | NowPlaying.ArtistClicked
+    ) -> None:
         """
         Searches for an album's tracks in the tracks tab, then switches tab.
         Message sent from AlbumsDataTable
         """
         self.albums_data_table.search.value = f'albumartist="{event.name}"'
+        if isinstance(event, NowPlaying.AlbumClicked):
+            self.tracks_data_table.on_show()
         self.action_goto_tab(3)
 
     @on(TracksDataTable.TrackClicked)
