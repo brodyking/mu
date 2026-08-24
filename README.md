@@ -19,31 +19,31 @@
 - [What is µ?](#what-is-%C2%B5)
 - [What is mµc?](#what-is-m%C2%B5c)
 - [Installation](#installation)
-    - [File Structure](#file-structure)
+  - [File Structure](#file-structure)
 - [What's included](#whats-included)
 - [µ Basic Commands](#%C2%B5-basic-commands)
-    - [Importing from iTunes](#importing-from-itunes)
-    - [Importing mp3 files](#importing-mp3-files)
-    - [µ query syntax](#%C2%B5-query-syntax)
-        - [Available columns for tracks](#available-columns-for-tracks)
-    - [Removing and favoriting tracks](#removing-and-favoriting-tracks)
-    - [Listing and searching](#listing-and-searching)
-    - [Playlists](#playlists)
+  - [Importing from iTunes](#importing-from-itunes)
+  - [Importing mp3 files](#importing-mp3-files)
+  - [µ query syntax](#%C2%B5-query-syntax)
+    - [Available columns for tracks](#available-columns-for-tracks)
+  - [Removing and favoriting tracks](#removing-and-favoriting-tracks)
+  - [Listing and searching](#listing-and-searching)
+  - [Playlists](#playlists)
 - [mµc Basic Usage](#m%C2%B5c-basic-usage)
-    - [Tab Navigation](#tab-navigation)
-    - [Pane Navigation](#pane-navigation)
-    - [Table Navigation](#table-navigation)
-    - [Tracks Table Navigation](#tracks-table-navigation)
-    - [Playback/Media Keys](#playbackmedia-keys)
-    - [Playlist/Queue Table Navigation](#playlistqueue-table-navigation)
+  - [Tab Navigation](#tab-navigation)
+  - [Pane Navigation](#pane-navigation)
+  - [Table Navigation](#table-navigation)
+  - [Tracks Table Navigation](#tracks-table-navigation)
+  - [Playback/Media Keys](#playbackmedia-keys)
+  - [Playlist/Queue Table Navigation](#playlistqueue-table-navigation)
 - [Using the µ Python API](#using-the-%C2%B5-python-api)
-    - [Reading your library](#reading-your-library)
-    - [Creating and managing playlists](#creating-and-managing-playlists)
-    - [Sorting](#sorting)
-    - [Searching](#searching)
-    - [Importing and Scanning](#importing-and-scanning)
-    - [Favorites and play counts](#favorites-and-play-counts)
-    - [There's more!](#theres-more)
+  - [Reading your library](#reading-your-library)
+  - [Creating and managing playlists](#creating-and-managing-playlists)
+  - [Sorting](#sorting)
+  - [Searching](#searching)
+  - [Importing and Scanning](#importing-and-scanning)
+  - [Favorites and play counts](#favorites-and-play-counts)
+  - [There's more!](#theres-more)
 
 <!-- /TOC -->
 
@@ -90,9 +90,9 @@ Upon running `mu` for the first time, or utilizing a library that interacts with
 └── source/
 ```
 
-* `albumart/` contains all albumart for all tracks. It does not contain duplicates, and it's location is stored in the database alongside each track.
-* `source/` contains all the original mp3 files. 
-* `mu.db` contains the SQLite database that stores track metadata, playlist data, etc.
+- `albumart/` contains all albumart for all tracks. It does not contain duplicates, and it's location is stored in the database alongside each track.
+- `source/` contains all the original mp3 files.
+- `mu.db` contains the SQLite database that stores track metadata, playlist data, etc.
 
 The `~/Music/mu/` folder can be backed up and then restored to preserve your music library. Note that when the library is moved to a new location, track locations will need to be adjusted in the database.
 
@@ -100,12 +100,13 @@ The `~/Music/mu/` folder can be backed up and then restored to preserve your mus
 
 The two basic CLI commands that µ come with are `mu` and `muc` .
 
-* `mu` allows you to interact with µ through the CLI. Almost all operations that are supported by the api are supported through the CLI.
-* `muc` starts the tui client for µ. It is currently the only way to interact with µ. Support for mobile/web is planned.
+- `mu` allows you to interact with µ through the CLI. Almost all operations that are supported by the api are supported through the CLI.
+- `muc` starts the tui client for µ. It is currently the only way to interact with µ. Support for mobile/web is planned.
 
 ## µ Basic Commands
 
 Upon running `mu` for the first time, an output similar to this will be shown.
+
 ```
 Usage: mu [OPTIONS] COMMAND [ARGS]...
 
@@ -130,14 +131,14 @@ Commands:
 
 Most of these commands are self-explanatory.
 
-* **Scan** goes through all tracks in `~/Music/mu/source/`, and updates their metadata. 
-* **Version** prints the current µ version.
+- **Scan** goes through all tracks in `~/Music/mu/source/`, and updates their metadata.
+- **Version** prints the current µ version.
 
 ### Importing from iTunes
 
 To import an existing library from iTunes, use the `itunes` command, or its alias `it` to an XML export of your iTunes library.
 
-This can be done by going to **File > Library > Export Library** 
+This can be done by going to **File > Library > Export Library**
 
 ```bash
 mu itunes ~/Desktop/Library.xml
@@ -147,8 +148,6 @@ mu itunes ~/Desktop/Library.xml
 
 To import new mp3 files to your library, use the `track` subparser (aliased
  as `t` ), with the `import` command (aliased as `i` )
-
- 
 
 ```bash
  # Full command
@@ -178,7 +177,7 @@ The `=` operand looks for an exact match. If this is undesired, use the `:` oper
 "artist:Pink"
 ```
 
-The query above would return tracks by *Pink Floyd*, alongside all other tracks with the artist containing *Pink* 
+The query above would return tracks by *Pink Floyd*, alongside all other tracks with the artist containing *Pink*
 
 And operations are done with the `&` operand.
 
@@ -202,10 +201,11 @@ The above query would return all tracks by *Pink Floyd* and all tracks by *David
 # This will cause an error
 'title=Sexy & Candy'
 # This will run successfully
-'title="Sex & Candy"
+'title="Sex & Candy"'
 ```
 
 #### Available columns for tracks
+
 Searching for tracks, albums, and artists support these prefixes.
 
 | Column |
@@ -245,7 +245,7 @@ mu track favorite "id=1"
 
 This favorites the track with the id == 1.
 
- **Note: All tracks and playlists are given their own ID. Artists and Albums are not given IDs.** 
+ **Note: All tracks and playlists are given their own ID. Artists and Albums are not given IDs.**
 
 To remove a track, use the same subparser with the `remove` command (alias `rm` )
 
@@ -275,7 +275,7 @@ mu list albums "artist:Pink Floyd"
 
 The above query returns all albums by Pink Floyd.
 
- **Note: Tracks, Albums, and Artists all query the `tracks` table. This means you can use all the same columns across different types.** 
+ **Note: Tracks, Albums, and Artists all query the `tracks` table. This means you can use all the same columns across different types.**
 
 ### Playlists
 
@@ -302,7 +302,7 @@ Commands:
 
 ## mµc Basic Usage
 
-To get started using mµc, simply run `muc` in the terminal of your choosing. 
+To get started using mµc, simply run `muc` in the terminal of your choosing.
 
 ### Tab Navigation
 
@@ -345,9 +345,9 @@ For all tables, the following keybindings are supported.
 | `y` | Yank line |
 | `Tab` | Inspect row |
 
-If the table supports search, you can press `/` to focus the search field. 
+If the table supports search, you can press `/` to focus the search field.
 
- **Note: Every table that supports searching supports µ query syntax.** 
+ **Note: Every table that supports searching supports µ query syntax.**
 
 ### Tracks Table Navigation
 
@@ -372,13 +372,15 @@ Playback keys are accessible almost everywhere inside of µ, barring input field
 
 ### Playlist/Queue Table Navigation
 
-In both the `Playlist` and `Queue` , you can remove tracks with the `d` key. 
+In both the `Playlist` and `Queue` , you can remove tracks with the `d` key.
 
 ## Using the µ Python API
-The `mu` command explained earlier in this README is essentially just a wrapper around the mu `Api` object. 
+
+The `mu` command explained earlier in this README is essentially just a wrapper around the mu `Api` object.
 If you wish to sort, organize, build a client, etc, then the µ Api will have everything you need to get started.
 
 ### Reading your library
+
 Every getter returns a dict, so you can index straight into it directly.
 
 ```python
@@ -399,6 +401,7 @@ playlists: dict[int, Playlist] = a.get_playlists()
 ```
 
 ### Creating and managing playlists
+
 You can accomplish all playlist actions, such as creation, modification, and deletion, from within the API.
 
 In this example, we create a new playlist, add all tracks by *Kanye West* into it, and then print out all the tracks in the playlist.
@@ -419,6 +422,7 @@ for t in pl.tracks:
 ```
 
 ### Sorting
+
 Sorting and filtering are done through SQL, so prefer them over sorting in python.
 
 In this example, we are finding the top 10 most played songs in the library.
@@ -436,6 +440,7 @@ for t in list(top.values())[:10]:
 ```
 
 ### Searching
+
 Every method takes in a `*_term` argument that uses µ Query Syntax.
 
 ```python
@@ -475,9 +480,10 @@ The four failure modes are as followed:
 Pay attention to the last one, as the parser splits on the `:` before `=`, so a value containing a colon is misread as a column name. To escape it, use double quotes around the value.
 
 ### Importing and Scanning
-`import_media()` copies files into `source/` and adds them to the database. 
 
-`scan_source_folder()` re-reads whats already in `source/` and updates metadata. 
+`import_media()` copies files into `source/` and adds them to the database.
+
+`scan_source_folder()` re-reads whats already in `source/` and updates metadata.
 
 Both are generators that yield one progress dict per file, and neither does anything until iterated over. Writes are batched, so records arrive in groups.
 
@@ -494,6 +500,7 @@ for result in a.import_media("~/Desktop/new-album"):
 ```
 
 ### Favorites and play counts
+
 These are incredibly easy one liners.
 
 ```python
@@ -507,6 +514,6 @@ a.increment_playcount_tracks("id=1",1) # increases playcount by 1
 
 These return the new versions of the items updated, so you can verify changes or update UI elements accordingly.
 
-### There's more!
+### There's more
 
 This has barely scratched the surface on what µ can do. The best way to learn about its functionality is to look at the [API's source code itself](./src/mu/api.py). It's only about 600 lines and is self documenting.
