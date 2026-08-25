@@ -89,21 +89,26 @@ PlaylistsSplit PlaylistTracksDataTable {
  * Popups
  */
 
-InspectRowPopup,SortTracksPopup,TrackOptionsPopup, AddToPlaylistPopup,RemoveTrackFromPlaylistPopup,DeletePlaylistPopup,QuitPopup  {
+InspectRowPopup,SortTracksPopup,TrackOptionsPopup, AddToPlaylistPopup,RemoveTrackFromPlaylistPopup,DeletePlaylistPopup,CreatePlaylistPopup,QuitPopup  {
  align: center middle;
  background: transparent;
 }
-AddToPlaylistPopup Input {
+AddToPlaylistPopup Input,
+CreatePlaylistPopup, Input {
   width: 1fr;
   height: 1;
 }
 RemoveTrackFromPlaylistPopup > Vertical,
+CreatePlaylistPopup > Vertical,
 DeletePlaylistPopup > Vertical,
+CreatePlaylistPopup > Vertical,
 QuitPopup > Vertical {
   width: auto;
   border: heavy $primary;
   max-height: 4;
   max-width: 50;
+  border-title-color: $secondary;
+  border-title-align: right;
 }
 RemoveTrackFromPlaylistPopup  Label,
 DeletePlaylistPopup Label,

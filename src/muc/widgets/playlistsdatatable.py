@@ -12,11 +12,42 @@ from textual.app import ComposeResult
 from textual.containers import Vertical
 from textual.message import Message
 from textual.screen import ModalScreen
-from textual.widgets import Input, Label, Static
+from textual.widgets import Button, Input, Label, Static
 
 from mu.api import Api
 from mu.models import Playlist
 from muc.widgets.vimdatatable import VimDataTable
+
+
+class CreatePlaylistPopup(ModalScreen[str]):
+    BINDINGS = [("escape", "dismiss", "Close"), ("enter", "create", "Create")]
+
+    class CreatePlaylist(Message):
+        def __init__(self, title: str, description: str, *args, **kwargs) -> None:
+            super().__init__(*args, **kwargs)
+            self.title = title
+            self.description = description
+
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self.vertical = Vertical()
+        self.vertical.border_title = "Create Playlist"
+        self.title_input = Input(placeholder="Title", compact=True, valid_empty=True)
+        self.description_input = Input(placeholder="Description", compact=True)
+
+        self.border_title = "Create Playlist"
+
+    def compose(self):
+        with self.vertical:
+            yield self.title_input
+            yield self.description_input
+
+    @on(Input.Submitted)
+    def action_create(self):
+        self.post_message(
+            self.CreatePlaylist(self.title_input.value, self.description_input.value)
+        )
+        self.dismiss()
 
 
 class DeletePlaylistPopup(ModalScreen[str]):
@@ -49,7 +80,11 @@ class PlaylistsDataTable(Static):
             super().__init__(*args, **kwargs)
             self.playlist = playlist
 
-    BINDINGS = [("/", "focus_search", "Search"), ("d", "delete_playlist", "Delete")]
+    BINDINGS = [
+        ("/", "focus_search", "Search"),
+        ("d", "delete_playlist", "Delete"),
+        ("a", "create_playlist", "Create"),
+    ]
 
     def __init__(self, api: Api):
         super().__init__()
@@ -89,6 +124,9 @@ class PlaylistsDataTable(Static):
         row_index: int = self.main_table.cursor_row
         pid: int = int(self.main_table.export_row_as_dict(row_index)["id"])
         self.app.push_screen(DeletePlaylistPopup(pid))
+
+    def action_create_playlist(self) -> None:
+        self.app.push_screen(CreatePlaylistPopup())
 
     def redraw_rows(self) -> None:
         self.main_table.clear()

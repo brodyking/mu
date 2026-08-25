@@ -25,7 +25,7 @@ from muc.widgets.nowplaying import (
     NowPlayingVolumeBar,
 )
 from muc.widgets.optionssplit import OptionsSplit
-from muc.widgets.playlistsdatatable import DeletePlaylistPopup
+from muc.widgets.playlistsdatatable import CreatePlaylistPopup, DeletePlaylistPopup
 from muc.widgets.playlistssplit import (
     PlaylistsSplit,
     RemoveTrackFromPlaylistPopup,
@@ -281,6 +281,16 @@ class Client(App):
         if self.focused == self.playlists_split.playlists_data_table.main_table:
             self.playlists_split.playlists_data_table.populate()
             self.playlists_split.playlists_data_table.redraw_rows()
+
+    @on(CreatePlaylistPopup.CreatePlaylist)
+    def create_playlist(self, event: CreatePlaylistPopup.CreatePlaylist) -> None:
+        if not event.title:
+            self.notify("Playlist title required.", severity="error")
+        response = self.api.create_playlist(event.title, event.description)
+        if self.focused == self.playlists_split.playlists_data_table.main_table:
+            self.playlists_split.playlists_data_table.populate()
+            self.playlists_split.playlists_data_table.redraw_rows()
+        self.notify(f"Created playlist [$primary]{response.id}[/]")
 
     @on(NowPlayingProgressBar.Clicked)
     def progressbar_clicked(self, event: NowPlayingProgressBar.Clicked):
