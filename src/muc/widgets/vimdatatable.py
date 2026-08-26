@@ -10,6 +10,7 @@
 from typing import Any
 
 from textual.app import ComposeResult
+from textual.containers import Vertical
 from textual.coordinate import Coordinate
 from textual.screen import ModalScreen
 from textual.widgets import DataTable
@@ -73,10 +74,13 @@ class InspectRowPopup(ModalScreen[str]):
     def __init__(self, row_dict, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.main_table = VimDataTable(show_inspect=False, cursor_type="row")
+        self.content = Vertical()
+        self.content.border_title = "Inspect"
         self.row_dict = row_dict
 
     def compose(self) -> ComposeResult:
-        yield self.main_table
+        with self.content:
+            yield self.main_table
 
     def on_mount(self) -> None:
 

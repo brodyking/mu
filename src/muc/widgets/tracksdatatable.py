@@ -8,102 +8,72 @@
 """
 
 import random
-from typing import Literal
+from typing import Literal, override
 
 from textual import on
 from textual.app import ComposeResult
 from textual.containers import Vertical
-from textual.coordinate import Coordinate
 from textual.message import Message
-from textual.screen import ModalScreen
-from textual.widgets import DataTable, Input, Static
+from textual.widgets import Input, Static
 
 from mu.api import Api
 from mu.models import Track
 from muc.widgets.playlistsdatatable import PlaylistsDataTable
+from muc.widgets.popups import BindsDataTablePopup, Popup
 from muc.widgets.vimdatatable import VimDataTable
 
 
-class SortTracksPopup(ModalScreen[str]):
-    TABLE = [
-        ("A", "Sort by Artist"),
-        ("a", "Sort by Album"),
-        ("D", "Sort by Date"),
-        ("d", "Sort by Date Added"),
-        ("g", "Sort by Genre"),
-        ("i", "Sort by Id"),
-        ("p", "Sort by Plays"),
-        ("s", "Sort by Shuffle"),
-        ("t", "Sort by Title"),
-        ("T", "Sort by Time"),
-        ("r", "Reset"),
-        ("esc", "Cancel"),
-    ]
-
+class SortTracksPopup(BindsDataTablePopup):
     BINDINGS = [
-        ("enter", "option_selected", "Select Option"),
-        ("escape", "dismiss_msg('cancel')", "Close"),
-        ("i", "dismiss_msg('id')", "Id"),
-        ("T", "dismiss_msg('time')", "Time"),
-        ("t", "dismiss_msg('title')", "Title"),
-        ("A", "dismiss_msg('artist')", "Artist"),
-        ("a", "dismiss_msg('album')", "Album"),
-        ("p", "dismiss_msg('plays')", "Plays"),
-        ("d", "dismiss_msg('dateadded')", "Dateadded"),
-        ("g", "dismiss_msg('genre')", "Genre"),
-        ("s", "dismiss_msg('shuffle')", "Shuffle"),
-        ("D", "dismiss_msg('date')", "Date"),
-        ("r", "dismiss_msg('reset')", "Reset"),
+        ("A", "dismiss_msg('A')", "Artist"),
+        ("a", "dismiss_msg('a')", "Album"),
+        ("D", "dismiss_msg('D')", "Date"),
+        ("d", "dismiss_msg('d')", "Date Added"),
+        ("g", "dismiss_msg('g')", "Genre"),
+        ("i", "dismiss_msg('i')", "Id"),
+        ("p", "dismiss_msg('p')", "Plays"),
+        ("s", "dismiss_msg('s')", "Shuffle"),
+        ("t", "dismiss_msg('t')", "Title"),
+        ("T", "dismiss_msg('T')", "Time"),
+        ("r", "dismiss_msg('r')", "Reset"),
+        ("esc", "dismiss_msg('esc')", "Cancel"),
     ]
 
     def __init__(self, *args, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
-        self.main_table = VimDataTable(show_inspect=False, cursor_type="row")
-
-    def compose(self) -> ComposeResult:
-        yield self.main_table
-
-    def on_mount(self) -> None:
-
-        self.main_table.add_column("Bind", key="bind", width=4)
-        self.main_table.add_column("Sorting Options", key="sorting-options", width=100)
-
-        for row in self.TABLE:
-            self.main_table.add_row(row[0], row[1])
-
-    def action_dismiss_msg(self, message: str):
-        self.dismiss(message)
-
-    @on(DataTable.RowSelected)
-    def action_option_selected(self, event: DataTable.RowSelected):
-        row = event.cursor_row
-        value = self.main_table.get_cell_at(Coordinate(row, 1))
-        if value and "Sort by" in value:
-            self.action_dismiss_msg(value[7:].lower().replace(" ", ""))
-        else:
-            self.action_dismiss_msg(value.lower())
+        binds = {
+            "A": "Sort by Artist",
+            "a": "Sort by Album",
+            "D": "Sort by Date",
+            "d": "Sort by Date Added",
+            "g": "Sort by Genre",
+            "i": "Sort by Id",
+            "p": "Sort by Plays",
+            "s": "Sort by Shuffle",
+            "t": "Sort by Title",
+            "T": "Sort by Time",
+            "r": "Reset",
+            "esc": "Cancel",
+        }
+        super().__init__("Sort", binds, *args, **kwargs)
 
 
-class AddToPlaylistPopup(ModalScreen[str]):
+class AddToPlaylistPopup(Popup):
     class AppendTrackToPlaylist(Message):
         def __init__(self, tid: int, pid: int, *args, **kwargs) -> None:
             super().__init__(*args, **kwargs)
             self.tid = tid
             self.pid = pid
 
-    BINDINGS = [
-        ("escape", "dismiss()", "Close"),
-    ]
-
     def __init__(self, api: Api, tid: int, *args, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
+        super().__init__("Add to playlist", *args, **kwargs)
         self.api = api
         self.tid = tid
 
         self.main_table = PlaylistsDataTable(self.api)
 
     def compose(self) -> ComposeResult:
-        yield self.main_table
+        with self.content:
+            yield self.main_table
 
     @on(PlaylistsDataTable.PlaylistClicked)
     def playlist_selected(self, event: PlaylistsDataTable.PlaylistClicked) -> None:
@@ -111,64 +81,50 @@ class AddToPlaylistPopup(ModalScreen[str]):
         self.dismiss()
 
 
-class TrackOptionsPopup(ModalScreen[str]):
+class TrackOptionsPopup(BindsDataTablePopup):
+    BINDINGS = [
+        ("l", "dismiss_msg('l')", "Queue Last"),
+        ("n", "dismiss_msg('n')", "Queue Next"),
+        ("p", "dismiss_msg('p')", "Add to Playlist"),
+        ("esc", "dismiss_msg('esc')", "Cancel"),
+    ]
+
     class QueueTrack(Message):
         def __init__(self, tid: int, queue_next: bool, *args, **kwargs) -> None:
             super().__init__(*args, **kwargs)
             self.tid = tid
             self.queue_next = queue_next
 
-    TABLE = [
-        ("l", "Queue Last"),
-        ("n", "Queue Next"),
-        ("p", "Add to Playlist"),
-        ("esc", "Cancel"),
-    ]
-
-    BINDINGS = [
-        ("enter", "option_selected", "Select Option"),
-        ("escape", "dismiss()", "Close"),
-        ("l", "queue_track(False)", "Queue Last"),
-        ("n", "queue_track(True)", "Queue Next"),
-        ("p", "add_track_to_playlist", "Add to Playlist"),
-    ]
-
     def __init__(self, api: Api, tid: int, *args, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
+
+        binds = {
+            "l": "Queue Last",
+            "n": "Queue Next",
+            "p": "Add to Playlist",
+            "esc": "Cancel",
+        }
+
+        super().__init__("Track Options", binds, *args, **kwargs)
         self.main_table = VimDataTable(show_inspect=False, cursor_type="row")
         self.api = api
         self.tid = tid
 
     def compose(self) -> ComposeResult:
-        yield self.main_table
+        with self.content:
+            yield self.main_table
 
-    def on_mount(self) -> None:
-
-        self.main_table.add_column("Bind", key="bind", width=4)
-        self.main_table.add_column("Option", key="add-options", width=100)
-
-        for row in self.TABLE:
-            self.main_table.add_row(row[0], row[1])
-
-    @on(DataTable.RowSelected)
-    def action_option_selected(self, event: DataTable.RowSelected):
-        row = event.cursor_row
-        value = self.main_table.get_cell_at(Coordinate(row, 1))
-        match value:
-            case "Queue Last":
-                self.action_queue_track(False)
-            case "Queue Next":
-                self.action_queue_track(True)
-            case "Add to Playlist":
-                self.action_add_track_to_playlist()
-
-    def action_queue_track(self, queue_next: bool) -> None:
-        self.dismiss()
-        self.post_message(self.QueueTrack(self.tid, queue_next))
-
-    def action_add_track_to_playlist(self) -> None:
-        self.dismiss()
-        self.app.push_screen(AddToPlaylistPopup(self.api, self.tid))
+    @override
+    def action_dismiss_msg(self, bind: str):
+        match bind:
+            case "l":
+                self.post_message(self.QueueTrack(self.tid, False))
+            case "n":
+                self.post_message(self.QueueTrack(self.tid, True))
+            case "p":
+                self.dismiss()
+                self.app.push_screen(AddToPlaylistPopup(self.api, self.tid))
+                return
+        super().action_dismiss_msg(bind)
 
 
 class TracksDataTable(Static):
@@ -212,7 +168,7 @@ class TracksDataTable(Static):
     def __init__(
         self,
         api: Api,
-        show_filter: bool = True,
+        show_sort: bool = True,
         only_favorites: bool = False,
     ):
         super().__init__()
@@ -221,7 +177,7 @@ class TracksDataTable(Static):
         self.only_favorites = only_favorites
 
         self.full_rows: list = []
-        self.show_filter = show_filter
+        self.show_sort = show_sort
 
         self._sort_col: (
             Literal[
@@ -251,7 +207,7 @@ class TracksDataTable(Static):
             yield self.main_table
 
     def action_open_sort(self) -> None:
-        if self.show_filter:
+        if self.show_sort:
             self.app.push_screen(SortTracksPopup(), callback=self.sort)  # type:ignore
 
     def action_open_options(self) -> None:
@@ -296,24 +252,42 @@ class TracksDataTable(Static):
 
     def sort(
         self,
-        method: Literal[
-            "artist",
-            "album",
-            "date",
-            "dateadded",
-            "id",
-            "plays",
-            "genre",
-            "title",
-            "time",
-            "cancel",
-            "shuffle",
-            "reset",
+        bind: Literal[
+            "A",
+            "a",
+            "D",
+            "d",
+            "g",
+            "i",
+            "p",
+            "s",
+            "t",
+            "T",
+            "r",
+            "esc",
         ],
     ):
+
+        bind_to_method = {
+            "A": "artist",
+            "a": "album",
+            "D": "date",
+            "d": "dateadded",
+            "i": "id",
+            "p": "plays",
+            "g": "genre",
+            "t": "title",
+            "T": "time",
+            "r": "reset",
+            "s": "shuffle",
+            "esc": "cancel",
+        }
+
         """Callback for the sort popup."""
-        if method in (None, "cancel"):
+        if bind in (None, "esc"):
             return
+
+        method = bind_to_method[bind]
 
         if method == "reset":
             self._sort_col, self._sort_desc = None, False
@@ -328,7 +302,7 @@ class TracksDataTable(Static):
 
         # column sort: toggle direction only when re-selecting the same column
         self._sort_desc = not self._sort_desc if self._sort_col == method else False
-        self._sort_col = method
+        self._sort_col = method  # type:ignore
         self.populate(self.search.value)  # re-queries the DB in the new order
         self.redraw_rows()
 

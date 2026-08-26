@@ -10,42 +10,38 @@
 from textual import on
 from textual.app import ComposeResult
 from textual.containers import Horizontal, Vertical
-from textual.message import Message
-from textual.screen import ModalScreen
 from textual.widgets import Label, Static
 
 from mu.api import Api
 from mu.models import Playlist, Track
 from muc.player import Player
 from muc.widgets.playlistsdatatable import PlaylistsDataTable
+from muc.widgets.popups import ConfirmPopup
 from muc.widgets.tracksdatatable import TrackOptionsPopup
 from muc.widgets.vimdatatable import VimDataTable
 
 
-class RemoveTrackFromPlaylistPopup(ModalScreen[str]):
-    BINDINGS = [("escape", "dismiss", "Close"), ("enter", "confirm", "Confirm")]
-
-    class RemoveTrackFromPlaylist(Message):
-        def __init__(self, tid: int, pid: int, *args, **kwargs) -> None:
-            super().__init__(*args, **kwargs)
+class RemoveTrackFromPlaylistPopup(ConfirmPopup):
+    class Submitted(ConfirmPopup.Submitted):
+        def __init__(
+            self, response: bool, tid: int = 0, pid: int = 0, *args, **kwargs
+        ) -> None:
+            super().__init__(response, *args, **kwargs)
             self.tid = tid
             self.pid = pid
 
     def __init__(self, tid: int, pid: int, *args, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
+        super().__init__(
+            "Are you sure you want to remove this track?",
+            title="Remove track?",
+            *args,
+            **kwargs,
+        )
         self.tid = tid
         self.pid = pid
 
-    def compose(self) -> ComposeResult:
-        with Vertical():
-            yield Label("Are you sure you want to remove this track?")
-            yield Label(
-                "[$error]Yes (enter)[/] / [$success]Cancel (esc)[/]", expand=True
-            )
-
-    def action_confirm(self) -> None:
-        self.post_message(self.RemoveTrackFromPlaylist(self.tid, self.pid))
-        self.dismiss()
+    async def action_submit(self, *args, **kwargs) -> None:
+        await super().action_dismiss(message=self.Submitted(True, self.tid, self.pid))
 
 
 class PlaylistTracksDataTable(Static):

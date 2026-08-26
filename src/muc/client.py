@@ -30,8 +30,8 @@ from muc.widgets.playlistssplit import (
     PlaylistsSplit,
     RemoveTrackFromPlaylistPopup,
 )
+from muc.widgets.popups import QuitPopup
 from muc.widgets.queuedatatable import QueueDataTable
-from muc.widgets.quitpopup import QuitPopup
 from muc.widgets.tracksdatatable import (
     AddToPlaylistPopup,
     TrackOptionsPopup,
@@ -257,27 +257,33 @@ class Client(App):
                     f"Added [$primary]#{event.tid}[/] to [$primary]#{event.pid}[/]."
                 )
 
-    @on(RemoveTrackFromPlaylistPopup.RemoveTrackFromPlaylist)
+    @on(RemoveTrackFromPlaylistPopup.Submitted)
     def remove_track_from_playlist(
-        self, event: RemoveTrackFromPlaylistPopup.RemoveTrackFromPlaylist
+        self, event: RemoveTrackFromPlaylistPopup.Submitted
     ) -> None:
+        if not event.response:
+            return
         response = self.api.remove_from_playlist(f"id={event.pid}", f"id={event.tid}")
         if len(response) == 0:
             self.notify("Playlist not found", severity="error")
             return
-        self.notify(f"Removed [$primary]#{event.pid}[/] from playlist")
+        self.notify(
+            f"Removed [$primary]#{event.tid}[/] from from [$primary]{event.pid}[/]"
+        )
         if self.focused == self.playlists_split.tracks_data_table.main_table:
             self.playlists_split.tracks_data_table.playlist = response[event.pid]
             self.playlists_split.tracks_data_table.populate()
             self.playlists_split.tracks_data_table.redraw_rows()
 
-    @on(DeletePlaylistPopup.DeletePlaylist)
-    def delete_playlist(self, event: DeletePlaylistPopup.DeletePlaylist) -> None:
+    @on(DeletePlaylistPopup.Submitted)
+    def delete_playlist(self, event: DeletePlaylistPopup.Submitted) -> None:
+        if not event.response:
+            return
         response = self.api.delete_playlists(f"id={event.pid}")
         if len(response) == 0:
             self.notify("Playlist not found", severity="error")
             return
-        self.notify(f"Removed [$primary]#{event.pid}[/] from playlist")
+        self.notify(f"Deleted [$primary]#{event.pid}[/]")
         if self.focused == self.playlists_split.playlists_data_table.main_table:
             self.playlists_split.playlists_data_table.populate()
             self.playlists_split.playlists_data_table.redraw_rows()
@@ -303,8 +309,10 @@ class Client(App):
     def action_prompt_quit(self) -> None:
         self.push_screen(QuitPopup())
 
-    @on(QuitPopup.Confirm)
-    async def action_quit(self, *args, **kwargs) -> None:
+    @on(QuitPopup.Submitted)
+    async def action_quit(self, event: QuitPopup.Submitted, *args, **kwargs) -> None:
+        if not event.response:
+            return
         await super().action_quit()
 
     def action_increase_volume(self) -> None:

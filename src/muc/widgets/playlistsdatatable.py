@@ -9,17 +9,36 @@
 
 from textual import on
 from textual.app import ComposeResult
-from textual.containers import Vertical
+from textual.containers import Horizontal, Vertical
 from textual.message import Message
-from textual.screen import ModalScreen
-from textual.widgets import Button, Input, Label, Static
+from textual.widgets import Input, Label, Static
 
 from mu.api import Api
 from mu.models import Playlist
+from muc.widgets.popups import ConfirmPopup, Popup
 from muc.widgets.vimdatatable import VimDataTable
 
 
-class CreatePlaylistPopup(ModalScreen[str]):
+class DeletePlaylistPopup(ConfirmPopup):
+    class Submitted(ConfirmPopup.Submitted):
+        def __init__(self, response: bool, pid: int = 0, *args, **kwargs) -> None:
+            super().__init__(response, *args, **kwargs)
+            self.pid = pid
+
+    def __init__(self, pid: int, *args, **kwargs) -> None:
+        super().__init__(
+            "Are you sure you want to delete this playlist?",
+            title="Delete playlist?",
+            *args,
+            **kwargs,
+        )
+        self.pid = pid
+
+    async def action_submit(self, *args, **kwargs) -> None:
+        await super().action_dismiss(message=self.Submitted(True, self.pid))
+
+
+class CreatePlaylistPopup(Popup):
     BINDINGS = [("escape", "dismiss", "Close"), ("enter", "create", "Create")]
 
     class CreatePlaylist(Message):
@@ -29,48 +48,26 @@ class CreatePlaylistPopup(ModalScreen[str]):
             self.description = description
 
     def __init__(self, *args, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
-        self.vertical = Vertical()
-        self.vertical.border_title = "Create Playlist"
-        self.title_input = Input(placeholder="Title", compact=True, valid_empty=True)
-        self.description_input = Input(placeholder="Description", compact=True)
+        super().__init__("Create Playlist", *args, **kwargs)
+        self.title_input = Input(compact=True, valid_empty=True)
+        self.description_input = Input(compact=True)
 
-        self.border_title = "Create Playlist"
+        self.border_title = "Create playlist"
 
     def compose(self):
-        with self.vertical:
-            yield self.title_input
-            yield self.description_input
+        with self.content:
+            with Horizontal():
+                yield Label("Title: ")
+                yield self.title_input
+            with Horizontal():
+                yield Label("Description: ")
+                yield self.description_input
 
     @on(Input.Submitted)
     def action_create(self):
         self.post_message(
             self.CreatePlaylist(self.title_input.value, self.description_input.value)
         )
-        self.dismiss()
-
-
-class DeletePlaylistPopup(ModalScreen[str]):
-    BINDINGS = [("escape", "dismiss", "Close"), ("enter", "confirm", "Confirm")]
-
-    class DeletePlaylist(Message):
-        def __init__(self, pid: int, *args, **kwargs) -> None:
-            super().__init__(*args, **kwargs)
-            self.pid = pid
-
-    def __init__(self, pid: int, *args, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
-        self.pid = pid
-
-    def compose(self) -> ComposeResult:
-        with Vertical():
-            yield Label("Are you sure you want to delete this playlist?")
-            yield Label(
-                "[$error]Yes (enter)[/] / [$success]Cancel (esc)[/]", expand=True
-            )
-
-    def action_confirm(self) -> None:
-        self.post_message(self.DeletePlaylist(self.pid))
         self.dismiss()
 
 
@@ -83,7 +80,7 @@ class PlaylistsDataTable(Static):
     BINDINGS = [
         ("/", "focus_search", "Search"),
         ("d", "delete_playlist", "Delete"),
-        ("a", "create_playlist", "Create"),
+        ("c", "create_playlist", "Create"),
     ]
 
     def __init__(self, api: Api):

@@ -89,60 +89,49 @@ PlaylistsSplit PlaylistTracksDataTable {
  * Popups
  */
 
-InspectRowPopup,SortTracksPopup,TrackOptionsPopup, AddToPlaylistPopup,RemoveTrackFromPlaylistPopup,DeletePlaylistPopup,CreatePlaylistPopup,QuitPopup  {
- align: center middle;
- background: transparent;
+
+
+Popup, InspectRowPopup {
+  align: center middle;
+  background: #00000090;
 }
-AddToPlaylistPopup Input,
-CreatePlaylistPopup, Input {
-  width: 1fr;
-  height: 1;
-}
-RemoveTrackFromPlaylistPopup > Vertical,
-CreatePlaylistPopup > Vertical,
-DeletePlaylistPopup > Vertical,
-CreatePlaylistPopup > Vertical,
-QuitPopup > Vertical {
-  width: auto;
-  border: heavy $primary;
-  max-height: 4;
-  max-width: 50;
-  border-title-color: $secondary;
+Popup > Vertical, InspectRowPopup > Vertical{
+  width: 30;
+  height: auto;
+  border: double $primary;
+  max-height: 20;
+  max-width: 80;
+  border-title-color: $primary;
   border-title-align: right;
+  margin-bottom: 1;
+  margin-right: 1;
+  background: $background;
 }
-RemoveTrackFromPlaylistPopup  Label,
-DeletePlaylistPopup Label,
-QuitPopup  Label {
+Popup Label {
+  text-align: center;
+  width: 1fr;
+}
+ConfirmPopup > Vertical {
+  padding: 0 1 0 1;
+  width: 36;
   text-align: center;
 }
-InspectRowPopup > VimDataTable, AddToPlaylistPopup > PlaylistsDataTable{
- min-width: 50;
- max-width: 70;
- height: auto;
- max-height: 30;
- border: heavy $primary;
- padding: 0 0;
- align: center middle;
- overflow:hidden;
+AddToPlaylistPopup > Vertical {
+  width: 60;
 }
-SortTracksPopup > VimDataTable {
- width: 35;
- height: auto;
- border: heavy $primary;
- padding: 0 0;
- align: center middle;
- overflow:hidden;
- }
-TrackOptionsPopup > VimDataTable {
- width: 30;
- height: auto;
- border: heavy $primary;
- padding: 0 0;
- align: center middle;
- overflow:hidden;
+InspectRowPopup > Vertical {
+  width: 100;
 }
-
-
+CreatePlaylistPopup > Vertical {
+  width: 50;
+}
+CreatePlaylistPopup Horizontal {
+  height:1;
+}
+CreatePlaylistPopup Label {
+  text-align: left;
+  width: auto;
+}
 
 CmdLine CmdLineHintTable {
   dock: bottom;
