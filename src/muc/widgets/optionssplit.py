@@ -1,5 +1,3 @@
-from cmd import Cmd
-import os
 
 from textual import on
 from textual.containers import Horizontal
@@ -7,7 +5,6 @@ from textual.coordinate import Coordinate
 from textual.widgets import Static
 
 from mu.api import Api
-from mu.io import mu_input_str, mu_print
 from muc.widgets.cmdline import CmdLine
 from muc.widgets.vimdatatable import VimDataTable
 
