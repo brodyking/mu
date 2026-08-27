@@ -234,7 +234,7 @@ class Api:
         where, values = self._build_sql_where(tracks_term, "tracks")
         with self.db.write() as conn:
             rows = conn.execute(
-                "UPDATE tracks SET plays = plays + ?" + where + " RETURNING *",
+                "UPDATE tracks SET plays = plays + ? WHERE " + where + " RETURNING *",
                 (amount, *values),
             ).fetchall()
         return {t.id: t for t in (Track(row) for row in rows)}
