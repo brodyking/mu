@@ -144,7 +144,7 @@ class PlaylistTracksDataTable(Static):
             self.playlist_metadata.update(
                 f"[grey] #{self.playlist.id}[/]"
                 f"[$success] 󱝟 {self.playlist.title}[/]"
-                f" {self.playlist.description}"
+                f" {self.playlist.description.replace('\n', '')}"
                 f"[$error] 󰈣 {len(self.playlist.tracks)}[/$error]"
             )
 

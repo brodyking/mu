@@ -9,6 +9,7 @@
 
 import os
 
+from rich.console import Console
 from textual import on
 from textual.containers import Horizontal
 from textual.coordinate import Coordinate
@@ -78,6 +79,8 @@ class CmdLine(ModalScreen[str]):
     def on_submitted(self, event: Input.Submitted) -> None:
         with self.app.suspend():
             os.system("cls" if os.name == "nt" else "clear")
+            console = Console()
+            console.print(f"[medium_purple1]> mu [/]{event.value}")
             os.system(f"mu {event.value}")
             input("Press Enter to return to muc")
         self.dismiss()
@@ -120,13 +123,6 @@ class CmdLine(ModalScreen[str]):
 
         for hint in hints:
             self.hint_table.add_row(hint)
-
-    # @on(Input.Changed)
-    # def update_hint_table(self, event: Input.Changed | None) -> None:
-    #     self.hint_table.clear()
-    #     for i, possible in enumerate(self.BASE_PARSER):
-    #         if not event or (event.value.lower() == possible[: (len(event.value))]):
-    #             self.hint_table.add_row(possible, key=str(i))
 
     def action_focus_hint_previous(self) -> None:
         self.hint_table.action_cursor_up()
