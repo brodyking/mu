@@ -88,6 +88,8 @@ class TrackOptionsPopup(BindsDataTablePopup):
         ("l", "dismiss_msg('l')", "Queue Last"),
         ("n", "dismiss_msg('n')", "Queue Next"),
         ("p", "dismiss_msg('p')", "Add to Playlist"),
+        ("A", "dismiss_msg('A')", "Search artist"),
+        ("a", "dismiss_msg('a')", "Search album"),
         ("esc", "dismiss_msg('esc')", "Cancel"),
     ]
 
@@ -97,12 +99,25 @@ class TrackOptionsPopup(BindsDataTablePopup):
             self.tid = tid
             self.queue_next = queue_next
 
+    class ArtistClicked(Message):
+        def __init__(self, name: str, *args, **kwargs) -> None:
+            super().__init__(*args, **kwargs)
+            self.name = name
+
+    class AlbumClicked(Message):
+        def __init__(self, title: str, albumartist: str, *args, **kwargs) -> None:
+            super().__init__(*args, **kwargs)
+            self.title = title
+            self.albumartist = albumartist
+
     def __init__(self, api: Api, tid: int, *args, **kwargs) -> None:
 
         binds = {
             "l": "Queue Last",
             "n": "Queue Next",
             "p": "Add to Playlist",
+            "A": "Search artist",
+            "a": "Search album",
             "esc": "Cancel",
         }
 
@@ -126,6 +141,18 @@ class TrackOptionsPopup(BindsDataTablePopup):
                 self.dismiss()
                 self.app.push_screen(AddToPlaylistPopup(self.api, self.tid))
                 return
+            case "A":
+                response = self.api.get_tracks(f"id={self.tid}")
+                if self.tid in response:
+                    self.post_message(self.ArtistClicked(response[self.tid].artist))
+            case "a":
+                response = self.api.get_tracks(f"id={self.tid}")
+                if self.tid in response:
+                    self.post_message(
+                        self.AlbumClicked(
+                            response[self.tid].album, response[self.tid].albumartist
+                        )
+                    )
         super().action_dismiss_msg(bind)
 
 
