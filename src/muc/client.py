@@ -314,7 +314,9 @@ class Client(App):
         self.push_screen(CurrentlyAvailableBindsPopup())
 
     @on(QuitPopup.Submitted)
-    async def action_quit(self, event: QuitPopup.Submitted, *args, **kwargs) -> None:
+    async def action_quit_confirmed(
+        self, event: QuitPopup.Submitted, *args, **kwargs
+    ) -> None:
         if not event.response:
             return
         await super().action_quit()
