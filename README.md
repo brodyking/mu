@@ -304,6 +304,8 @@ Commands:
 
 To get started using mµc, simply run `muc` in the terminal of your choosing.
 
+For a list of available keybinds, press `?`. (Note: This does not work inside of popups)
+
 ### Tab Navigation
 
 You can to a specific tab with the following keybindings.
