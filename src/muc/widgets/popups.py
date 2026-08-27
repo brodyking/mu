@@ -18,12 +18,13 @@ class Popup(ModalScreen[str]):
 
     BINDINGS = [("escape", "dismiss", "Close")]
 
-    def __init__(self, title: str, *args, **kwargs) -> None:
+    def __init__(self, title: str = "", subtitle: str = "", *args, **kwargs) -> None:
 
         super().__init__(*args, **kwargs)
 
         self.content: Vertical = Vertical()
         self.content.border_title = title
+        self.content.border_subtitle = subtitle
 
     def compose(self) -> ComposeResult:
         with self.content:
@@ -38,8 +39,8 @@ class ConfirmPopup(Popup):
 
     BINDINGS = [("enter", "submit", "Submit")]
 
-    def __init__(self, prompt: str, title: str = "Confirm"):
-        super().__init__(title)
+    def __init__(self, prompt: str, title: str = "Confirm", subtitle: str = ""):
+        super().__init__(title, subtitle)
 
         self.prompt: Label = Label(prompt)
         self.response: bool = False

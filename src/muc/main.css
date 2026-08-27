@@ -68,7 +68,9 @@ QueueDataTable VimDataTable {
   width: 1fr;
   height: 1fr;
 }
-
+PlaylistsDataTable Button {
+  width: 1fr;
+}
 
 
 
@@ -102,7 +104,9 @@ Popup > Vertical, InspectRowPopup > Vertical{
   max-height: 20;
   max-width: 80;
   border-title-color: $primary;
+  border-subtitle-color: $primary;
   border-title-align: right;
+  border-subtitle-align: left;
   margin-bottom: 1;
   margin-right: 1;
   background: $background;

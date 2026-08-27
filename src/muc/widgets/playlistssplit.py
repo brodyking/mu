@@ -34,6 +34,7 @@ class RemoveTrackFromPlaylistPopup(ConfirmPopup):
         super().__init__(
             "Are you sure you want to remove this track?",
             title="Remove track?",
+            subtitle="This cannot be undone!",
             *args,
             **kwargs,
         )

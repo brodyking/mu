@@ -11,7 +11,7 @@ from textual import on
 from textual.app import ComposeResult
 from textual.containers import Horizontal, Vertical
 from textual.message import Message
-from textual.widgets import Input, Label, Static
+from textual.widgets import Button, Input, Label, Static
 
 from mu.api import Api
 from mu.models import Playlist
@@ -29,6 +29,7 @@ class DeletePlaylistPopup(ConfirmPopup):
         super().__init__(
             "Are you sure you want to delete this playlist?",
             title="Delete playlist?",
+            subtitle="This cannot be undone!",
             *args,
             **kwargs,
         )
@@ -48,7 +49,9 @@ class CreatePlaylistPopup(Popup):
             self.description = description
 
     def __init__(self, *args, **kwargs) -> None:
-        super().__init__("Create Playlist", *args, **kwargs)
+        super().__init__(
+            title="Create Playlist", subtitle="Press enter to submit", *args, **kwargs
+        )
         self.title_input = Input(compact=True, valid_empty=True)
         self.description_input = Input(compact=True)
 
@@ -92,11 +95,15 @@ class PlaylistsDataTable(Static):
 
         self.search = Input(placeholder="Filter playlists (/)", compact=True)
         self.main_table = VimDataTable(cursor_type="row")
+        self.create_playlist_btn = Button(
+            " Create playlist (c)", compact=True, id="create-playlist-btn"
+        )
 
     def compose(self) -> ComposeResult:
         with Vertical():
             yield self.search
             yield self.main_table
+            yield self.create_playlist_btn
 
     def action_focus_search(self) -> None:
         self.search.focus()
@@ -122,6 +129,7 @@ class PlaylistsDataTable(Static):
         pid: int = int(self.main_table.export_row_as_dict(row_index)["id"])
         self.app.push_screen(DeletePlaylistPopup(pid))
 
+    @on(Button.Pressed, "#create-playlist-btn")
     def action_create_playlist(self) -> None:
         self.app.push_screen(CreatePlaylistPopup())
 
