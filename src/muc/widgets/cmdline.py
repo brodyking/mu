@@ -7,7 +7,9 @@
 
 """
 
-import os
+import shlex
+import shutil
+import subprocess
 
 from rich.console import Console
 from textual import on
@@ -30,6 +32,8 @@ class CmdLineHintTable(VimDataTable):
 
 
 class CmdLine(ModalScreen[str]):
+    MU_BIN = shutil.which("mu")
+
     BINDINGS = [
         ("esc", "dismiss", "Close"),
         ("up", "focus_hint_previous", "Previous hint"),
@@ -77,11 +81,12 @@ class CmdLine(ModalScreen[str]):
 
     @on(Input.Submitted)
     def on_submitted(self, event: Input.Submitted) -> None:
+        args = shlex.split(event.value)
         with self.app.suspend():
-            os.system("cls" if os.name == "nt" else "clear")
             console = Console()
+            console.clear()
             console.print(f"[medium_purple1]> mu [/]{event.value}")
-            os.system(f"mu {event.value}")
+            subprocess.run([self.MU_BIN, *args], check=False)  # type: ignore
             input("Press Enter to return to muc")
         self.dismiss()
 
