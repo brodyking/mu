@@ -214,10 +214,12 @@ class Api:
         as a dict with tracks mapped to their ids.
         Term filters through tracks.
         """
-        match, values = self._build_sql_where(tracks_term, "tracks")
+        where, values = self._build_sql_where(tracks_term, "tracks")
         with self.db.write() as conn:
             rows = conn.execute(
-                "UPDATE tracks SET favorite = 1 - favorite " + match + " RETURNING *",
+                "UPDATE tracks SET favorite = 1 - favorite WHERE "
+                + where
+                + " RETURNING *",
                 values,
             ).fetchall()
 
