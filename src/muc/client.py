@@ -174,6 +174,7 @@ class Client(App):
 
     @on(AlbumsDataTable.AlbumClicked)
     @on(NowPlaying.AlbumClicked)
+    @on(TrackOptionsPopup.AlbumClicked)
     def album_clicked(
         self, event: AlbumsDataTable.AlbumClicked | NowPlaying.AlbumClicked
     ) -> None:
@@ -184,12 +185,15 @@ class Client(App):
         self.tracks_data_table.search.value = (
             f'album="{event.title}"&albumartist="{event.albumartist}"'
         )
-        if isinstance(event, NowPlaying.AlbumClicked):
+        if isinstance(event, NowPlaying.AlbumClicked) or isinstance(
+            event, TrackOptionsPopup.AlbumClicked
+        ):
             self.tracks_data_table.on_show()
         self.action_goto_tab(2)
 
     @on(ArtistsDataTable.ArtistClicked)
     @on(NowPlaying.ArtistClicked)
+    @on(TrackOptionsPopup.ArtistClicked)
     def artist_clicked(
         self, event: ArtistsDataTable.ArtistClicked | NowPlaying.ArtistClicked
     ) -> None:
