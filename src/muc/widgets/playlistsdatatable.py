@@ -86,10 +86,12 @@ class PlaylistsDataTable(Static):
         ("c", "create_playlist", "Create"),
     ]
 
-    def __init__(self, api: Api):
+    def __init__(self, api: Api, show_delete: bool = True, show_create: bool = True):
         super().__init__()
 
         self.api = api
+        self.show_delete = show_delete
+        self.show_create = show_create
 
         self.full_rows: list = []
 
@@ -125,12 +127,16 @@ class PlaylistsDataTable(Static):
             self.notify("Playlist not found", severity="error")
 
     def action_delete_playlist(self) -> None:
+        if not self.show_delete:
+            return
         row_index: int = self.main_table.cursor_row
         pid: int = int(self.main_table.export_row_as_dict(row_index)["id"])
         self.app.push_screen(DeletePlaylistPopup(pid))
 
     @on(Button.Pressed, "#create-playlist-btn")
     def action_create_playlist(self) -> None:
+        if not self.show_create:
+            return
         self.app.push_screen(CreatePlaylistPopup())
 
     def redraw_rows(self) -> None:

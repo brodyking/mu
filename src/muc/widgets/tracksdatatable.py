@@ -69,7 +69,9 @@ class AddToPlaylistPopup(Popup):
         self.api = api
         self.tid = tid
 
-        self.main_table = PlaylistsDataTable(self.api)
+        self.main_table = PlaylistsDataTable(
+            self.api, show_create=False, show_delete=False
+        )
 
     def compose(self) -> ComposeResult:
         with self.content:
