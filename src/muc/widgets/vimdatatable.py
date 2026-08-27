@@ -29,7 +29,7 @@ class VimDataTable(DataTable):
     ]
 
     def __init__(self, show_inspect: bool = True, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+        super().__init__(zebra_stripes=True, *args, **kwargs)
         self.show_inspect = show_inspect
 
     def export_row_as_dict(self, row: int) -> dict[str, Any]:
