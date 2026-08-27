@@ -75,7 +75,7 @@ class ArtistsDataTable(Static):
         self.full_rows = []
 
         if artists_term and ":" not in artists_term and "=" not in artists_term:
-            artists_term = f'albumartist:"{artists_term}",album:"{artists_term}"'
+            artists_term = f'albumartist:"{artists_term}",artist:"{artists_term}"'
 
         try:
             artists: dict[str, Artist] = self.api.get_artists(
