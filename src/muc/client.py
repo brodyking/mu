@@ -30,7 +30,7 @@ from muc.widgets.playlistssplit import (
     PlaylistsSplit,
     RemoveTrackFromPlaylistPopup,
 )
-from muc.widgets.popups import QuitPopup
+from muc.widgets.popups import CurrentlyAvailableBindsPopup, QuitPopup
 from muc.widgets.queuedatatable import QueueDataTable
 from muc.widgets.tracksdatatable import (
     AddToPlaylistPopup,
@@ -46,6 +46,7 @@ class Client(App):
 
     BINDINGS = (
         ("q", "prompt_quit", "Quit"),
+        ("?", "show_bindings", "Help"),
         # Cycling tabs
         ("H", "cycle_tab(-1)", "Previous Tab"),
         ("L", "cycle_tab(1)", "Next Tab"),
@@ -308,6 +309,9 @@ class Client(App):
 
     def action_prompt_quit(self) -> None:
         self.push_screen(QuitPopup())
+
+    def action_show_bindings(self) -> None:
+        self.push_screen(CurrentlyAvailableBindsPopup())
 
     @on(QuitPopup.Submitted)
     async def action_quit(self, event: QuitPopup.Submitted, *args, **kwargs) -> None:

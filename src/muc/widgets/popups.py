@@ -102,6 +102,24 @@ class BindsDataTablePopup(Popup):
         self.action_dismiss_msg(value)
 
 
+class CurrentlyAvailableBindsPopup(Popup):
+    def __init__(self, *args, **kwargs):
+        super().__init__(title="Available Bindings", *args, **kwargs)
+        self.bindings = self.app.active_bindings.values()
+        self.main_table = VimDataTable(show_inspect=False, cursor_type="row")
+
+    def on_mount(self) -> None:
+        self.main_table.add_column("Bind", key="bind", width=7)
+        self.main_table.add_column("Description", key="description", width=100)
+
+        for bind in self.bindings:
+            self.main_table.add_row(bind.binding.key, bind.binding.description)
+
+    def compose(self) -> ComposeResult:
+        with self.content:
+            yield self.main_table
+
+
 class QuitPopup(ConfirmPopup):
     class Submitted(ConfirmPopup.Submitted): ...
 
