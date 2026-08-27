@@ -84,7 +84,12 @@ class Api:
         select = "SELECT * FROM tracks "
         if tracks_term:
             where, values = self._build_sql_where(tracks_term, "tracks")
-            where += " AND (favorite = 1)" if only_favorited else ""
+            where = (
+                f"WHERE (favorite = 1 AND ({where}))"
+                if only_favorited
+                else f"WHERE {where}"
+            )
+            ordering = f" ORDER BY {ordering}" if order_by else ordering
             rows = self.db.query(select + where + ordering, values)
         else:
             where: str = " WHERE (favorite = 1)" if only_favorited else ""
@@ -125,6 +130,7 @@ class Api:
         select = "SELECT * FROM tracks"
         if tracks_term:
             where, values = self._build_sql_where(tracks_term, "tracks")
+            where = f" WHERE {where}"
             rows = self.db.query(select + where + ordering, values)
         else:
             rows = self.db.query(select + ordering)
@@ -161,6 +167,7 @@ class Api:
 
         if tracks_term:
             where, values = self._build_sql_where(tracks_term, "tracks")
+            where = f" WHERE {where}"
             rows = self.db.query(select + where + ordering, values)
         else:
             rows = self.db.query(select + ordering)
@@ -187,6 +194,7 @@ class Api:
         # Create playlists
         if playlists_term:
             where, values = self._build_sql_where(playlists_term, "playlists")
+            where = f" WHERE {where}"
             playlist_rows = self.db.query(select + where + ordering, values)
         else:
             playlist_rows = self.db.query(select + ordering)
@@ -521,7 +529,7 @@ class Api:
                     values.append(f"{value}")
             groups.append("(" + " AND ".join(conditions) + ")")
 
-        sql = " WHERE " + " OR ".join(groups)
+        sql = " OR ".join(groups)
         return sql, tuple(values)
 
     def _build_sql_order(
@@ -567,7 +575,7 @@ class Api:
         else:
             key = f"{order_by} COLLATE NOCASE"
 
-        return f" ORDER BY {key} {'DESC' if descending else 'ASC'} NULLS LAST"
+        return f"{key} {'DESC' if descending else 'ASC'} NULLS LAST"
 
     def _upsert_track(self, conn, metadata: dict) -> Track:
         """
