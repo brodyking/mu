@@ -35,7 +35,9 @@ class QueueList:
         """Returns the currently selected track"""
         if self.pos <= len(self.queue) - 1:
             tid: int = self.queue[self.pos]
-            return self.api.get_tracks(f"id={tid}")[tid]
+            response = self.api.get_tracks(f"id={tid}")
+            if tid in response:
+                return response[tid]
         else:
             return None
 
