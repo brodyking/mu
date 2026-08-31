@@ -84,8 +84,19 @@ class Playlist:
         self.description = description if description is not None else ""
         self.tracks = tracks if tracks else []
 
+    def get_dict(self) -> dict:
+        return {
+            "id": self.id,
+            "title": self.title,
+            "description": self.description,
+            "tracks": self.tracks,
+        }
+
 
 class Artist:
     def __init__(self, name: str, tracks: list[Track]) -> None:
         self.name = name
         self.tracks = tracks
+
+    def get_dict(self) -> dict:
+        return {"name": self.name, "tracks": self.tracks}
