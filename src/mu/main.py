@@ -9,7 +9,7 @@
 
 from importlib.metadata import version
 from typing import Annotated, Literal
-
+import uvicorn
 import typer
 
 from mu.api import Api
@@ -26,6 +26,7 @@ from mu.io import (
 )
 from mu.itunesimport import ITunesImport
 from mu.models import Playlist, Track
+from mu.server import app as server_app
 
 VERSION: str = version("mu")
 
@@ -84,6 +85,12 @@ def itunes_import(
             track=r["track"],
             playlist=r["playlist"],
         )
+
+
+@parser.command("sv", hidden=True)
+@parser.command("serve", help="start the mu web api (alias: sv)")
+def serve():
+    uvicorn.run(server_app)
 
 
 @track_parser.command("f", hidden=True)
