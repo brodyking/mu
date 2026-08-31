@@ -9,8 +9,9 @@
 
 from importlib.metadata import version
 from typing import Annotated, Literal
-import uvicorn
+
 import typer
+import uvicorn
 
 from mu.api import Api
 from mu.io import (
@@ -26,7 +27,7 @@ from mu.io import (
 )
 from mu.itunesimport import ITunesImport
 from mu.models import Playlist, Track
-from mu.server import app as server_app
+from mu.server.server import app as server_app
 
 VERSION: str = version("mu")
 
