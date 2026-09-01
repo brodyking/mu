@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import Literal
 
-from fastapi import FastAPI, Query
+from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
@@ -12,6 +12,7 @@ api = MuApi()
 
 
 WEB_DIR = Path(__file__).resolve().parent / "static"
+INDEX_WEB_DIR = Path(__file__).resolve().parent / "static" / "index.html"
 
 
 @app.get("/api/tracks")
@@ -58,3 +59,8 @@ def playlists(q: str | None = None):
 
 
 app.mount("/", StaticFiles(directory=WEB_DIR, html=True))
+
+
+@app.exception_handler(404)
+async def custom_404_handler(request: Request, exc: HTTPException):
+    return FileResponse(INDEX_WEB_DIR)
