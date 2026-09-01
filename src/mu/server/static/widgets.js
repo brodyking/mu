@@ -16,10 +16,14 @@ const Homepage = () => {
   `
 }
 
-const TracksTable = async (data) => {
-  rows = ""
-  data.forEach(track => {
-    rows += `
+const TracksTable = async (onlyFavorites = false) => {
+  const data = onlyFavorites ? await getTracksFavorites() : await getTracks()
+  const content = document.createElement("div");
+
+  const generateRows = (data) => {
+    let rows = "";
+    data.forEach(track => {
+      rows += `
     <tr>
         <td title="${track.id}">${track.id}</td>
         <td title="${track.favorite ? "Favorite" : "Not Favorited"}"> <i class="text-danger bi bi-heart${track.favorite ? `-fill` : " "}"></i></td>
@@ -34,32 +38,62 @@ const TracksTable = async (data) => {
         <td title="${track.discnumber}">${track.discnumber}</td>
         <td title="${track.genre}">${track.genre}</td>
         <td title="${track.date}">${track.date}</td>
-      </tr >
-    `
-  })
-  return `
+      </tr>
+    `;
+    });
+    return rows; // ← the fix: return AFTER the loop, not inside it
+  }
+
+  const search = document.createElement("form");
+  search.className = "search-form"
+  search.innerHTML = `
+    <input type="text" name="term" class="form-control rounded-0 w-100 border-0 border-bottom border-light-gray shadow-none" placeholder="Search tracks..."/>
+  `;
+  search.addEventListener('submit', async function (event) { // ← async
+    event.preventDefault();
+    const formData = new FormData(search);
+    const formDataEntries = Object.fromEntries(formData.entries());
+    results = null
+    if (onlyFavorites) {
+      results = await getTracksFavorites(encodeURIComponent(formDataEntries.term)); // ← await + encode
+    } else {
+      results = await getTracks(encodeURIComponent(formDataEntries.term)); // ← await + encode
+    }
+    document.getElementById("tracks-table-body").innerHTML = generateRows(results);
+    window.scrollTo(0, 0)
+  });
+
+  const table = document.createElement("div");
+  table.className = "tracks-table-wrapper";
+  table.innerHTML = `
   <table class="table table-striped" id="tracks-table">
     <thead>
-      <th>id</th>
-      <th>favorite</th>
-      <th>title</th>
-      <th>artist</th>
-      <th>album</th>
-      <th>plays</th>
-      <th>time</th>
-      <th>dateadded</th>
-      <th>tracknumber</th>
-      <th>albumartist</th>
-      <th>discnumber</th>
-      <th>genre</th>
-      <th>date</th>
+      <tr>
+        <th>id</th>
+        <th>favorite</th>
+        <th>title</th>
+        <th>artist</th>
+        <th>album</th>
+        <th>plays</th>
+        <th>time</th>
+        <th>dateadded</th>
+        <th>tracknumber</th>
+        <th>albumartist</th>
+        <th>discnumber</th>
+        <th>genre</th>
+        <th>date</th>
+      </tr>
     </thead>
     <tbody id="tracks-table-body">
-      ${rows}
+      ${generateRows(data)}
     </tbody>
   </table>
-  `
-}
+  `;
+
+  content.appendChild(search);
+  content.appendChild(table);
+  return content;
+};
 
 const AlbumsTable = async (data) => {
   rows = ""

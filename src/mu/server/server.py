@@ -42,9 +42,13 @@ def tracks(
         "reset",
     ]
     | None = None,
-    desc: bool = False,
+    descending: bool = False,
+    only_favorited: bool = False,
 ):
-    return [t.get_dict() for t in api.get_tracks(q, order_by, desc).values()]
+    return [
+        t.get_dict()
+        for t in api.get_tracks(q, order_by, descending, only_favorited).values()
+    ]
 
 
 @app.get("/api/tracks_by_ids")

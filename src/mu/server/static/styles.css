@@ -1,10 +1,39 @@
+.table {
+  height: 100%;
+}
 .table td {
   max-width: 150px;
   text-wrap: nowrap;
   overflow: hidden;
   padding-right: 5px;
 }
-
-#main {
-  padding-left: 64px;
+@media (min-width: 992px) {
+  #main {
+    padding-left: 64px;
+    padding-bottom: 32px;
+  }
+  #nowplaying {
+    position:fixed;
+    bottom:0;
+    z-index:2;
+    padding-left: 64px;
+  }
 }
+.search-form {
+  position:sticky;
+  top:0;
+  z-index: 2
+}
+.tracks-table-wrapper {
+  max-height: 100%;      /* or any fixed value like 500px */
+  overflow-y: auto;
+  overflow-x: auto;      /* in case columns overflow horizontally too */
+}
+
+.tracks-table-wrapper thead th {
+  position: sticky;
+  top: 0;
+  background-color: var(--cui-body-bg, #fff); /* keep header opaque over scrolling rows */
+  z-index: 1;
+}
+

@@ -8,38 +8,41 @@
     <link href="styles.css" rel="stylesheet" />
   </head>
   <body>
-<div class="sidebar sidebar-narrow-unfoldable border-end">
-  <div class="sidebar-header">
-    <div class="sidebar-brand">
-        <a class="nav-item fs-2 text-secondary text-decoration-none" href="/">µ</a>
+    <div id="nav">
+      <div class="sidebar sidebar-narrow-unfoldable border-end">
+        <div class="sidebar-header">
+          <div class="sidebar-brand">
+              <a class="nav-item fs-2 text-secondary text-decoration-none" href="/">µ</a>
+          </div>
+        </div>
+        <ul class="sidebar-nav">
+          <li class="nav-item">
+            <a class="nav-link" href="/tracks">
+              <i class="nav-icon bi bi-music-note"></i> tracks
+            </a>
+          </li>
+
+          <li class="nav-item">
+            <a class="nav-link" href="/favorites">
+              <i class="nav-icon bi bi-heart-fill"></i> favorites 
+            </a>
+          </li>
+
+          <li class="nav-item">
+            <a class="nav-link" href="/albums">
+              <i class="nav-icon bi bi-vinyl-fill"></i> albums 
+            </a>
+          </li>
+
+          <li class="nav-item mt-auto">
+            <a class="nav-link" href="https://github.com/brodyking/mu" data-external>
+              <i class="nav-icon bi bi-github"></i> github</a>
+          </li>
+        </ul>
+      </div>
     </div>
-  </div>
-  <ul class="sidebar-nav">
-    <li class="nav-item">
-      <a class="nav-link" href="/tracks">
-        <i class="nav-icon bi bi-music-note"></i> tracks
-      </a>
-    </li>
-
-    <li class="nav-item">
-      <a class="nav-link" href="/favorites">
-        <i class="nav-icon bi bi-heart-fill"></i> favorites 
-      </a>
-    </li>
-
-    <li class="nav-item">
-      <a class="nav-link" href="/albums">
-        <i class="nav-icon bi bi-vinyl-fill"></i> albums 
-      </a>
-    </li>
-
-    <li class="nav-item mt-auto">
-      <a class="nav-link" href="https://github.com/brodyking/mu" data-external>
-        <i class="nav-icon bi bi-github"></i> github</a>
-    </li>
-  </ul>
-</div>
     <div id="main"></div>
+    <div id="nowplaying" class="w-100 bg-body border">Nowplaying bar<br>example</div>
     <script src="api.js"></script>
     <script src="widgets.js"></script>
     <script src="router.js"></script>

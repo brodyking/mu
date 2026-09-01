@@ -29,17 +29,15 @@ const route = async (pathname, search) => {
       break;
     // ===== Tracks tab =====
     case "/tracks":
-      data = await get_tracks()
-      main.innerHTML = await TracksTable(data)
+      main.replaceChildren(await TracksTable())
       break;
     // ===== Favorites tab =====
     case "/favorites":
-      data = await get_tracks("favorite%3D1")
-      main.innerHTML = await TracksTable(data)
+      main.replaceChildren(await TracksTable(true))
       break;
     // ===== Albums tab =====
     case "/albums":
-      data = await get_albums()
+      data = await getAlbums()
       main.innerHTML = await AlbumsTable(data)
       break;
     // ===== Error 404 =====
@@ -56,9 +54,9 @@ document.addEventListener('click', function (event) {
     return
   }
 
-  event.preventDefault()
   const link = event.target.closest('a');
   if (link && link.hasAttribute('href')) {
+    event.preventDefault()
     route(link.pathname, link.search)
   }
 });

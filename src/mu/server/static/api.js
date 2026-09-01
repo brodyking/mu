@@ -6,15 +6,33 @@
 */
 
 // Gets tracks
-const get_tracks = async (q) => {
+const getTracks = async (q) => {
   if (q == undefined) { q = "" }
-  const response = await fetch(`/api/tracks?q=${q}`)
+  if (q.length !== 0 && q.indexOf("%3A") == -1 && q.indexOf("%3D") == -1) {
+    q = `artist:${q},albumartist:${q},album:${q},title:${q}`
+  }
+  try {
+    const response = await fetch(`/api/tracks?q=${q}`)
+    const data = await response.json()
+    return data;
+  } catch {
+    alert("Invalid search query")
+  }
+}
+
+// Gets favorited tracks
+const getTracksFavorites = async (q) => {
+  if (q == undefined) { q = "" }
+  if (q.length !== 0 && q.indexOf("%3A") == -1 && q.indexOf("%3D") == -1) {
+    q = `artist:${q},albumartist:${q},album:${q},title:${q}`
+  }
+  const response = await fetch(`/api/tracks?q=${q}&only_favorited=1`)
   const data = await response.json()
   return data;
 }
 
 // Get albums
-const get_albums = async (q) => {
+const getAlbums = async (q) => {
   if (q == undefined) { q = "" }
   const response = await fetch(`/api/albums?q=${q}`)
   const data = await response.json()
