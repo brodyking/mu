@@ -19,29 +19,43 @@ const route = async (pathname, search) => {
   }
 
 
-  to_put = document.getElementById("main")
+  main = document.getElementById("main")
 
   // Switch case the current page
   switch (pathname) {
-    // ===== Tracks tab =====
+    // ===== Homepage =====
     case "/":
+      main.innerHTML = Homepage()
+      break;
+    // ===== Tracks tab =====
+    case "/tracks":
       data = await get_tracks()
-      to_put.innerHTML = await TracksTable(data)
+      main.innerHTML = await TracksTable(data)
       break;
     // ===== Favorites tab =====
     case "/favorites":
       data = await get_tracks("favorite%3D1")
-      to_put.innerHTML = await TracksTable(data)
+      main.innerHTML = await TracksTable(data)
+      break;
+    // ===== Albums tab =====
+    case "/albums":
+      data = await get_albums()
+      main.innerHTML = await AlbumsTable(data)
       break;
     // ===== Error 404 =====
     default:
-      document.body.innerHTML = "Error 404";
+      main.innerHTML = `<h1>Error 404</h1>`;
       break;
   }
 }
 
 // Intercept <a href="">, hands off to router.
 document.addEventListener('click', function (event) {
+
+  if (event.target.dataset.external !== undefined) {
+    return
+  }
+
   event.preventDefault()
   const link = event.target.closest('a');
   if (link && link.hasAttribute('href')) {

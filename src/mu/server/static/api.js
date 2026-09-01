@@ -13,3 +13,10 @@ const get_tracks = async (q) => {
   return data;
 }
 
+// Get albums
+const get_albums = async (q) => {
+  if (q == undefined) { q = "" }
+  const response = await fetch(`/api/albums?q=${q}`)
+  const data = await response.json()
+  return data;
+}
