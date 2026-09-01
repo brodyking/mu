@@ -37,8 +37,7 @@ const route = async (pathname, search) => {
       break;
     // ===== Albums tab =====
     case "/albums":
-      data = await getAlbums()
-      main.innerHTML = await AlbumsTable(data)
+      main.replaceChildren(await AlbumsTable())
       break;
     // ===== Error 404 =====
     default:
