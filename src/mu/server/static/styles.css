@@ -1,2 +1,7 @@
-
+.table td {
+  max-width: 150px;
+  text-wrap: nowrap;
+  overflow: hidden;
+  padding-right: 5px;
+}
 
