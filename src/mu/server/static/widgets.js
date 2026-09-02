@@ -75,7 +75,7 @@ const TracksTable = async (onlyFavorites = false) => {
     <thead>
       <tr>
         <th>id</th>
-        <th>favorite</th>
+        <th></th>
         <th>title</th>
         <th>artist</th>
         <th>album</th>
