@@ -25,16 +25,29 @@
   top:0;
   z-index: 2
 }
+
+.data-table {
+  -webkit-user-select: none; 
+  -ms-user-select: none;     
+  user-select: none;         
+}
+
+.data-table tr:hover td{
+  color: var(--cui-danger)!important;
+  cursor: pointer;
+}
+
+
 .tracks-table-wrapper {
-  max-height: 100%;      /* or any fixed value like 500px */
+  max-height: 100%;      
   overflow-y: auto;
-  overflow-x: auto;      /* in case columns overflow horizontally too */
+  overflow-x: auto;     
 }
 
 .tracks-table-wrapper thead th {
   position: sticky;
   top: 0;
-  background-color: var(--cui-body-bg, #fff); /* keep header opaque over scrolling rows */
+  background-color: var(--cui-body-bg, #fff); 
   z-index: 1;
 }
 

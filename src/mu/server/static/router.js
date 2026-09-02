@@ -25,7 +25,7 @@ const route = async (pathname, search) => {
   switch (pathname) {
     // ===== Homepage =====
     case "/":
-      main.innerHTML = Homepage()
+      main.replaceChildren(Homepage())
       break;
     // ===== Tracks tab =====
     case "/tracks":
@@ -41,7 +41,7 @@ const route = async (pathname, search) => {
       break;
     // ===== Error 404 =====
     default:
-      main.innerHTML = Error404();
+      main.replaceChildren(Error404())
       break;
   }
 }

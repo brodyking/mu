@@ -7,32 +7,38 @@
 
 
 const Homepage = () => {
-  return `
-    <div class="text-center d-flex flex-column justify-content-center align-items-center min-vh-100">
-      <h1 class='mt-5 align-self-center fs-1'>µ</h1>
-      <p class='mt-3 fs-4'>your personal music library</p>
-      <a href="https://github.com/brodyking/mu/" class="btn btn-primary mt-3" data-external>github</a>
-    </div>
-  `
-}
+  const content = document.createElement("div");
+  content.className = "text-center d-flex flex-column justify-content-center align-items-center min-vh-100";
+  content.innerHTML = `
+    <h1 class='mt-5 align-self-center fs-1'>µ</h1>
+    <p class='mt-3 fs-4'>your personal music library</p>
+    <a href="https://github.com/brodyking/mu/" class="btn btn-primary mt-3" data-external>github</a>
+  `;
+  return content;
+};
 
 const Error404 = () => {
-  return `
+  const content = document.createElement("div");
+  content.className = "text-center d-flex flex-column justify-content-center align-items-center min-vh-100";
+  content.innerHTML = `
     <div class="text-center d-flex flex-column justify-content-center align-items-center min-vh-100">
       <h1 class='mt-5 align-self-center fs-1'>Error 404</h1>
       <p class='mt-3 fs-5'>Page not found.</p>
     </div>
-  `
-}
+  `;
+  return content;
+};
+
 
 const TracksTable = async (onlyFavorites = false) => {
 
   // Generates the HTML for the table's rows.
   const generateRows = (data) => {
     let rows = "";
+    let index = 0;
     data.forEach(track => {
       rows += `
-        <tr>
+        <tr ondblclick='startQueue("${index}")'>
           <td title="${track.id}">${track.id}</td>
           <td title="${track.favorite ? "Favorite" : "Not Favorited"}"> <i class="text-danger bi bi-heart${track.favorite ? `-fill` : " "}"></i></td>
           <td title="${track.title}">${track.title}</td>
@@ -47,6 +53,7 @@ const TracksTable = async (onlyFavorites = false) => {
           <td title="${track.genre}">${track.genre}</td>
           <td title="${track.date}">${track.date}</td>
         </tr>`;
+      index++;
     });
     return rows;
   }
@@ -80,7 +87,7 @@ const TracksTable = async (onlyFavorites = false) => {
   // Table
   table.className = "tracks-table-wrapper";
   table.innerHTML = `
-  <table class="table table-striped" id="tracks-table">
+  <table class="table table-striped data-table" id="tracks-table">
     <thead>
       <tr>
         <th>id</th>
@@ -110,60 +117,8 @@ const TracksTable = async (onlyFavorites = false) => {
 };
 
 const AlbumsTable = async () => {
-
-  // Generates the HTML for the table's rows.
-  const generateRows = (data) => {
-    let rows = "";
-    data.forEach(album => {
-      rows += `
-        <tr>
-          <td title="${album.title}">${album.title}</td>
-          <td title="${album.albumartist}">${album.albumartist}</td>
-          <td title="${album.tracks.length}">${album.tracks.length}</td>
-        </tr>`;
-    });
-    return rows;
-  }
-
-  const data = await getAlbums() // Get tracks from api
-  const content = document.createElement("div"); // Parent element for search and table
-  const search = document.createElement("form"); // Search Box
-  const table = document.createElement("div"); // Table
-
-
-  // Search
-  search.className = "search-form"
-  search.innerHTML = `
-    <input type="text" name="term" class="form-control rounded-0 w-100 border-0 border-bottom border-light-gray shadow-none" placeholder="Search albums..."/>
-  `;
-  search.addEventListener('submit', async function(event) {
-    // Listens for search submit, fetches tracks and updates rows.
-    event.preventDefault();
-    const formData = new FormData(search);
-    const formDataEntries = Object.fromEntries(formData.entries());
-    results = await getAlbums(encodeURIComponent(formDataEntries.term));
-    document.getElementById("albums-table-body").innerHTML = generateRows(results);
-    window.scrollTo(0, 0)
-  });
-
-  // Table
-  table.className = "albums-table-wrapper";
-  table.innerHTML = `
-    <table class="table table-striped" id="albums-table">
-      <thead>
-        <th>album</th>
-        <th>albumartist</th>
-        <th>tracks</th>
-      </thead>
-      <tbody id="albums-table-body">
-      ${generateRows(data)}
-      </tbody>
-    </table>
-  `;
-
-  content.appendChild(search);
-  content.appendChild(table);
-  console.log(table)
+  const content = document.createElement("div");
+  content.className = "text-center d-flex flex-column justify-content-center align-items-center min-vh-100";
+  content.innerHTML = "<p class='mt-3 fs-4'>coming soon</p>";
   return content;
 };
-
