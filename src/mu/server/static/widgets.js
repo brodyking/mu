@@ -11,7 +11,16 @@ const Homepage = () => {
     <div class="text-center d-flex flex-column justify-content-center align-items-center min-vh-100">
       <h1 class='mt-5 align-self-center fs-1'>µ</h1>
       <p class='mt-3 fs-4'>your personal music library</p>
-      <a href="https://github.com/brodyking/mu/" class="btn btn-dark mt-3" data-external>github</a>
+      <a href="https://github.com/brodyking/mu/" class="btn btn-primary mt-3" data-external>github</a>
+    </div>
+  `
+}
+
+const Error404 = () => {
+  return `
+    <div class="text-center d-flex flex-column justify-content-center align-items-center min-vh-100">
+      <h1 class='mt-5 align-self-center fs-1'>Error 404</h1>
+      <p class='mt-3 fs-5'>Page not found.</p>
     </div>
   `
 }

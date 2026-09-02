@@ -41,7 +41,7 @@ const route = async (pathname, search) => {
       break;
     // ===== Error 404 =====
     default:
-      main.innerHTML = `<h1>Error 404</h1>`;
+      main.innerHTML = Error404();
       break;
   }
 }
