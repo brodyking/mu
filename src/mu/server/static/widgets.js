@@ -53,7 +53,7 @@ const TracksTable = async (onlyFavorites = false) => {
   search.innerHTML = `
     <input type="text" name="term" class="form-control rounded-0 w-100 border-0 border-bottom border-light-gray shadow-none" placeholder="Search tracks..."/>
   `;
-  search.addEventListener('submit', async function (event) {
+  search.addEventListener('submit', async function(event) {
     // Listens for search submit, fetches tracks and updates rows.
     event.preventDefault();
     const formData = new FormData(search);
@@ -127,7 +127,7 @@ const AlbumsTable = async () => {
   search.innerHTML = `
     <input type="text" name="term" class="form-control rounded-0 w-100 border-0 border-bottom border-light-gray shadow-none" placeholder="Search tracks..."/>
   `;
-  search.addEventListener('submit', async function (event) {
+  search.addEventListener('submit', async function(event) {
     // Listens for search submit, fetches tracks and updates rows.
     event.preventDefault();
     const formData = new FormData(search);

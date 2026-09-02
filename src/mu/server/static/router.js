@@ -47,7 +47,7 @@ const route = async (pathname, search) => {
 }
 
 // Intercept <a href="">, hands off to router.
-document.addEventListener('click', function (event) {
+document.addEventListener('click', function(event) {
 
   if (event.target.dataset.external !== undefined) {
     return
@@ -61,7 +61,7 @@ document.addEventListener('click', function (event) {
 });
 
 // Intercept brower back and forward history 
-window.addEventListener('popstate', function (event) {
+window.addEventListener('popstate', function(event) {
   event.preventDefault()
   route(event.pathname)
 });
