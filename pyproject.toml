@@ -5,9 +5,10 @@ build-backend = "hatchling.build"
 [project.scripts]
 mu = "mu.main:main"
 mutui = "mutui.main:main"
+muweb = "muweb.main:main"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/mu/", "src/mutui/"]
+packages = ["src/mu/", "src/mutui/", "src/muweb/"]
 
 [tool.ruff]
 src = ["src"]
