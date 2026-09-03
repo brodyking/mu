@@ -5,6 +5,11 @@
  |_|
 */
 
+// Adds navbar to the dom
+const renderNavbar = () => {
+  let nav = document.getElementById("nav");
+  nav.replaceChildren(Navbar());
+}
 
 // Main routing function. Routes + Hydrates
 const route = async (pathname, search) => {
@@ -19,7 +24,7 @@ const route = async (pathname, search) => {
   }
 
 
-  main = document.getElementById("main")
+  let main = document.getElementById("main")
 
   // Switch case the current page
   switch (pathname) {
@@ -29,14 +34,17 @@ const route = async (pathname, search) => {
       break;
     // ===== Tracks tab =====
     case "/tracks":
+      main.replaceChildren(Loading())
       main.replaceChildren(await TracksTable())
       break;
     // ===== Favorites tab =====
     case "/favorites":
+      main.replaceChildren(Loading())
       main.replaceChildren(await TracksTable(true))
       break;
     // ===== Albums tab =====
     case "/albums":
+      main.replaceChildren(Loading())
       main.replaceChildren(await AlbumsTable())
       break;
     // ===== Error 404 =====
@@ -46,14 +54,14 @@ const route = async (pathname, search) => {
   }
 }
 
-// Intercept <a href="">, hands off to router.
+// Intercept <a href="" data-external>, hands off to router.
 document.addEventListener('click', function(event) {
 
-  if (event.target.dataset.external !== undefined) {
+  const link = event.target.closest('a');
+
+  if (link && event.target.dataset.external !== undefined) {
     return
   }
-
-  const link = event.target.closest('a');
   if (link && link.hasAttribute('href')) {
     event.preventDefault()
     route(link.pathname, link.search)
@@ -67,3 +75,4 @@ window.addEventListener('popstate', function(event) {
 });
 
 route()
+renderNavbar()

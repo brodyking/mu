@@ -6,6 +6,66 @@
 */
 
 
+const Navbar = () => {
+  const element = document.createElement("div");
+  element.innerHTML = `
+    <div class="sidebar sidebar-narrow-unfoldable border-end">
+      <div class="sidebar-header">
+        <div class="sidebar-brand">
+          <a class="nav-item fs-2 text-secondary text-decoration-none" href="/">µ</a>
+        </div>
+      </div>
+      <ul class="sidebar-nav">
+        <li class="nav-item">
+          <a class="nav-link" href="/tracks">
+            <i class="nav-icon bi bi-music-note"></i>
+            <span class="nav-link-text">tracks</span>
+          </a>
+        </li>
+
+        <li class="nav-item">
+          <a class="nav-link" href="/favorites">
+            <i class="nav-icon bi bi-heart-fill"></i>
+            <span class="nav-link-text">favorites</span>
+          </a>
+        </li>
+
+        <li class="nav-item">
+          <a class="nav-link" href="/albums">
+            <i class="nav-icon bi bi-vinyl-fill"></i>
+            <span class="nav-link-text">albums</span>
+          </a>
+        </li>
+
+        <li class="nav-item mt-auto">
+          <a class="nav-link" href="https://github.com/brodyking/mu" data-external>
+            <i class="nav-icon bi bi-github"></i>
+            <span class="nav-link-text">github</span>
+          </a>
+        </li>
+      </ul>
+    </div>`
+  return element;
+}
+
+const Loading = () => {
+  const content = document.createElement("div");
+  content.innerHTML = `
+    <!-- Full-Screen Loading Overlay -->
+    <div id="loading-overlay" class="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center" style="z-index: 9999;">
+      <div class="text-center">
+        <!-- CoreUI / Bootstrap Spinner -->
+        <div class="spinner-border text-body" role="status" style="width: 3rem; height: 3rem;">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+        <!-- Optional Loading Text -->
+        <div class="text-light mt-2">loading...</div>
+      </div>
+    </div>
+  `;
+  return content
+}
+
 const Homepage = () => {
   const content = document.createElement("div");
   content.className = "text-center d-flex flex-column justify-content-center align-items-center min-vh-100";
@@ -67,7 +127,7 @@ const TracksTable = async (onlyFavorites = false) => {
   // Search
   search.className = "search-form"
   search.innerHTML = `
-    <input type="text" name="term" class="form-control rounded-0 w-100 border-0 border-bottom border-light-gray shadow-none" placeholder="Search tracks..."/>
+    <input type="text" name="term" autocomplete="off" class="form-control rounded-0 w-100 border-0 border-bottom border-light-gray shadow-none" placeholder="Search tracks..."/>
   `;
   search.addEventListener('submit', async function(event) {
     // Listens for search submit, fetches tracks and updates rows.
