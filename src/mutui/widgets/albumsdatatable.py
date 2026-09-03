@@ -1,6 +1,6 @@
 """
  _   _
-| | | | muc client
+| | | | mutui
 | |_| | (c) 2026 all rights reserved
 | ._,_| https://github.com/brodyking/mu
 |_|
@@ -14,15 +14,16 @@ from textual.message import Message
 from textual.widgets import Input, Static
 
 from mu.api import Api
-from mu.models import Artist
-from muc.widgets.vimdatatable import VimDataTable
+from mu.models import Album
+from mutui.widgets.vimdatatable import VimDataTable
 
 
-class ArtistsDataTable(Static):
-    class ArtistClicked(Message):
-        def __init__(self, name: str, *args, **kwargs) -> None:
+class AlbumsDataTable(Static):
+    class AlbumClicked(Message):
+        def __init__(self, title: str, albumartist: str, *args, **kwargs) -> None:
             super().__init__(*args, **kwargs)
-            self.name = name
+            self.title = title
+            self.albumartist = albumartist
 
     BINDINGS = [
         ("/", "focus_search", "Search"),
@@ -35,7 +36,7 @@ class ArtistsDataTable(Static):
 
         self.full_rows: list = []
 
-        self.search = Input(placeholder="Filter artists (/)", compact=True, id="search")
+        self.search = Input(placeholder="Filter albums (/)", compact=True, id="search")
         self.main_table = VimDataTable(cursor_type="row", id="tracks-main-table")
 
     def compose(self) -> ComposeResult:
@@ -53,9 +54,9 @@ class ArtistsDataTable(Static):
         self.main_table.focus()
 
     @on(VimDataTable.RowSelected)
-    def artist_clicked(self, event: VimDataTable.RowSelected) -> None:
+    def album_clicked(self, event: VimDataTable.RowSelected) -> None:
         row = self.main_table.export_row_as_dict(event.cursor_row)
-        self.post_message(self.ArtistClicked(row["artist"]))
+        self.post_message(self.AlbumClicked(row["album"], row["albumartist"]))
 
     def redraw_rows(self) -> None:
         self.main_table.clear()
@@ -64,30 +65,31 @@ class ArtistsDataTable(Static):
 
     def populate(
         self,
-        artists_term: str | None = None,
+        albums_term: str | None = None,
     ) -> None:
         """
-        Clears and repopulates the table with artsits. Calls the database
+        Clears and repopulates the table with albums. Calls the database
         each time this is called. Also supports search queries with standard
-        mu search syntax. If no prefix is given, it searches artist and albumartist.
+        mu search syntax. If no prefix is given, it searches albumartist
+        and album.
         """
 
         self.full_rows = []
 
-        if artists_term and ":" not in artists_term and "=" not in artists_term:
-            artists_term = f'albumartist:"{artists_term}",artist:"{artists_term}"'
+        if albums_term and ":" not in albums_term and "=" not in albums_term:
+            albums_term = f'albumartist:"{albums_term}",album:"{albums_term}"'
 
         try:
-            artists: dict[str, Artist] = self.api.get_artists(
-                artists_term, only_albumartists=True
+            albums: dict[tuple, Album] = self.api.get_albums(
+                albums_term,
             )
         except ValueError as e:
             self.app.notify(str(e), severity="error")
             return
 
-        for artist_name in artists:
-            artist = artists[artist_name]
-            row_tuple = (artist.name, str(len(artist.tracks)))
+        for aid in albums:
+            album = albums[aid]
+            row_tuple = (album.title, album.albumartist, str(len(album.tracks)))
             self.full_rows.append(row_tuple)
 
     def on_mount(self) -> None:
@@ -95,8 +97,9 @@ class ArtistsDataTable(Static):
 
         # Add the maximum width to your column metadata definition
         columns = [
-            ("Artist", "artist", 25),
-            ("Tracks", "tracks", 15),
+            ("Album", "album", 25),
+            ("Album Artist", "albumartist", 15),
+            ("Tracks", "tracks", 10),
         ]
 
         # Use the max_width argument in add_column

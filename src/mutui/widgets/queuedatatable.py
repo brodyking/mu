@@ -1,51 +1,27 @@
 """
  _   _
-| | | | muc client
+| | | | mutui
 | |_| | (c) 2026 all rights reserved
 | ._,_| https://github.com/brodyking/mu
 |_|
 
 """
 
+import random
+from typing import Literal
+
 from textual import on
 from textual.app import ComposeResult
-from textual.containers import Horizontal, Vertical
-from textual.widgets import Label, Static
+from textual.widgets import Static
 
 from mu.api import Api
-from mu.models import Playlist, Track
-from muc.player import Player
-from muc.widgets.playlistsdatatable import PlaylistsDataTable
-from muc.widgets.popups import ConfirmPopup
-from muc.widgets.tracksdatatable import TrackOptionsPopup
-from muc.widgets.vimdatatable import VimDataTable
+from mu.models import Track
+from mutui.player import Player
+from mutui.widgets.tracksdatatable import TrackOptionsPopup
+from mutui.widgets.vimdatatable import VimDataTable
 
 
-class RemoveTrackFromPlaylistPopup(ConfirmPopup):
-    class Submitted(ConfirmPopup.Submitted):
-        def __init__(
-            self, response: bool, tid: int = 0, pid: int = 0, *args, **kwargs
-        ) -> None:
-            super().__init__(response, *args, **kwargs)
-            self.tid = tid
-            self.pid = pid
-
-    def __init__(self, tid: int, pid: int, *args, **kwargs) -> None:
-        super().__init__(
-            "Are you sure you want to remove this track?",
-            title="Remove track?",
-            subtitle="This cannot be undone!",
-            *args,
-            **kwargs,
-        )
-        self.tid = tid
-        self.pid = pid
-
-    async def action_submit(self, *args, **kwargs) -> None:
-        await super().action_dismiss(message=self.Submitted(True, self.tid, self.pid))
-
-
-class PlaylistTracksDataTable(Static):
+class QueueDataTable(Static):
     BINDINGS = [
         (".", "open_addto", "Add to"),
         ("f", "favorite_track", "Favorite"),
@@ -71,26 +47,17 @@ class PlaylistTracksDataTable(Static):
         "albumart": 15,
     }
 
-    def __init__(
-        self,
-        api: Api,
-        player: Player,
-        playlist: Playlist | None,
-    ):
+    def __init__(self, api: Api, player: Player):
         super().__init__()
-        self.api = api
-        self.player: Player = player
-        self.playlist = playlist
 
+        self.api: Api = api
+        self.player: Player = player
         self.full_rows: list = []
 
-        self.playlist_metadata = Label()
         self.main_table = VimDataTable(cursor_type="row", id="tracks-main-table")
 
     def compose(self) -> ComposeResult:
-        with Vertical():
-            yield self.playlist_metadata
-            yield self.main_table
+        yield self.main_table
 
     def action_open_addto(self) -> None:
         row_index = self.main_table.cursor_row
@@ -104,6 +71,18 @@ class PlaylistTracksDataTable(Static):
     def start_queue(self, event: VimDataTable.RowSelected) -> None:
         tids = [row[0] for row in self.full_rows]
         self.player.play_now(tids, event.cursor_row)
+        self.populate()
+        self.redraw_rows()
+
+    def action_remove_track(self) -> None:
+        pos = (self.main_table.cursor_row + 1) + self.player.queue.pos
+        track = self.player.queue.remove_track(pos)
+        if track:
+            self.notify(f"Removed {track.title} from the queue.")
+        else:
+            self.notify("Could not remove track from queue", severity="error")
+        self.populate()
+        self.redraw_rows()
 
     def action_favorite_track(self) -> None:
         """
@@ -121,45 +100,64 @@ class PlaylistTracksDataTable(Static):
         except Exception as e:
             self.app.notify(f"Couldn't favorite: {e}", severity="error")
 
-    def action_remove_track(self) -> None:
-        try:
-            row_index: int = self.main_table.cursor_row
-            tid: int = int(self.main_table.export_row_as_dict(row_index)["id"])
-            if self.playlist:
-                self.app.push_screen(
-                    RemoveTrackFromPlaylistPopup(tid, self.playlist.id)
-                )
-            else:
-                self.app.notify("No playlist selected", severity="error")
-        except Exception as e:
-            self.app.notify(f"Couldn't favorite: {e}", severity="error")
+    def sort(
+        self,
+        method: Literal[
+            "artist",
+            "album",
+            "date",
+            "dateadded",
+            "id",
+            "plays",
+            "genre",
+            "title",
+            "time",
+            "cancel",
+            "shuffle",
+            "reset",
+        ],
+    ):
+        """Callback for the sort popup."""
+        if method in (None, "cancel"):
+            return
+
+        if method == "reset":
+            self._sort_col, self._sort_desc = None, False
+            self.populate()
+            self.redraw_rows()
+            return
+
+        if method == "shuffle":
+            random.shuffle(self.full_rows)  # session state, stays in memory
+            self.redraw_rows()
+            return
+
+        # column sort: toggle direction only when re-selecting the same column
+        self._sort_desc = not self._sort_desc if self._sort_col == method else False
+        self._sort_col = method
+        self.populate()  # re-queries the DB in the new order
+        self.redraw_rows()
 
     def redraw_rows(self) -> None:
         self.main_table.clear()
         for i, row in enumerate(self.full_rows):
             self.main_table.add_row(*row, key=str(i))
 
-    def redraw_metadata(self) -> None:
-        if self.playlist:
-            self.playlist_metadata.update(
-                f"[grey] #{self.playlist.id}[/]"
-                f"[$success] 󱝟 {self.playlist.title}[/]"
-                f" {self.playlist.description.replace('\n', '')}"
-                f"[$error] 󰈣 {len(self.playlist.tracks)}[/$error]"
-            )
-
-    def populate(
-        self,
-    ) -> None:
+    def populate(self) -> None:
         """
-        Clears and repopulates the table with tracks from the current playlist."""
-
-        if not self.playlist:
-            return
+        Clears and repopulates the table with tracks in the current queue.
+        Calls the database from the QueueList each time this is called."""
 
         self.full_rows = []
 
-        for track in self.playlist.tracks:
+        try:
+            tracks: list[Track] = self.player.queue.get_queue()
+        except ValueError as e:
+            self.app.notify(str(e), severity="error")
+            return
+
+        for track in tracks:
+            # 1. Safely parse the TCSS variable name into a usable Rich style
             favorite = "󰋑" if track.favorite else " "
 
             row_tuple = (
@@ -212,45 +210,7 @@ class PlaylistTracksDataTable(Static):
     def on_show(self) -> None:
         self.populate()
         self.redraw_rows()
-        self.redraw_metadata()
         self.main_table.focus()
 
     def on_hide(self) -> None:
         self.main_table.clear()
-
-
-class PlaylistsSplit(Static):
-    BINDINGS = [
-        ("ctrl+h", "focus_table(0)", "Focus Playlists"),
-        ("ctrl+l", "focus_table(1)", "Focus Tracks"),
-    ]
-
-    def __init__(self, api: Api, player: Player, *args, **kwargs) -> None:
-
-        super().__init__(*args, **kwargs)
-
-        self.player = player
-        self.api = api
-
-        self.playlists_data_table = PlaylistsDataTable(self.api)
-        self.tracks_data_table = PlaylistTracksDataTable(self.api, self.player, None)
-
-    @on(PlaylistsDataTable.PlaylistClicked)
-    def playlist_clicked(self, event: PlaylistsDataTable.PlaylistClicked):
-        self.tracks_data_table.playlist = event.playlist
-        self.tracks_data_table.populate()
-        self.tracks_data_table.redraw_rows()
-        self.tracks_data_table.redraw_metadata()
-        self.tracks_data_table.main_table.focus()
-
-    def action_focus_table(self, table: int):
-        """Focuses different tables. 0: Playlists, 1: Playlist Tracks"""
-        if table == 0:
-            self.playlists_data_table.main_table.focus()
-        else:
-            self.tracks_data_table.main_table.focus()
-
-    def compose(self):
-        with Horizontal():
-            yield self.playlists_data_table
-            yield self.tracks_data_table

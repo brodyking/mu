@@ -1,12 +1,11 @@
-
 from textual import on
 from textual.containers import Horizontal
 from textual.coordinate import Coordinate
 from textual.widgets import Static
 
 from mu.api import Api
-from muc.widgets.cmdline import CmdLine
-from muc.widgets.vimdatatable import VimDataTable
+from mutui.widgets.cmdline import CmdLine
+from mutui.widgets.vimdatatable import VimDataTable
 
 
 class OptionsDataTable(VimDataTable):

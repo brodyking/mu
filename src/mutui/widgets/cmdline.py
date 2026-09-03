@@ -1,6 +1,6 @@
 """
  _   _
-| | | | muc client
+| | | | mutui
 | |_| | (c) 2026 all rights reserved
 | ._,_| https://github.com/brodyking/mu
 |_|
@@ -18,7 +18,7 @@ from textual.coordinate import Coordinate
 from textual.screen import ModalScreen
 from textual.widgets import Input, Label
 
-from muc.widgets.vimdatatable import VimDataTable
+from mutui.widgets.vimdatatable import VimDataTable
 
 
 class CmdLineHintTable(VimDataTable):
@@ -87,7 +87,7 @@ class CmdLine(ModalScreen[str]):
             console.clear()
             console.print(f"[medium_purple1]> mu [/]{event.value}")
             subprocess.run([self.MU_BIN, *args], check=False)  # type: ignore
-            input("Press Enter to return to muc")
+            input("Press Enter to return to mutui")
         self.dismiss()
 
     def on_key(self, event) -> None:

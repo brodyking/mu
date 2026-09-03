@@ -1,6 +1,6 @@
 """
  _   _
-| | | | muc client
+| | | | mutui
 | |_| | (c) 2026 all rights reserved
 | ._,_| https://github.com/brodyking/mu
 |_|
@@ -18,9 +18,9 @@ from textual.widgets import Input, Static
 
 from mu.api import Api
 from mu.models import Track
-from muc.widgets.playlistsdatatable import PlaylistsDataTable
-from muc.widgets.popups import BindsDataTablePopup, Popup
-from muc.widgets.vimdatatable import VimDataTable
+from mutui.widgets.playlistsdatatable import PlaylistsDataTable
+from mutui.widgets.popups import BindsDataTablePopup, Popup
+from mutui.widgets.vimdatatable import VimDataTable
 
 
 class SortTracksPopup(BindsDataTablePopup):

@@ -1,6 +1,6 @@
 """
  _   _
-| | | | muc client
+| | | | mutui
 | |_| | (c) 2026 all rights reserved
 | ._,_| https://github.com/brodyking/mu
 |_|
@@ -11,7 +11,7 @@ from just_playback import Playback as _Playback  # aliased: its class is named P
 
 from mu.api import Api
 from mu.models import Track
-from muc.queuelist import QueueList
+from mutui.queuelist import QueueList
 
 
 class Player:

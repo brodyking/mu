@@ -4,10 +4,10 @@ build-backend = "hatchling.build"
 
 [project.scripts]
 mu = "mu.main:main"
-muc = "muc.main:main"
+mutui = "mutui.main:main"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/mu/", "src/muc/"]
+packages = ["src/mu/", "src/mutui/"]
 
 [tool.ruff]
 src = ["src"]

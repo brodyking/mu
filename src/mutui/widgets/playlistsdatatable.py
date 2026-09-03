@@ -1,6 +1,6 @@
 """
  _   _
-| | | | muc client
+| | | | mutui
 | |_| | (c) 2026 all rights reserved
 | ._,_| https://github.com/brodyking/mu
 |_|
@@ -15,8 +15,8 @@ from textual.widgets import Button, Input, Label, Static
 
 from mu.api import Api
 from mu.models import Playlist
-from muc.widgets.popups import ConfirmPopup, Popup
-from muc.widgets.vimdatatable import VimDataTable
+from mutui.widgets.popups import ConfirmPopup, Popup
+from mutui.widgets.vimdatatable import VimDataTable
 
 
 class DeletePlaylistPopup(ConfirmPopup):

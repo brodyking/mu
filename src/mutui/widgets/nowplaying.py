@@ -5,7 +5,7 @@ from textual.events import Click
 from textual.message import Message
 from textual.widgets import Label, ProgressBar, Static
 
-from muc.player import Player
+from mutui.player import Player
 
 
 class NowPlayingProgressBar(ProgressBar):

@@ -68,7 +68,7 @@ def scan() -> None:
 @parser.command("v", hidden=True)
 @parser.command("version", help="get version (alias: v)")
 def print_version() -> None:
-    """Prints the version of mu+muc+db"""
+    """Prints the version of mu+mutui+db"""
     mu_print_version(VERSION, api.db.SCHEMA)
 
 
