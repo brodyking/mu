@@ -1,6 +1,5 @@
-const hydrateTracksTable = (scrollAreaId, contentAreaId, tracks) => {
+const hydrateTracksTable = async (scrollAreaId, contentAreaId, term, only_favorites = false) => {
   const generateRows = (data) => {
-    console.log(data)
     let rows = [];
     let index = 0;
     data.forEach(track => {
@@ -25,12 +24,25 @@ const hydrateTracksTable = (scrollAreaId, contentAreaId, tracks) => {
     return rows;
   }
 
-  console.log(generateRows(tracks))
+  if (term === null) {
+    term = ""
+  }
+
+  if (only_favorites) {
+    tracks = await getTracksFavorites(encodeURIComponent(term))
+  } else {
+    tracks = await getTracks(encodeURIComponent(term))
+  }
 
   Clusterize({
     rows: generateRows(tracks),
     scrollId: scrollAreaId,
     contentId: contentAreaId
   })
+
+  search = document.getElementById("tracks-table-search");
+  if (search) {
+    search.value = term
+  }
 
 }

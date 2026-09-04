@@ -23,6 +23,7 @@ const route = async (pathname, search) => {
     window.history.pushState({}, "", url);
   }
 
+  let params = new URLSearchParams(document.location.search);
 
   let main = document.getElementById("main")
 
@@ -34,14 +35,13 @@ const route = async (pathname, search) => {
       break;
     // ===== Tracks tab =====
     case "/tracks":
-      main.replaceChildren(Loading())
       main.replaceChildren(TracksTable())
-      hydrateTracksTable("scrollArea", "contentArea", await getTracks())
+      hydrateTracksTable("scrollArea", "contentArea", params.get("q"))
       break;
     // ===== Favorites tab =====
     case "/favorites":
-      main.replaceChildren(TracksTable(true))
-      hydrateTracksTable("scrollArea", "contentArea", await getTracksFavorites())
+      main.replaceChildren(TracksTable(only_favorites = true))
+      hydrateTracksTable("scrollArea", "contentArea", params.get("q"), only_favorites = true)
       break;
     // ===== Albums tab =====
     case "/albums":
@@ -76,4 +76,4 @@ window.addEventListener('popstate', function(event) {
 });
 
 route()
-renderNavbar()
+window.addEventListener('load', renderNavbar)

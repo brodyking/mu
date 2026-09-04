@@ -99,7 +99,7 @@ const TracksTable = (onlyFavorites = false) => {
   // Search
   search.className = "search-form"
   search.innerHTML = `
-    <input type="text" name="term" autocomplete="off" class="form-control rounded-0 w-100 border-0 border-bottom border-light-gray shadow-none" placeholder="Search tracks..."/>
+    <input type="text" name="term" autocomplete="off" id="tracks-table-search" class="form-control rounded-0 w-100 border-0 border-bottom border-light-gray shadow-none" placeholder="Search tracks..."/>
   `;
   search.addEventListener('submit', async function(event) {
     // Listens for search submit, fetches tracks and updates rows.
@@ -108,9 +108,9 @@ const TracksTable = (onlyFavorites = false) => {
     const formDataEntries = Object.fromEntries(formData.entries());
     const term = encodeURIComponent(formDataEntries.term)
     if (onlyFavorites) {
-      hydrateTracksTable("scrollArea", "contentArea", await getTracksFavorites(term))
+      route("/favorites", `?q=${term}`)
     } else {
-      hydrateTracksTable("scrollArea", "contentArea", await getTracks(term))
+      route("/tracks", `?q=${term}`)
     }
     window.scrollTo(0, 0)
   });
