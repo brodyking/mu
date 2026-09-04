@@ -26,9 +26,13 @@ const getTracksFavorites = async (q) => {
   if (q.length !== 0 && q.indexOf("%3A") == -1 && q.indexOf("%3D") == -1) {
     q = `artist:${q},albumartist:${q},album:${q},title:${q}`
   }
-  const response = await fetch(`/api/tracks?q=${q}&only_favorited=1`)
-  const data = await response.json()
-  return data;
+  try {
+    const response = await fetch(`/api/tracks?q=${q}&only_favorited=1`)
+    const data = await response.json()
+    return data;
+  } catch {
+    alert("Invalid search query")
+  }
 }
 
 // Gets track by ids
