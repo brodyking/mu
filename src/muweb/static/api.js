@@ -31,6 +31,13 @@ const getTracksFavorites = async (q) => {
   return data;
 }
 
+// Gets track by ids
+const getTrackById = async (id) => {
+  const response = await fetch(`/api/tracks_by_ids?ids=${id}`);
+  const data = await response.json();
+  return data[0] ?? null;
+};
+
 // Get albums
 const getAlbums = async (q) => {
   if (q == undefined) { q = "" }

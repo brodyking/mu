@@ -25,6 +25,21 @@ WEB_DIR = Path(__file__).resolve().parent / "static"
 INDEX_WEB_DIR = Path(__file__).resolve().parent / "static" / "index.html"
 
 
+def track_json(t: Track) -> dict:
+    d = t.get_dict()
+    d.pop("filepath")
+    d["audio_url"] = f"/api/tracks/{t.id}/audio"
+    d["art_url"] = f"/api/tracks/{t.id}/art" if t.albumart else None
+    return d
+
+
+def track_or_404(track_id: int) -> Track:
+    track = api.get_tracks_by_ids([track_id]).get(track_id)
+    if track is None:
+        raise HTTPException(404, "unknown track")
+    return track
+
+
 @app.get("/api/tracks")
 def tracks(
     q: str | None = None,
@@ -48,34 +63,42 @@ def tracks(
 ):
     """Returns tracks from a mu search query"""
     return [
-        t.get_dict()
+        track_json(t)
         for t in api.get_tracks(q, order_by, descending, only_favorited).values()
     ]
 
 
 @app.get("/api/tracks_by_ids")
-def tracks_by_ids(id: list[int] = Query(None)):
+def tracks_by_ids(ids: list[int] = Query(None)):
     """Returns tracks by ids, more efficient than a regular mu list query."""
-    return [t.get_dict() for t in api.get_tracks_by_ids(id).values()]
+    return [track_json(t) for t in api.get_tracks_by_ids(ids).values()]
 
 
 @app.get("/api/tracks/{track_id}/audio")
 def track_audio(track_id: int):
     """Returns the audio file of the requested track"""
 
-    def _track_or_404(track_id: int) -> Track:
-        track = api.get_tracks_by_ids([track_id]).get(track_id)
-        if track is None:
-            raise HTTPException(404, "unknown track")
-        return track
-
-    track = _track_or_404(track_id)
+    track = track_or_404(track_id)
     path = Path(track.filepath).resolve()
     root = api.db.source_path.resolve()
     if not path.is_relative_to(root) or not path.is_file():
         raise HTTPException(404, "file missing")
 
     return FileResponse(path, media_type="audio/mpeg")
+
+
+@app.get("/api/tracks/{track_id}/art")
+def track_art(track_id: int):
+    track = track_or_404(track_id)
+    if not track.albumart:
+        raise HTTPException(404, "no art")
+
+    root = api.db.albumart_path.resolve()
+    path = (root / track.albumart).resolve()
+    if path.parent != root or not path.is_file():
+        raise HTTPException(404, "art missing")
+
+    return FileResponse(path)
 
 
 @app.get("/api/albums")

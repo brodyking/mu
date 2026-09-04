@@ -55,11 +55,11 @@ const Loading = () => {
     <div id="loading-overlay" class="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center" style="z-index: 9999;">
       <div class="text-center">
         <!-- CoreUI / Bootstrap Spinner -->
-        <div class="spinner-border text-body" role="status" style="width: 3rem; height: 3rem;">
+        <div class="spinner-border text-secondary" role="status" style="width: 3rem; height: 3rem;">
           <span class="visually-hidden">Loading...</span>
         </div>
         <!-- Optional Loading Text -->
-        <div class="text-light mt-2">loading...</div>
+        <div class="text-secondary mt-2">loading...</div>
       </div>
     </div>
   `;
@@ -98,7 +98,7 @@ const TracksTable = async (onlyFavorites = false) => {
     let index = 0;
     data.forEach(track => {
       rows += `
-        <tr ondblclick='startQueue("${index}")'>
+        <tr ondblclick='playerCreateQueue(${index});playerPlayCurrent();'>
           <td title="${track.id}">${track.id}</td>
           <td title="${track.favorite ? "Favorite" : "Not Favorited"}"> <i class="text-danger bi bi-heart${track.favorite ? `-fill` : " "}"></i></td>
           <td title="${track.title}">${track.title}</td>
