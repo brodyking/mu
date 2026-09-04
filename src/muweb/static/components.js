@@ -68,7 +68,7 @@ const Loading = () => {
 
 const Homepage = () => {
   const content = document.createElement("div");
-  content.className = "text-center d-flex flex-column justify-content-center align-items-center min-vh-100";
+  content.className = "text-center d-flex flex-column justify-content-center align-items-center h-100";
   content.innerHTML = `
     <h1 class='mt-5 align-self-center fs-1'>µ</h1>
     <p class='mt-3 fs-4'>your personal music library</p>
@@ -79,9 +79,9 @@ const Homepage = () => {
 
 const Error404 = () => {
   const content = document.createElement("div");
-  content.className = "text-center d-flex flex-column justify-content-center align-items-center min-vh-100";
+  content.className = "text-center d-flex flex-column justify-content-center align-items-center h-100";
   content.innerHTML = `
-    <div class="text-center d-flex flex-column justify-content-center align-items-center min-vh-100">
+    <div class="text-center d-flex flex-column justify-content-center align-items-center h-100">
       <h1 class='mt-5 align-self-center fs-1'>Error 404</h1>
       <p class='mt-3 fs-5'>Page not found.</p>
     </div>
@@ -92,6 +92,7 @@ const Error404 = () => {
 const TracksTable = (onlyFavorites = false) => {
 
   const content = document.createElement("div"); // Parent element for search and table
+  content.className = "tracks-page";
   const search = document.createElement("form"); // Search Box
   const table = document.createElement("div"); // Table
 
@@ -151,7 +152,7 @@ const TracksTable = (onlyFavorites = false) => {
 
 const AlbumsTable = async () => {
   const content = document.createElement("div");
-  content.className = "text-center d-flex flex-column justify-content-center align-items-center min-vh-100";
+  content.className = "text-center d-flex flex-column justify-content-center align-items-center h-100";
   content.innerHTML = "<p class='mt-3 fs-4'>coming soon</p>";
   return content;
-};
+};;

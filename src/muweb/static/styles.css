@@ -1,28 +1,67 @@
-.table {
+/*    _
+ | | | | mu
+ | |_| | (c) 2026 all rights reserved
+ | ._,_| https://github.com/brodyking/mu
+ |_|
+*/
+
+:root {
+  --mu-rail-w: 64px;          /* desktop left rail width */
+  --mu-nowplaying-h: 56px;    /* height of the nowplaying bar */
+}
+
+html,
+body {
   height: 100%;
 }
-.table td {
-  max-width: 150px;
-  text-wrap: nowrap;
+
+body {
   overflow: hidden;
-  padding-right: 5px;
+  overscroll-behavior: none;
 }
+
+#main {
+  /* dvh tracks the mobile URL bar; vh is the fallback for old browsers */
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+#main > * {
+  height: 100%;
+}
+
+/* ============================================================
+   Desktop: left rail + nowplaying pinned to the bottom
+   ============================================================ */
 
 @media (min-width: 992px) {
   #main {
-    padding-left: 64px;
-    padding-bottom: 32px;
-    height: 100vh;
+    padding-left: var(--mu-rail-w);
+    padding-bottom: var(--mu-nowplaying-h);
   }
+
   #nowplaying {
-    position:fixed;
-    bottom:0;
-    z-index:2;
-    padding-left: 64px;
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    z-index: 2;
+    height: var(--mu-nowplaying-h);
+    padding-left: var(--mu-rail-w);
   }
 }
 
+/* ============================================================
+   Mobile: sidebar becomes a bottom tab bar,
+   nowplaying sits directly above it
+   ============================================================ */
+
 @media (max-width: 991.98px) {
+  :root {
+    /* tab bar height + iOS home indicator inset */
+    --mu-bottomnav-h: calc(52px + env(safe-area-inset-bottom, 0px));
+  }
+
   #nav .sidebar {
     position: fixed !important;
     top: auto !important;
@@ -33,6 +72,7 @@
     height: auto !important;
     margin-inline-start: 0 !important;
     margin-left: 0 !important;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
     z-index: 2;
   }
 
@@ -62,55 +102,86 @@
     padding: 16px 0;
   }
 
-
   #nav .sidebar-nav .nav-link .nav-icon {
-    margin:0; 
+    margin: 0;
   }
+
   #nav .nav-link-text {
     display: none;
   }
 
-  #nav .botton-link {
-    display none!important;
+  #main {
+    padding-bottom: calc(var(--mu-bottomnav-h) + var(--mu-nowplaying-h));
   }
 
   #nowplaying {
     position: fixed;
-    bottom: 52px;
     left: 0;
+    bottom: var(--mu-bottomnav-h);
     z-index: 2;
+    height: var(--mu-nowplaying-h);
   }
+}
 
-  #main {
-    padding-bottom: 110px;
-  }
+/* ============================================================
+   Tracks page: search box on top, list fills what's left
+   ============================================================ */
+
+.tracks-page {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
 }
 
 .search-form {
-  position:sticky;
-  top:0;
-  z-index: 2
+  flex: 0 0 auto;
+  z-index: 2;
 }
 
-.data-table {
-  -webkit-user-select: none; 
-  -ms-user-select: none;     
-  user-select: none;         
+.tracks-table-wrapper {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+/* Header table stays put; only the list below it scrolls. */
+.tracks-table-wrapper > .table {
+  flex: 0 0 auto;
 }
 
 #scrollArea {
-  max-height: calc(100vh - 100px);
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: none;   /* overrides clusterize's 200px default */
+  overflow-y: auto;
+  overflow-x: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
 }
 
-.data-table tr:hover td{
-  color: var(--cui-danger)!important;
+.table td {
+  max-width: 150px;
+  text-wrap: nowrap;
+  overflow: hidden;
+  padding-right: 5px;
+}
+
+.data-table {
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+.data-table tr:hover td {
+  color: var(--cui-danger) !important;
   cursor: pointer;
 }
 
 .tracks-table-wrapper thead th {
   position: sticky;
   top: 0;
-  background-color: var(--cui-body-bg, #fff); 
+  background-color: var(--cui-body-bg, #fff);
   z-index: 1;
 }
-
