@@ -89,36 +89,8 @@ const Error404 = () => {
   return content;
 };
 
+const TracksTable = (onlyFavorites = false) => {
 
-const TracksTable = async (onlyFavorites = false) => {
-
-  // Generates the HTML for the table's rows.
-  const generateRows = (data) => {
-    let rows = "";
-    let index = 0;
-    data.forEach(track => {
-      rows += `
-        <tr ondblclick='playerCreateQueue(${index});playerPlayCurrent();'>
-          <td title="${track.id}">${track.id}</td>
-          <td title="${track.favorite ? "Favorite" : "Not Favorited"}"> <i class="text-danger bi bi-heart${track.favorite ? `-fill` : " "}"></i></td>
-          <td title="${track.title}">${track.title}</td>
-          <td title="${track.artist}">${track.artist}</td>
-          <td title="${track.album}">${track.album}</td>
-          <td title="${track.plays}">${track.plays}</td>
-          <td title="${track.time}">${track.time}</td>
-          <td title="${track.dateadded}">${track.dateadded}</td>
-          <td title="${track.tracknumber}">${track.tracknumber}</td>
-          <td title="${track.albumartist}">${track.albumartist}</td>
-          <td title="${track.discnumber}">${track.discnumber}</td>
-          <td title="${track.genre}">${track.genre}</td>
-          <td title="${track.date}">${track.date}</td>
-        </tr>`;
-      index++;
-    });
-    return rows;
-  }
-
-  const data = onlyFavorites ? await getTracksFavorites() : await getTracks() // Get tracks from api
   const content = document.createElement("div"); // Parent element for search and table
   const search = document.createElement("form"); // Search Box
   const table = document.createElement("div"); // Table
@@ -134,20 +106,19 @@ const TracksTable = async (onlyFavorites = false) => {
     event.preventDefault();
     const formData = new FormData(search);
     const formDataEntries = Object.fromEntries(formData.entries());
-    results = null
+    const term = encodeURIComponent(formDataEntries.term)
     if (onlyFavorites) {
-      results = await getTracksFavorites(encodeURIComponent(formDataEntries.term));
+      hydrateTracksTable("scrollArea", "contentArea", await getTracksFavorites(term))
     } else {
-      results = await getTracks(encodeURIComponent(formDataEntries.term));
+      hydrateTracksTable("scrollArea", "contentArea", await getTracks(term))
     }
-    document.getElementById("tracks-table-body").innerHTML = generateRows(results);
     window.scrollTo(0, 0)
   });
 
   // Table
-  table.className = "tracks-table-wrapper";
+  table.className = "tracks-table-wrapper clusterize";
   table.innerHTML = `
-  <table class="table table-striped data-table" id="tracks-table">
+  <table class="table table-striped data-table mb-0">
     <thead>
       <tr>
         <th>id</th>
@@ -165,12 +136,14 @@ const TracksTable = async (onlyFavorites = false) => {
         <th>date</th>
       </tr>
     </thead>
-    <tbody id="tracks-table-body">
-      ${generateRows(data)}
-    </tbody>
   </table>
+  <div id="scrollArea" class="clusterize-scroll">
+    <table class="table table-striped data-table" id="tracks-table">
+      <tbody id="contentArea">
+      </tbody>
+    </table>
+  </div>
   `;
-
   content.appendChild(search);
   content.appendChild(table);
   return content;

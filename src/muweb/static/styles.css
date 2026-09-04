@@ -98,16 +98,13 @@
   user-select: none;         
 }
 
+#scrollArea {
+  max-height: calc(100vh - 100px);
+}
+
 .data-table tr:hover td{
   color: var(--cui-danger)!important;
   cursor: pointer;
-}
-
-
-.tracks-table-wrapper {
-  max-height: 100%;      
-  overflow-y: auto;
-  overflow-x: auto;     
 }
 
 .tracks-table-wrapper thead th {

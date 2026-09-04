@@ -35,12 +35,13 @@ const route = async (pathname, search) => {
     // ===== Tracks tab =====
     case "/tracks":
       main.replaceChildren(Loading())
-      main.replaceChildren(await TracksTable())
+      main.replaceChildren(TracksTable())
+      hydrateTracksTable("scrollArea", "contentArea", await getTracks())
       break;
     // ===== Favorites tab =====
     case "/favorites":
-      main.replaceChildren(Loading())
-      main.replaceChildren(await TracksTable(true))
+      main.replaceChildren(TracksTable(true))
+      hydrateTracksTable("scrollArea", "contentArea", await getTracksFavorites())
       break;
     // ===== Albums tab =====
     case "/albums":
