@@ -40,13 +40,17 @@ const route = async (pathname, search) => {
       break;
     // ===== Tracks tab =====
     case "/tracks":
-      main.replaceChildren(TracksTable())
-      hydrateTracksTable("scrollArea", "contentArea", params.get("q"))
+      main.replaceChildren(Loading())
+      main.appendChild(TracksTable())
+      await hydrateTracksTable("scrollArea", "contentArea", params.get("q"))
+      main.removeChild(document.getElementById("loading"))
       break;
     // ===== Favorites tab =====
     case "/favorites":
-      main.replaceChildren(TracksTable(only_favorites = true))
-      hydrateTracksTable("scrollArea", "contentArea", params.get("q"), only_favorites = true)
+      main.replaceChildren(Loading())
+      main.appendChild(TracksTable(only_favorites = true))
+      await hydrateTracksTable("scrollArea", "contentArea", params.get("q"), only_favorites = true)
+      main.removeChild(document.getElementById("loading"))
       break;
     // ===== Albums tab =====
     case "/albums":

@@ -99,6 +99,7 @@ const Navbar = () => {
 
 const Loading = () => {
   const content = document.createElement("div");
+  content.id = "loading"
   content.innerHTML = `
     <!-- Full-Screen Loading Overlay -->
     <div id="loading-overlay" class="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center" style="z-index: 9999;">
