@@ -194,6 +194,13 @@ const TracksTable = (onlyFavorites = false) => {
     </table>
   </div>
   `;
+  table.addEventListener("dblclick", (event) => {
+    const row = event.target.closest("tr[data-index]");
+    if (!row) return;
+    playerCreateQueue(tracksView.ids, Number(row.dataset.index));
+    playerPlayCurrent();
+  });
+
   content.appendChild(search);
   content.appendChild(table);
   return content;

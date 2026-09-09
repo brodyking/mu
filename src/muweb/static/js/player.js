@@ -4,8 +4,8 @@ const playerState = {
 }
 audio.preload = "metadata";
 
-const playerCreateQueue = (pos) => {
-  playerState.queue = queueCreate(collectIdsFromTracksTable(), pos)
+const playerCreateQueue = (ids, pos) => {
+  playerState.queue = queueCreate(ids, pos)
 }
 
 const playerSetMetadata = async () => {
@@ -30,16 +30,24 @@ const playerSetMetadata = async () => {
 
 }
 
+const playerControlsSetState = (paused) => {
+  if (paused) {
+    document.getElementById("playerbar-pause").classList.add("d-none")
+    document.getElementById("playerbar-resume").classList.remove("d-none")
+  } else {
+    document.getElementById("playerbar-pause").classList.remove("d-none")
+    document.getElementById("playerbar-resume").classList.add("d-none")
+  }
+}
+
 const playerPause = () => {
   audio.pause();
-  document.getElementById("playerbar-pause").classList.add("d-none")
-  document.getElementById("playerbar-resume").classList.remove("d-none")
+  playerControlsSetState(paused = true)
 }
 
 const playerResume = () => {
   audio.play();
-  document.getElementById("playerbar-pause").classList.remove("d-none")
-  document.getElementById("playerbar-resume").classList.add("d-none")
+  playerControlsSetState(paused = false)
 }
 
 const playerPlayCurrent = async () => {
@@ -64,3 +72,12 @@ audio.addEventListener("ended", () => {
   playerPlayNext();
 });
 
+
+audio.addEventListener("play", () => {
+  playerControlsSetState(paused = false)
+});
+
+// 3. Add the 'pause' event listener
+audio.addEventListener("pause", () => {
+  playerControlsSetState(paused = true)
+});

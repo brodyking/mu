@@ -1,48 +1,72 @@
+/*    _
+ | | | | mu
+ | |_| | (c) 2026 all rights reserved
+ | ._,_| https://github.com/brodyking/mu
+ |_|
+*/
+
+const tracksView = {
+  ids: [],
+  clusterize: null,
+};
+
+const escapeHtml = (value) =>
+  String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+
 const hydrateTracksTable = async (scrollAreaId, contentAreaId, term, only_favorites = false) => {
-  const generateRows = (data) => {
-    let rows = [];
-    let index = 0;
-    data.forEach(track => {
-      rows.push(`
-        <tr ondblclick='playerCreateQueue(${index});playerPlayCurrent();'>
-          <td title="${track.id}">${track.id}</td>
-          <td title="${track.favorite ? "Favorite" : "Not Favorited"}"> <i class="text-danger bi bi-heart${track.favorite ? `-fill` : " "}"></i></td>
-          <td title="${track.title}">${track.title}</td>
-          <td title="${track.artist}">${track.artist}</td>
-          <td title="${track.album}">${track.album}</td>
-          <td title="${track.plays}">${track.plays}</td>
-          <td title="${track.time}">${track.time}</td>
-          <td title="${track.dateadded}">${track.dateadded}</td>
-          <td title="${track.tracknumber}">${track.tracknumber}</td>
-          <td title="${track.albumartist}">${track.albumartist}</td>
-          <td title="${track.discnumber}">${track.discnumber}</td>
-          <td title="${track.genre}">${track.genre}</td>
-          <td title="${track.date}">${track.date}</td>
-        </tr>`);
-      index++;
-    });
-    return rows;
-  }
+  const cell = (value) => {
+    const safe = escapeHtml(value);
+    return `<td title="${safe}">${safe}</td>`;
+  };
+
+  const generateRows = (data) =>
+    data.map((track, index) => `
+      <tr data-index="${index}" data-id="${escapeHtml(track.id)}">
+        ${cell(track.id)}
+        <td title="${track.favorite ? "Favorite" : "Not Favorited"}"><i class="text-danger bi bi-heart${track.favorite ? "-fill" : ""}"></i></td>
+        ${cell(track.title)}
+        ${cell(track.artist)}
+        ${cell(track.album)}
+        ${cell(track.plays)}
+        ${cell(track.time)}
+        ${cell(track.dateadded)}
+        ${cell(track.tracknumber)}
+        ${cell(track.albumartist)}
+        ${cell(track.discnumber)}
+        ${cell(track.genre)}
+        ${cell(track.date)}
+      </tr>`);
 
   if (term === null) {
-    term = ""
+    term = "";
   }
 
-  if (only_favorites) {
-    tracks = await getTracksFavorites(encodeURIComponent(term))
-  } else {
-    tracks = await getTracks(encodeURIComponent(term))
+  const tracks = only_favorites
+    ? await getTracksFavorites(encodeURIComponent(term))
+    : await getTracks(encodeURIComponent(term));
+
+  const rows = tracks ?? [];
+
+  tracksView.ids = rows.map((track) => track.id);
+
+  if (tracksView.clusterize) {
+    tracksView.clusterize.destroy(false);
+    tracksView.clusterize = null;
   }
 
-  Clusterize({
-    rows: generateRows(tracks),
+  tracksView.clusterize = new Clusterize({
+    rows: generateRows(rows),
     scrollId: scrollAreaId,
-    contentId: contentAreaId
-  })
+    contentId: contentAreaId,
+  });
 
-  search = document.getElementById("tracks-table-search");
+  const search = document.getElementById("tracks-table-search");
   if (search) {
-    search.value = term
+    search.value = term;
   }
-
-}
+};
