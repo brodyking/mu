@@ -34,7 +34,7 @@ const PlayerBar = () => {
       <div class="col">
         <img src="/img/empty_art.png" id="playerbar-art">
       </div>
-      <div class="col">
+      <div class="col" style="max-width: 50px;">
         <div class="container text-start metadata">
           <div class="row">
             <div class="col" id="playerbar-title">
