@@ -201,7 +201,7 @@ padding-right: 5px;
 }
 
 .data-table tr:hover td {
-  color: var(--cui-danger) !important;
+  color: var(--cui-primary) !important;
   cursor: pointer;
 }
 

@@ -28,7 +28,7 @@ const hydrateTracksTable = async (scrollAreaId, contentAreaId, term, only_favori
     data.map((track, index) => `
       <tr data-index="${index}" data-id="${escapeHtml(track.id)}">
         ${cell(track.id)}
-        <td title="${track.favorite ? "Favorite" : "Not Favorited"}"><i class="text-danger bi bi-heart${track.favorite ? "-fill" : ""}"></i></td>
+        <td title="${track.favorite ? "Favorite" : "Not Favorited"}"><i class="text-primary bi bi-heart${track.favorite ? "-fill" : ""}"></i></td>
         ${cell(track.title)}
         ${cell(track.artist)}
         ${cell(track.album)}
