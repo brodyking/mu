@@ -6,6 +6,36 @@
 */
 
 
+const PlayerBar = () => {
+  const bar = document.createElement("div");
+  bar.innerHTML = `
+  <div class="container text-center controls">
+    <div class="row">
+      <div class="col">
+        <a class="btn btn-outline-primary" onclick="playerPlayPrevious()">
+          <i class="bi bi-skip-backward-fill"></i>
+        </a>
+      </div>
+      <div class="col">
+        <a class="btn btn-primary" onclick="playerPlayCurrent()">
+          <i class="bi bi-pause-fill"></i>
+        </a>
+      </div>
+      <div class="col">
+        <a class="btn btn-outline-primary" onclick="playerPlayNext()">
+          <i class="bi bi-skip-forward-fill"></i>
+        </a>
+      </div>
+      <div class="col">
+        <img src="/empty_art.png" id="playerbar-art">
+      </div>
+    </div>
+  </div>
+
+  `
+  return bar
+}
+
 const Navbar = () => {
   const element = document.createElement("div");
   element.innerHTML = `

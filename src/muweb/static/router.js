@@ -11,6 +11,11 @@ const renderNavbar = () => {
   nav.replaceChildren(Navbar());
 }
 
+const renderPlayerBar = () => {
+  let bar = document.getElementById("playerbar");
+  bar.replaceChildren(PlayerBar());
+}
+
 // Main routing function. Routes + Hydrates
 const route = async (pathname, search) => {
 
@@ -77,3 +82,4 @@ window.addEventListener('popstate', function(event) {
 
 route()
 window.addEventListener('load', renderNavbar)
+window.addEventListener('load', renderPlayerBar)
