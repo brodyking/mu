@@ -38,6 +38,13 @@ padding-left: 5px;
 padding-right: 5px;
 }
 
+#playerbar .metadata .col {
+  margin: 0px;
+  padding:0px;
+  font-size: 12px;
+  text-wrap: nowrap;
+}
+
 #main {
   /* dvh tracks the mobile URL bar; vh is the fallback for old browsers */
   height: 100vh;

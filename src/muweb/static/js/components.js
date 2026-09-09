@@ -16,9 +16,14 @@ const PlayerBar = () => {
           <i class="bi bi-skip-backward-fill"></i>
         </a>
       </div>
-      <div class="col">
-        <a class="btn btn-primary" onclick="playerPlayCurrent()">
+      <div class="col d-none" id="playerbar-pause">
+        <a class="btn btn-primary" onclick="playerPause()">
           <i class="bi bi-pause-fill"></i>
+        </a>
+      </div>
+      <div class="col" id="playerbar-resume">
+        <a class="btn btn-primary" onclick="playerResume()">
+          <i class="bi bi-play-fill"></i>
         </a>
       </div>
       <div class="col">
@@ -27,7 +32,21 @@ const PlayerBar = () => {
         </a>
       </div>
       <div class="col">
-        <img src="/empty_art.png" id="playerbar-art">
+        <img src="/img/empty_art.png" id="playerbar-art">
+      </div>
+      <div class="col">
+        <div class="container text-start metadata">
+          <div class="row">
+            <div class="col" id="playerbar-title">
+              Track title 
+            </div>
+          </div>
+          <div class="row">
+            <div class="col" id="playerbar-artist">
+              Track artist 
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
