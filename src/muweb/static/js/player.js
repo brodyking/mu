@@ -15,12 +15,19 @@ const playerSetMetadata = async () => {
     title: track.title,
     artist: track.artist,
     album: track.album,
-    artwork: track.art_url ? [{ src: track.art_url }] : [{ src: "/img/empty_art.png" }],
+    artwork: track.art_url ? [{ src: track.art_url }] : [{ src: "" }],
   });
   navigator.mediaSession.setActionHandler("nexttrack", () => { playerPlayNext() });
   navigator.mediaSession.setActionHandler("previoustrack", () => { playerPlayPrevious() });
 
-  document.getElementById("playerbar-art").src = track.art_url ? track.art_url : "/img/empty_art.png";
+  if (track.art_url) {
+    document.getElementById("playerbar-art").src = track.art_url
+    document.getElementById("playerbar-art").classList.remove("opacity-0")
+    document.getElementById("playerbar-art").classList.add("opacity-100")
+  } else {
+    document.getElementById("playerbar-art").classList.remove("opacity-100")
+    document.getElementById("playerbar-art").classList.add("opacity-0")
+  }
 
   document.getElementById("playerbar-title").innerText = track.title;
   document.getElementById("playerbar-artist").innerText = track.artist;

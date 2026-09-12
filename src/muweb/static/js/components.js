@@ -14,7 +14,7 @@ const PlayerBar = () => {
 
       <div id="playerbar-info">
         <div class="d-flex gap-0">
-          <img src="/img/empty_art.png" id="playerbar-art" class="ms-1 me-2">
+          <img id="playerbar-art" class="ms-1 me-2 border-1 opacity-0">
           <div class="container text-start align-middle metadata p-0 pt-1 m-0">
             <div class="row">
               <div class="col fw-bold">
