@@ -17,7 +17,12 @@ from fastapi.staticfiles import StaticFiles
 from mu.api import Api as MuApi
 from mu.models import Track
 
-app = FastAPI()
+app = FastAPI(
+    title="Muweb API",
+    description="A custom FastAPI wrapper for the µ python library.",
+    contact={"name": "Brody King", "url": "https://github.com/brodyking/mu"},
+    docs_url="/api/",
+)
 api = MuApi()
 
 
