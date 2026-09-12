@@ -24,6 +24,7 @@ const playerSetMetadata = async () => {
 
   document.getElementById("playerbar-title").innerText = track.title;
   document.getElementById("playerbar-artist").innerText = track.artist;
+  document.getElementById("playerbar-album").innerText = track.album;
 
   document.getElementById("playerbar-pause").classList.remove("d-none")
   document.getElementById("playerbar-resume").classList.add("d-none")
@@ -80,4 +81,17 @@ audio.addEventListener("play", () => {
 // 3. Add the 'pause' event listener
 audio.addEventListener("pause", () => {
   playerControlsSetState(paused = true)
+});
+
+audio.addEventListener('timeupdate', function() {
+  // duration is NaN until metadata loads, and assigning NaN to a
+  // <progress> throws, which leaves the bar stuck on the last track.
+  const done = Number.isFinite(audio.duration) && audio.duration > 0
+    ? audio.currentTime / audio.duration
+    : 0;
+  document.getElementById('playerbar-seekbar').value = done;
+});
+
+audio.addEventListener('emptied', () => {
+  document.getElementById('playerbar-seekbar').value = 0;
 });

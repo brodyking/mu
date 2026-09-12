@@ -8,48 +8,68 @@
 
 const PlayerBar = () => {
   const bar = document.createElement("div");
+  bar.id = "playerbar-row";
+  bar.classList = `w-100 bg-body border`;
   bar.innerHTML = `
-  <div class="container text-center controls">
-    <div class="row">
-      <div class="col">
-        <a class="btn btn-outline-primary" onclick="playerPlayPrevious()">
-          <i class="bi bi-skip-backward-fill"></i>
-        </a>
-      </div>
-      <div class="col d-none" id="playerbar-pause">
-        <a class="btn btn-primary" onclick="playerPause()">
-          <i class="bi bi-pause-fill"></i>
-        </a>
-      </div>
-      <div class="col" id="playerbar-resume">
-        <a class="btn btn-primary" onclick="playerResume()">
-          <i class="bi bi-play-fill"></i>
-        </a>
-      </div>
-      <div class="col">
-        <a class="btn btn-outline-primary" onclick="playerPlayNext()">
-          <i class="bi bi-skip-forward-fill"></i>
-        </a>
-      </div>
-      <div class="col">
-        <img src="/img/empty_art.png" id="playerbar-art">
-      </div>
-      <div class="col" style="max-width: 50px;">
-        <div class="container text-start metadata">
-          <div class="row">
-            <div class="col" id="playerbar-title">
-              Track title 
+
+      <div id="playerbar-info">
+        <div class="d-flex gap-0">
+          <img src="/img/empty_art.png" id="playerbar-art" class="ms-1 me-2">
+          <div class="container text-start align-middle metadata p-0 pt-1 m-0">
+            <div class="row">
+              <div class="col fw-bold">
+                <a href="/tracks" id="playerbar-title">Title </a>
+              </div>
             </div>
-          </div>
-          <div class="row">
-            <div class="col" id="playerbar-artist">
-              Track artist 
+            <div class="row">
+              <div class="col">
+                by <a href="/tracks" id="playerbar-artist">Artist</a>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col">
+                from <a href="/tracks" id="playerbar-album">Album</a>
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
-  </div>
+
+      <div id="playerbar-transport">
+
+        <div class="transport-side transport-left">
+          <div class="d-none" id="playerbar-pause">
+            <a class="btn" onclick="playerPause()">
+              <i class="bi bi-pause-fill"></i>
+            </a>
+          </div>
+          <div id="playerbar-resume">
+            <a class="btn" onclick="playerResume()">
+              <i class="bi bi-play-fill"></i>
+            </a>
+          </div>
+        </div>
+
+        <div id="playerbar-seek">
+          <progress id="playerbar-seekbar" value="0" max="1"></progress>
+        </div>
+
+        <div class="transport-side transport-right">
+          <a class="btn" onclick="playerPlayPrevious()">
+            <i class="bi bi-skip-backward-fill"></i>
+          </a>
+          <a class="btn" onclick="playerPlayNext()">
+            <i class="bi bi-skip-forward-fill"></i>
+          </a>
+        </div>
+
+      </div>
+
+      <div id="playerbar-actions">
+        <a href="" class="btn btn-outline-secondary">
+          Queue
+        </a>
+      </div>
 
   `
   return bar
