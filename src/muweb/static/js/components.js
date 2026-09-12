@@ -189,7 +189,7 @@ const TracksTable = (onlyFavorites = false) => {
   // Table
   table.className = "tracks-table-wrapper clusterize";
   table.innerHTML = `
-  <table class="table table-striped data-table mb-0">
+  <table class="table data-table mb-0">
     <thead>
       <tr>
         <th>id</th>
@@ -209,7 +209,7 @@ const TracksTable = (onlyFavorites = false) => {
     </thead>
   </table>
   <div id="scrollArea" class="clusterize-scroll">
-    <table class="table table-striped data-table" id="tracks-table">
+    <table class="table data-table" id="tracks-table">
       <tbody id="contentArea">
       </tbody>
     </table>

@@ -141,11 +141,38 @@ body {
 }
 
 #playerbar-seekbar {
+  /* Reset original styles */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  border: none;
+  border-radius: 10px;
+  height: 7px;
+
   display: block;
   width: var(--mu-seek-w);
   min-width: var(--mu-seek-w);
   max-width: var(--mu-seek-w);
   flex: none;
+  background-color: var(--cui-secondary-bg);
+}
+
+/* 1. Track Background (Chrome, Safari, Edge, Opera) */
+#playerbar-seekbar::-webkit-progress-bar {
+  border-radius: 10px;
+  background-color: var(--cui-secondary-bg);
+}
+
+/* 2. Progress Value Color (Chrome, Safari, Edge, Opera) */
+#playerbar-seekbar::-webkit-progress-value {
+  border-radius: 10px;
+  background-color: var(--cui-body-color); /* Modern Blue */
+  transition: width 0.3s ease; /* Smooth transition if value changes */
+}
+/* Filled/value portion (Firefox) */
+#playerbar-seekbar::-moz-progress-bar {
+  border-radius: 10px;
+  background-color: var(--cui-body-color);
 }
 
 /* Desktop: left rail + player bar pinned to the bottom */
@@ -299,8 +326,8 @@ body {
 }
 
 .data-table tr:hover td {
-  color: var(--cui-primary) !important;
   cursor: pointer;
+  background-color: var(--cui-secondary-bg)!important;
 }
 
 .tracks-table-wrapper thead th {
