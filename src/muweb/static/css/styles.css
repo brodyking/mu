@@ -167,13 +167,16 @@ body {
 #playerbar-seekbar::-webkit-progress-value {
   border-radius: 10px;
   background-color: var(--cui-body-color); /* Modern Blue */
-  transition: width 0.3s ease; /* Smooth transition if value changes */
+  transition: width none; /* Smooth transition if value changes */
 }
 /* Filled/value portion (Firefox) */
 #playerbar-seekbar::-moz-progress-bar {
   border-radius: 10px;
   background-color: var(--cui-body-color);
+  transition: none;
 }
+
+
 
 /* Desktop: left rail + player bar pinned to the bottom */
 
