@@ -14,6 +14,7 @@ const renderNavbar = () => {
 const renderPlayerBar = () => {
   let bar = document.getElementById("playerbar");
   bar.replaceChildren(PlayerBar());
+  document.getElementById("playerbar-seekbar").addEventListener('click', playerScrubFromPlayerBar);
 }
 
 // Main routing function. Routes + Hydrates

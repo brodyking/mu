@@ -48,6 +48,15 @@ const playerControlsSetState = (paused) => {
   }
 }
 
+const playerScrubFromPlayerBar = (e) => {
+  const el = e.currentTarget;
+  const rect = el.getBoundingClientRect();
+  const clickX = e.clientX - rect.left;
+  const percentage = clickX / el.offsetWidth;
+  const clickedValue = percentage * el.max;
+  audio.currentTime = clickedValue * audio.duration;
+};
+
 const playerPause = () => {
   audio.pause();
   playerControlsSetState(paused = true)
@@ -58,11 +67,21 @@ const playerResume = () => {
   playerControlsSetState(paused = false)
 }
 
+let playToken = 0;
+
 const playerPlayCurrent = async () => {
+  const myToken = ++playToken;
   const id = queueGetCurrent(playerState.queue);
   if (id === null) return;
+
   audio.src = `/api/tracks/${id}/audio`;
-  await audio.play();
+  try {
+    await audio.play();
+  } catch (err) {
+    if (err.name !== "AbortError") throw err; // interrupted by a newer load, ignore
+  }
+
+  if (myToken !== playToken) return; // a newer play request superseded this one
   playerSetMetadata();
 };
 
@@ -102,3 +121,4 @@ audio.addEventListener('timeupdate', function() {
 audio.addEventListener('emptied', () => {
   document.getElementById('playerbar-seekbar').value = 0;
 });
+
