@@ -67,8 +67,8 @@ const PlayerBar = () => {
       </div>
 
       <div id="playerbar-actions">
-        <a href="" class="btn btn-outline-secondary">
-          Queue
+        <a href="" class="btn">
+          <i class="bi bi-music-note-list"></i>
         </a>
       </div>
 
