@@ -119,6 +119,23 @@ audio.addEventListener('timeupdate', function() {
     ? audio.currentTime / audio.duration
     : 0;
   document.getElementById('playerbar-seekbar').value = done;
+
+  function formatTime(totalSeconds) {
+
+    if (totalSeconds != totalSeconds) {
+      // Check if NaN
+      return "00:00"
+    }
+
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+
+    const paddedMinutes = String(minutes).split(".")[0].padStart(2, '0');
+    const paddedSeconds = String(seconds).split(".")[0].padStart(2, '0');
+
+    return `${paddedMinutes}:${paddedSeconds}`;
+  }
+  document.getElementById('playerbar-duration').innerText = `${formatTime(audio.currentTime)} / ${formatTime(audio.duration)}`;
 });
 
 audio.addEventListener('emptied', () => {

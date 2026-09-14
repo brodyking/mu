@@ -49,10 +49,11 @@ const PlayerBar = () => {
             </a>
           </div>
         </div>
-
-        <div id="playerbar-seek">
-          <progress id="playerbar-seekbar" value="0" max="1"></progress>
-        </div>
+        
+          <div id="playerbar-seek" >
+            <progress id="playerbar-seekbar" value="0" max="1"></progress>
+            <a id="playerbar-duration" class="btn disabled border-0">00:00 / 00:00</a>
+          </div>
 
         <div class="transport-side transport-right">
           <a class="btn" onclick="playerPlayPrevious()">

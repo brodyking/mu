@@ -134,6 +134,11 @@ body {
   justify-content: flex-start;
 }
 
+#playerbar-duration {
+  font-size: 14px;
+  margin-left: 10px;
+}
+
 #playerbar-seek {
   display: flex;
   align-items: center;
