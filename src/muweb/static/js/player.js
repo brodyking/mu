@@ -30,8 +30,11 @@ const playerSetMetadata = async () => {
   }
 
   document.getElementById("playerbar-title").innerText = track.title;
+  document.getElementById("playerbar-title").href = `/tracks?q=title%3D"${track.title}"`;
   document.getElementById("playerbar-artist").innerText = track.artist;
+  document.getElementById("playerbar-artist").href = `/tracks?q=artist%3D"${track.artist}"`;
   document.getElementById("playerbar-album").innerText = track.album;
+  document.getElementById("playerbar-album").href = `/tracks?q=album%3D"${track.album}"`;
 
   document.getElementById("playerbar-pause").classList.remove("d-none")
   document.getElementById("playerbar-resume").classList.add("d-none")
