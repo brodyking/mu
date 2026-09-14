@@ -11,7 +11,6 @@ from importlib.metadata import version
 from typing import Annotated, Literal
 
 import typer
-import uvicorn
 
 from mu.api import Api
 from mu.io import (
