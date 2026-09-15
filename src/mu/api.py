@@ -80,7 +80,9 @@ class Api:
         """
         Returns a dict of tracks with the trackid as the key
         """
-        ordering = self._build_sql_order(order_by, descending)
+        ordering = self._build_sql_order(
+            order_by, descending
+        )  # always includes "ORDER BY"
         select = "SELECT * FROM tracks "
         if tracks_term:
             where, values = self._build_sql_where(tracks_term, "tracks")
@@ -89,7 +91,6 @@ class Api:
                 if only_favorited
                 else f"WHERE {where}"
             )
-            ordering = f" ORDER BY {ordering}" if order_by else ordering
             rows = self.db.query(select + where + ordering, values)
         else:
             where: str = " WHERE (favorite = 1)" if only_favorited else ""
@@ -577,7 +578,7 @@ class Api:
         else:
             key = f"{order_by} COLLATE NOCASE"
 
-        return f"{key} {'DESC' if descending else 'ASC'} NULLS LAST"
+        return f"ORDER BY {key} {'DESC' if descending else 'ASC'} NULLS LAST"
 
     def _upsert_track(self, conn, metadata: dict) -> Track:
         """
