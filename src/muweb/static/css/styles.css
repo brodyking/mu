@@ -291,7 +291,7 @@ body {
 
 /* Tracks page: search box on top, list fills what's left */
 
-.tracks-page {
+.tracks-page, .queue-page {
   display: flex;
   flex-direction: column;
   height: 100%;

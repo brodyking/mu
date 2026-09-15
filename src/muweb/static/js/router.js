@@ -39,6 +39,13 @@ const route = async (pathname, search) => {
     case "/":
       main.replaceChildren(Homepage())
       break;
+    // ===== Queuetab =====
+    case "/queue":
+      main.replaceChildren(Loading())
+      main.appendChild(QueueTable())
+      await hydrateQueueTable("scrollArea", "contentArea")
+      main.removeChild(document.getElementById("loading"))
+      break;
     // ===== Tracks tab =====
     case "/tracks":
       main.replaceChildren(Loading())

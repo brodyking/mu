@@ -67,7 +67,7 @@ const PlayerBar = () => {
       </div>
 
       <div id="playerbar-actions">
-        <a href="" class="btn">
+        <a href="/queue" class="btn">
           <i class="bi bi-music-note-list"></i>
         </a>
       </div>
@@ -224,6 +224,52 @@ const TracksTable = (onlyFavorites = false) => {
   });
 
   content.appendChild(search);
+  content.appendChild(table);
+  return content;
+};
+
+const QueueTable = (onlyFavorites = false) => {
+
+  const content = document.createElement("div"); // Parent element for search and table
+  content.className = "queue-page";
+  const table = document.createElement("div"); // Table
+
+  // Table
+  table.className = "tracks-table-wrapper clusterize";
+  table.innerHTML = `
+  <table class="table data-table mb-0">
+    <thead>
+      <tr>
+        <th>id</th>
+        <th></th>
+        <th>title</th>
+        <th>artist</th>
+        <th>album</th>
+        <th>plays</th>
+        <th>time</th>
+        <th>dateadded</th>
+        <th>tracknumber</th>
+        <th>albumartist</th>
+        <th>discnumber</th>
+        <th>genre</th>
+        <th>date</th>
+      </tr>
+    </thead>
+  </table>
+  <div id="scrollArea" class="clusterize-scroll">
+    <table class="table data-table" id="tracks-table">
+      <tbody id="contentArea">
+      </tbody>
+    </table>
+  </div>
+  `;
+  table.addEventListener("dblclick", (event) => {
+    const row = event.target.closest("tr[data-index]");
+    if (!row) return;
+    playerCreateQueue(tracksView.ids, Number(row.dataset.index));
+    playerPlayCurrent();
+  });
+
   content.appendChild(table);
   return content;
 };
