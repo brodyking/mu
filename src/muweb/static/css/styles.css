@@ -160,6 +160,7 @@ body {
   max-width: var(--mu-seek-w);
   flex: none;
   background-color: var(--cui-secondary-bg);
+  cursor: pointer;
 }
 
 /* 1. Track Background (Chrome, Safari, Edge, Opera) */
@@ -220,6 +221,10 @@ body {
   }
 
   #playerbar-actions {
+    display: none;
+  }
+
+  #playerbar-duration {
     display: none;
   }
 
