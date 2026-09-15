@@ -86,30 +86,25 @@ const playerPlayCurrent = async () => {
 
   if (myToken !== playToken) return; // a newer play request superseded this one
   playerSetMetadata();
-  if (document.location.pathname == "/queue") {
-    await hydrateQueueTable("scrollArea", "contentArea")
-  }
+  hydrateQueueTableIfActive()
 };
 
 const playerPlayNext = async () => {
   playerState.queue = queueNext(playerState.queue)
-  if (document.location.pathname == "/queue") {
-    await hydrateQueueTable("scrollArea", "contentArea")
-  }
   playerPlayCurrent(playerState.queue)
+  hydrateQueueTableIfActive()
 
 }
 
 const playerPlayPrevious = async () => {
   playerState.queue = queuePrevious(playerState.queue)
-  if (document.location.pathname == "/queue") {
-    await hydrateQueueTable("scrollArea", "contentArea")
-  }
   playerPlayCurrent(playerState.queue)
+  hydrateQueueTableIfActive()
 }
 
 audio.addEventListener("ended", () => {
   playerPlayNext();
+  hydrateQueueTableIfActive()
 });
 
 

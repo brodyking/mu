@@ -18,7 +18,13 @@ const escapeHtml = (value) =>
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#39;");
 
-const hydrateQueueTable = async (scrollAreaId, contentAreaId, term) => {
+const hydrateQueueTableIfActive = async (scrollAreaId, contentAreaId) => {
+  if (window.location.pathname == "/queue") {
+    await hydrateQueueTable("scrollArea", "contentArea")
+  }
+}
+
+const hydrateQueueTable = async (scrollAreaId, contentAreaId) => {
   const cell = (value) => {
     const safe = escapeHtml(value);
     return `<td title="${safe}">${safe}</td>`;
@@ -41,10 +47,6 @@ const hydrateQueueTable = async (scrollAreaId, contentAreaId, term) => {
         ${cell(track.genre)}
         ${cell(track.date)}
       </tr>`);
-
-  if (term === null) {
-    term = "";
-  }
 
   const tids = queueGetUpcoming(playerState.queue) ?? []
   if (tids.length == 0) { return }
