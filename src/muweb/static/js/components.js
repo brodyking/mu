@@ -113,6 +113,12 @@ const Navbar = () => {
             <span class="nav-link-text">github</span>
           </a>
         </li>
+        <li class="nav-item ">
+          <a class="nav-link" href="/api/" data-external>
+            <i class="nav-icon bi bi-book"></i>
+            <span class="nav-link-text">api</span>
+          </a>
+        </li>
       </ul>
     </div>`
   return element;
