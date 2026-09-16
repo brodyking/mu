@@ -222,6 +222,10 @@ body {
   #playerbar-row {
     grid-template-columns: minmax(0, 1fr) auto;
     grid-template-rows: minmax(0, 1fr) var(--mu-controls-h);
+    /* the bar is edge-to-edge on phones, so side borders just add clutter;
+       !important is needed to beat CoreUI's .border utility */
+    border-left: 0 !important;
+    border-right: 0 !important;
   }
 
   #playerbar-info {
