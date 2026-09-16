@@ -194,7 +194,7 @@ const TracksTable = (onlyFavorites = false) => {
   // Search
   search.className = "search-form"
   search.innerHTML = `
-    <input type="text" name="term" autocomplete="off" id="tracks-table-search" class="form-control rounded-0 w-100 border-0 border-bottom border-light-gray shadow-none" placeholder="Search tracks..."/>
+    <input type="text" name="term" autocomplete="off" id="tracks-table-search" class="form-control rounded-0 w-100 border-0 border-bottom border-light-gray shadow-none" placeholder="Search tracks..." onfocus="this.select()"/>
   `;
   search.addEventListener('submit', async function(event) {
     // Listens for search submit, fetches tracks and updates rows.
