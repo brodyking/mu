@@ -267,7 +267,7 @@ const QueueTable = () => {
   const table = document.createElement("div"); // Table
 
   // Header
-  header.innerHTML = `<span class="fw-bold">Queue</span> <span id='tracks-total-count'></span>`;
+  header.innerHTML = `<span class="fw-bold">queue</span> <span id='tracks-total-count'></span>`;
 
   // Table
   table.className = "tracks-table-wrapper clusterize";
