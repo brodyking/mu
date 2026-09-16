@@ -41,6 +41,11 @@ const route = async (pathname, search) => {
 
   let main = document.getElementById("main")
 
+  const links = [document.getElementById("navbar-tracks"), document.getElementById("navbar-favorites"), document.getElementById("navbar-albums")]
+  links.forEach((link) => {
+    link.classList.remove("active")
+  })
+
   // Switch case the current page
   switch (pathname) {
     // ===== Homepage =====
@@ -58,6 +63,7 @@ const route = async (pathname, search) => {
       break;
     // ===== Tracks tab =====
     case "/tracks":
+      document.getElementById("navbar-tracks").classList.add("active")
       changeWindowTitle("tracks")
       main.replaceChildren(Loading("fetching tracks..."))
       main.appendChild(TracksTable())
@@ -66,6 +72,7 @@ const route = async (pathname, search) => {
       break;
     // ===== Favorites tab =====
     case "/favorites":
+      document.getElementById("navbar-favorites").classList.add("active")
       changeWindowTitle("favorites")
       main.replaceChildren(Loading("fetching favorites..."))
       main.appendChild(TracksTable(only_favorites = true))
@@ -74,6 +81,7 @@ const route = async (pathname, search) => {
       break;
     // ===== Albums tab =====
     case "/albums":
+      document.getElementById("navbar-albums").classList.add("active")
       changeWindowTitle("albums")
       main.replaceChildren(Loading("fetching albums..."))
       main.replaceChildren(await AlbumsTable())
@@ -88,14 +96,14 @@ const route = async (pathname, search) => {
 
 // Intercept <a href="" data-external>, hands off to router.
 document.addEventListener('click', function(event) {
-
+  event.preventDefault()
   const link = event.target.closest('a');
 
-  if (link && event.target.dataset.external !== undefined) {
-    return
-  }
-  if (link && link.hasAttribute('href')) {
-    event.preventDefault()
+  if (link && event.target.dataset.external !== undefined && link.hasAttribute('href')) {
+    if (confirm(`This is an external link. Are you sure you want to visit?`)) {
+      window.open(link.href, '_blank');
+    }
+  } else if (link && link.hasAttribute('href')) {
     route(link.pathname, link.search)
   }
 });

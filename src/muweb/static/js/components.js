@@ -87,21 +87,21 @@ const Navbar = () => {
       </div>
       <ul class="sidebar-nav">
         <li class="nav-item">
-          <a class="nav-link" href="/tracks">
+          <a class="nav-link" href="/tracks" id="navbar-tracks">
             <i class="nav-icon bi bi-music-note"></i>
             <span class="nav-link-text">tracks</span>
           </a>
         </li>
 
         <li class="nav-item">
-          <a class="nav-link" href="/favorites">
+          <a class="nav-link" href="/favorites" id="navbar-favorites">
             <i class="nav-icon bi bi-heart-fill"></i>
             <span class="nav-link-text">favorites</span>
           </a>
         </li>
 
         <li class="nav-item">
-          <a class="nav-link" href="/albums">
+          <a class="nav-link" href="/albums" id="navbar-albums">
             <i class="nav-icon bi bi-vinyl-fill"></i>
             <span class="nav-link-text">albums</span>
           </a>
@@ -110,13 +110,13 @@ const Navbar = () => {
         <li class="nav-item mt-auto">
           <a class="nav-link" href="https://github.com/brodyking/mu" data-external>
             <i class="nav-icon bi bi-github"></i>
-            <span class="nav-link-text">github</span>
+            <span class="nav-link-text">github <i class="bi bi-box-arrow-up-right"></i></span>
           </a>
         </li>
         <li class="nav-item ">
           <a class="nav-link" href="/api/" data-external>
             <i class="nav-icon bi bi-book"></i>
-            <span class="nav-link-text">api</span>
+            <span class="nav-link-text">api <i class="bi bi-box-arrow-up-right"></i></span>
           </a>
         </li>
       </ul>
