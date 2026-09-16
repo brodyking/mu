@@ -123,7 +123,7 @@ const Loading = (info = "loading...") => {
   content.id = "loading"
   content.innerHTML = `
     <!-- Full-Screen Loading Overlay -->
-    <div id="loading-overlay" class="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center bg-body bg-opacity-50" style="z-index: 9999;">
+    <div id="loading-overlay" class="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center" style="z-index: 9999; background-color: color-mix(in srgb, var(--cui-body-bg) 50%, transparent);">
       <div class="text-center">
         <!-- CoreUI / Bootstrap Spinner -->
         <div class="spinner-border text-body" role="status" style="width: 3rem; height: 3rem;">

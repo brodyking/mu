@@ -350,3 +350,74 @@ body {
   background-color: var(--cui-body-bg, #fff);
   z-index: 1;
 }
+
+
+
+
+[data-coreui-theme="dark"] {
+  /* Base */
+  --cui-body-bg: #1c1c1c;
+  --cui-body-bg-rgb: #1c1c1c;
+  --cui-body-color: #c7c7c7;
+  --cui-border-color: #3a3a3a;
+  --cui-border-color-translucent: #585858;
+
+  /* Surfaces */
+  --cui-secondary-bg: #262626;
+  --cui-tertiary-bg: #303030;
+  --cui-card-bg: #262626;
+  --cui-card-cap-bg: #303030;
+  --cui-emphasis-color: #eeeeee;
+
+  /* Brand / semantic colors, pulled from the syntax groups */
+  --cui-primary: #5f87af;        /* Type (blue) */
+  --cui-primary-rgb: 95, 135, 175;
+
+  --cui-secondary: #767676;      /* Comment (gray) */
+  --cui-secondary-rgb: 118, 118, 118;
+
+  --cui-success: #87af87;        /* String (green) */
+  --cui-success-rgb: 135, 175, 135;
+
+  --cui-info: #5f8787;           /* Special (cyan) */
+  --cui-info-rgb: 95, 135, 135;
+
+  --cui-warning: #d7af87;        /* Constant/Question (tan) */
+  --cui-warning-rgb: 215, 175, 135;
+
+  --cui-danger: #af5f5f;         /* Error (red) */
+  --cui-danger-rgb: 175, 95, 95;
+
+  --cui-light: #9e9e9e;
+  --cui-light-rgb: 158, 158, 158;
+
+  --cui-dark: #1c1c1c;
+  --cui-dark-rgb: 28, 28, 28;
+
+  /* Links */
+  --cui-link-color: #87afaf;
+  --cui-link-hover-color: #a9c9c9;
+
+  /* Selection / highlight states */
+  --cui-highlight-bg: #374a44;       /* Search */
+  --cui-component-active-bg: #1a3456; /* Visual selection */
+  --cui-component-active-color: #eeeeee;
+
+  /* Sidebar / header (CoreUI admin components) */
+  --cui-sidebar-bg: #1c1c1c;
+  --cui-sidebar-nav-link-color: #c7c7c7;
+  --cui-sidebar-nav-link-hover-color: #eeeeee;
+  --cui-header-bg: #262626;
+  --cui-header-color: #c7c7c7;
+  --cui-header-border-color: #3a3a3a;
+
+  /* Table striping / hover */
+  --cui-table-striped-bg: #262626;
+  --cui-table-hover-bg: #303030;
+
+  /* Dropdown / popover (Pmenu-derived) */
+  --cui-dropdown-bg: #3a3a3a;
+  --cui-dropdown-link-hover-bg: #585858;
+  --cui-popover-bg: #3a3a3a;
+  --cui-popover-border-color: #767676;
+}
