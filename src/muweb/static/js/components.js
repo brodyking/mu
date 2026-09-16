@@ -143,7 +143,6 @@ const Homepage = () => {
   content.innerHTML = `
     <h1 class='mt-5 align-self-center fs-1'>µ</h1>
     <p class='mt-3 fs-4'>your personal music library</p>
-    <a href="https://github.com/brodyking/mu/" class="btn btn-primary mt-3" data-external>github</a>
   `;
   return content;
 };
