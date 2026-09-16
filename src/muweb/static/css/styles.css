@@ -216,12 +216,20 @@ body {
 
   /* A centered 400px bar plus readable metadata doesn't fit on a phone,
      so drop the Queue column and let the transport sit on the right */
+  /* Transport sits on the right, followed by the Queue button */
   #playerbar-row {
-    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr) auto auto;
   }
 
   #playerbar-actions {
-    display: none;
+    padding-right: 4px;
+  }
+
+  /* No centering needed on mobile, so the play/pause side only takes
+     the width of its single button; this makes room for Queue */
+  #playerbar-transport .transport-left {
+    width: auto;
+    flex: 0 0 auto;
   }
 
   #playerbar-duration {
