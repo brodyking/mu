@@ -81,7 +81,11 @@ const playerPlayCurrent = async () => {
   try {
     await audio.play();
   } catch (err) {
-    if (err.name !== "AbortError") throw err; // interrupted by a newer load, ignore
+    // interrupted by a newer load, ignore
+    if (err.name !== "AbortError") {
+      alert(err);
+      throw err;
+    }
   }
 
   if (myToken !== playToken) return; // a newer play request superseded this one
