@@ -17,6 +17,14 @@ const renderPlayerBar = () => {
   document.getElementById("playerbar-seekbar").addEventListener('click', playerScrubFromPlayerBar);
 }
 
+const changeWindowTitle = (title = "") => {
+  if (title !== "") {
+    document.title = `muweb · ${title}`
+  } else {
+    document.title = `muweb`
+  }
+}
+
 // Main routing function. Routes + Hydrates
 const route = async (pathname, search) => {
 
@@ -37,10 +45,12 @@ const route = async (pathname, search) => {
   switch (pathname) {
     // ===== Homepage =====
     case "/":
+      changeWindowTitle()
       main.replaceChildren(Homepage())
       break;
     // ===== Queuetab =====
     case "/queue":
+      changeWindowTitle("queue")
       main.replaceChildren(Loading())
       main.appendChild(QueueTable())
       await hydrateQueueTable("scrollArea", "contentArea")
@@ -48,6 +58,7 @@ const route = async (pathname, search) => {
       break;
     // ===== Tracks tab =====
     case "/tracks":
+      changeWindowTitle("tracks")
       main.replaceChildren(Loading())
       main.appendChild(TracksTable())
       await hydrateTracksTable("scrollArea", "contentArea", params.get("q"))
@@ -55,6 +66,7 @@ const route = async (pathname, search) => {
       break;
     // ===== Favorites tab =====
     case "/favorites":
+      changeWindowTitle("favorites")
       main.replaceChildren(Loading())
       main.appendChild(TracksTable(only_favorites = true))
       await hydrateTracksTable("scrollArea", "contentArea", params.get("q"), only_favorites = true)
@@ -62,11 +74,13 @@ const route = async (pathname, search) => {
       break;
     // ===== Albums tab =====
     case "/albums":
+      changeWindowTitle("albums")
       main.replaceChildren(Loading())
       main.replaceChildren(await AlbumsTable())
       break;
     // ===== Error 404 =====
     default:
+      changeWindowTitle("error 404")
       main.replaceChildren(Error404())
       break;
   }
