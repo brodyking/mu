@@ -51,7 +51,7 @@ const route = async (pathname, search) => {
     // ===== Queuetab =====
     case "/queue":
       changeWindowTitle("queue")
-      main.replaceChildren(Loading())
+      main.replaceChildren(Loading("fetching queue..."))
       main.appendChild(QueueTable())
       await hydrateQueueTable("scrollArea", "contentArea")
       main.removeChild(document.getElementById("loading"))
@@ -59,7 +59,7 @@ const route = async (pathname, search) => {
     // ===== Tracks tab =====
     case "/tracks":
       changeWindowTitle("tracks")
-      main.replaceChildren(Loading())
+      main.replaceChildren(Loading("fetching tracks..."))
       main.appendChild(TracksTable())
       await hydrateTracksTable("scrollArea", "contentArea", params.get("q"))
       main.removeChild(document.getElementById("loading"))
@@ -67,7 +67,7 @@ const route = async (pathname, search) => {
     // ===== Favorites tab =====
     case "/favorites":
       changeWindowTitle("favorites")
-      main.replaceChildren(Loading())
+      main.replaceChildren(Loading("fetching favorites..."))
       main.appendChild(TracksTable(only_favorites = true))
       await hydrateTracksTable("scrollArea", "contentArea", params.get("q"), only_favorites = true)
       main.removeChild(document.getElementById("loading"))
@@ -75,7 +75,7 @@ const route = async (pathname, search) => {
     // ===== Albums tab =====
     case "/albums":
       changeWindowTitle("albums")
-      main.replaceChildren(Loading())
+      main.replaceChildren(Loading("fetching albums..."))
       main.replaceChildren(await AlbumsTable())
       break;
     // ===== Error 404 =====
