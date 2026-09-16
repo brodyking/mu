@@ -333,6 +333,7 @@ body {
 }
 
 .data-table {
+  table-layout: fixed;
   -webkit-user-select: none;
   -ms-user-select: none;
   user-select: none;

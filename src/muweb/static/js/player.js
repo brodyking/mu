@@ -79,7 +79,10 @@ const playerPlayCurrent = async () => {
 
   audio.src = `/api/tracks/${id}/audio`;
   try {
+    let main = document.getElementById("main")
+    main.appendChild(Loading("fetching and encoding..."))
     await audio.play();
+    main.removeChild(document.getElementById("loading"))
   } catch (err) {
     // interrupted by a newer load, ignore
     if (err.name !== "AbortError") {

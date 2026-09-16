@@ -7,13 +7,12 @@
 
 """
 
-import io
 import subprocess
 from pathlib import Path
 from typing import Literal
 
 from fastapi import FastAPI, HTTPException, Query, Request
-from fastapi.responses import FileResponse, StreamingResponse
+from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 
 from mu.api import Api as MuApi
@@ -83,17 +82,38 @@ def tracks_by_ids(ids: list[int] = Query(None)):
 
 @app.get("/api/tracks/{track_id}/audio")
 def track_audio(track_id: int, t: float = 0):
-    """
-    Returns audio track, remuxed
-    """
     track = track_or_404(track_id)
     path = Path(track.filepath).resolve()
     proc = subprocess.Popen(
-        ["ffmpeg", "-ss", str(t), "-i", str(path), "-c", "copy", "-f", "mp3", "-"],
+        [
+            "ffmpeg",
+            "-ss",
+            str(t),
+            "-i",
+            str(path),
+            "-map",
+            "0:a:0",
+            "-c:a",
+            "libmp3lame",
+            "-b:a",
+            "192k",
+            "-f",
+            "mp3",
+            "-",
+        ],
+        stdin=subprocess.DEVNULL,
         stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
     )
     stdout, stderr = proc.communicate()
-    return StreamingResponse(io.BytesIO(stdout), media_type="audio/mpeg")
+
+    if proc.returncode != 0:
+        raise HTTPException(
+            status_code=500,
+            detail=f"ffmpeg failed: {stderr.decode(errors='replace')}",
+        )
+
+    return Response(content=stdout, media_type="audio/mpeg")
 
 
 @app.get("/api/tracks/{track_id}/art")

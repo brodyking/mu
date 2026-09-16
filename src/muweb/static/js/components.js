@@ -118,19 +118,19 @@ const Navbar = () => {
   return element;
 }
 
-const Loading = () => {
+const Loading = (info = "loading...") => {
   const content = document.createElement("div");
   content.id = "loading"
   content.innerHTML = `
     <!-- Full-Screen Loading Overlay -->
-    <div id="loading-overlay" class="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center" style="z-index: 9999;">
+    <div id="loading-overlay" class="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center bg-body bg-opacity-50" style="z-index: 9999;">
       <div class="text-center">
         <!-- CoreUI / Bootstrap Spinner -->
-        <div class="spinner-border text-secondary" role="status" style="width: 3rem; height: 3rem;">
+        <div class="spinner-border text-body" role="status" style="width: 3rem; height: 3rem;">
           <span class="visually-hidden">Loading...</span>
         </div>
         <!-- Optional Loading Text -->
-        <div class="text-secondary mt-2">loading...</div>
+        <div class="text-body mt-2">${info}</div>
       </div>
     </div>
   `;
@@ -159,6 +159,24 @@ const Error404 = () => {
   `;
   return content;
 };
+
+const trackColgroup = `
+  <colgroup>
+    <col style="width: 60px">   <!-- id -->
+    <col style="width: 36px">   <!-- favorite icon -->
+    <col style="width: 200px">    <!-- title -->
+    <col style="width: 100px">    <!-- artist -->
+    <col style="width: 100px">    <!-- album -->
+    <col style="width: 60px">   <!-- plays -->
+    <col style="width: 60px">   <!-- time -->
+    <col style="width: 100px">  <!-- dateadded -->
+    <col style="width: 90px">   <!-- tracknumber -->
+    <col style="width: 15%">    <!-- albumartist -->
+    <col style="width: 80px">   <!-- discnumber -->
+    <col style="width: 100px">  <!-- genre -->
+    <col style="width: 90px">   <!-- date -->
+  </colgroup>
+`;
 
 const TracksTable = (onlyFavorites = false) => {
 
@@ -191,6 +209,7 @@ const TracksTable = (onlyFavorites = false) => {
   table.className = "tracks-table-wrapper clusterize";
   table.innerHTML = `
   <table class="table data-table mb-0">
+    ${trackColgroup}
     <thead>
       <tr>
         <th>id</th>
@@ -211,6 +230,7 @@ const TracksTable = (onlyFavorites = false) => {
   </table>
   <div id="scrollArea" class="clusterize-scroll">
     <table class="table data-table" id="tracks-table">
+      ${trackColgroup}
       <tbody id="contentArea">
       </tbody>
     </table>
@@ -238,6 +258,7 @@ const QueueTable = (onlyFavorites = false) => {
   table.className = "tracks-table-wrapper clusterize";
   table.innerHTML = `
   <table class="table data-table mb-0">
+    ${trackColgroup}
     <thead>
       <tr>
         <th>id</th>
@@ -258,6 +279,7 @@ const QueueTable = (onlyFavorites = false) => {
   </table>
   <div id="scrollArea" class="clusterize-scroll">
     <table class="table data-table" id="tracks-table">
+      ${trackColgroup}
       <tbody id="contentArea">
       </tbody>
     </table>
