@@ -43,7 +43,7 @@ const route = async (pathname, search) => {
 
   const links = [document.getElementById("navbar-tracks"), document.getElementById("navbar-favorites"), document.getElementById("navbar-albums")]
   links.forEach((link) => {
-    link.classList.remove("active")
+    if (link) link.classList.remove("active")
   })
 
   // Switch case the current page
@@ -114,6 +114,7 @@ window.addEventListener('popstate', function(event) {
   route(event.pathname)
 });
 
+renderNavbar()
+renderPlayerBar()
 route()
-window.addEventListener('load', renderNavbar)
-window.addEventListener('load', renderPlayerBar)
+
