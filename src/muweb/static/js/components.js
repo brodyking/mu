@@ -183,13 +183,17 @@ const trackColgroup = `
   </colgroup>
 `;
 
-const TracksTable = (onlyFavorites = false) => {
+const TracksTable = (onlyFavorites = false, headerText = "tracks") => {
 
   const content = document.createElement("div"); // Parent element for search and table
   content.className = "tracks-page";
+  const header = document.createElement("div"); // Header
+  header.classList = "border-bottom pb-1 pt-1 d-flex justify-content-between ps-2 pe-2"
   const search = document.createElement("form"); // Search Box
   const table = document.createElement("div"); // Table
 
+  // Header
+  header.innerHTML = `<span class="fw-bold">${headerText}</span> <span id='tracks-total-count'></span>`;
 
   // Search
   search.className = "search-form"
@@ -248,16 +252,22 @@ const TracksTable = (onlyFavorites = false) => {
     playerPlayCurrent();
   });
 
+  content.appendChild(header);
   content.appendChild(search);
   content.appendChild(table);
   return content;
 };
 
-const QueueTable = (onlyFavorites = false) => {
+const QueueTable = () => {
 
   const content = document.createElement("div"); // Parent element for search and table
   content.className = "queue-page";
+  const header = document.createElement("div"); // Header
+  header.classList = "border-bottom pb-1 pt-1 d-flex justify-content-between ps-2 pe-2"
   const table = document.createElement("div"); // Table
+
+  // Header
+  header.innerHTML = `<span class="fw-bold">Queue</span> <span id='tracks-total-count'></span>`;
 
   // Table
   table.className = "tracks-table-wrapper clusterize";
@@ -296,7 +306,7 @@ const QueueTable = (onlyFavorites = false) => {
     playerCreateQueue(tracksView.ids, Number(row.dataset.index));
     playerPlayCurrent();
   });
-
+  content.appendChild(header);
   content.appendChild(table);
   return content;
 };

@@ -24,7 +24,7 @@ const hydrateQueueTableIfActive = async (scrollAreaId, contentAreaId) => {
   }
 }
 
-const hydrateQueueTable = async (scrollAreaId, contentAreaId) => {
+const hydrateQueueTable = async () => {
   const cell = (value) => {
     const safe = escapeHtml(value);
     return `<td title="${safe}">${safe}</td>`;
@@ -68,14 +68,17 @@ const hydrateQueueTable = async (scrollAreaId, contentAreaId) => {
 
   tracksView.clusterize = new Clusterize({
     rows: generateRows(rows),
-    scrollId: scrollAreaId,
-    contentId: contentAreaId,
+    scrollId: "scrollArea",
+    contentId: "contentArea",
   });
+
+  const total = document.getElementById("tracks-total-count")
+  total.innerText = `${rows.length.toLocaleString('en-US')} results`;
 
 }
 
 
-const hydrateTracksTable = async (scrollAreaId, contentAreaId, term, only_favorites = false) => {
+const hydrateTracksTable = async (term, only_favorites = false) => {
   const cell = (value) => {
     const safe = escapeHtml(value);
     return `<td title="${safe}">${safe}</td>`;
@@ -109,8 +112,6 @@ const hydrateTracksTable = async (scrollAreaId, contentAreaId, term, only_favori
 
   const rows = tracks ?? [];
 
-  console.log(rows)
-
   tracksView.ids = rows.map((track) => track.id);
 
   if (tracksView.clusterize) {
@@ -120,12 +121,14 @@ const hydrateTracksTable = async (scrollAreaId, contentAreaId, term, only_favori
 
   tracksView.clusterize = new Clusterize({
     rows: generateRows(rows),
-    scrollId: scrollAreaId,
-    contentId: contentAreaId,
+    scrollId: "scrollArea",
+    contentId: "contentArea",
   });
 
   const search = document.getElementById("tracks-table-search");
   if (search) {
     search.value = term;
   }
+  const total = document.getElementById("tracks-total-count")
+  total.innerText = `${rows.length.toLocaleString('en-US')} results`;
 };

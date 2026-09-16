@@ -58,7 +58,7 @@ const route = async (pathname, search) => {
       changeWindowTitle("queue")
       main.replaceChildren(Loading("fetching queue..."))
       main.appendChild(QueueTable())
-      await hydrateQueueTable("scrollArea", "contentArea")
+      await hydrateQueueTable()
       main.removeChild(document.getElementById("loading"))
       break;
     // ===== Tracks tab =====
@@ -67,7 +67,7 @@ const route = async (pathname, search) => {
       changeWindowTitle("tracks")
       main.replaceChildren(Loading("fetching tracks..."))
       main.appendChild(TracksTable())
-      await hydrateTracksTable("scrollArea", "contentArea", params.get("q"))
+      await hydrateTracksTable(params.get("q"))
       main.removeChild(document.getElementById("loading"))
       break;
     // ===== Favorites tab =====
@@ -75,8 +75,8 @@ const route = async (pathname, search) => {
       document.getElementById("navbar-favorites").classList.add("active")
       changeWindowTitle("favorites")
       main.replaceChildren(Loading("fetching favorites..."))
-      main.appendChild(TracksTable(only_favorites = true))
-      await hydrateTracksTable("scrollArea", "contentArea", params.get("q"), only_favorites = true)
+      main.appendChild(TracksTable(only_favorites = true, headerText = "favorites"))
+      await hydrateTracksTable(params.get("q"), only_favorites = true)
       main.removeChild(document.getElementById("loading"))
       break;
     // ===== Albums tab =====
