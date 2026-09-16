@@ -209,20 +209,58 @@ body {
     /* tab bar height + iOS home indicator inset */
     --mu-bottomnav-h: calc(52px + env(safe-area-inset-bottom, 0px));
     /* still fixed, just smaller numbers than desktop */
-    --mu-info-w: 150px;
-    --mu-seek-w: 110px;
+    --mu-info-w: 100%;
     --mu-transport-w: 84px;
+    /* height of the second (controls) row */
+    --mu-controls-h: 40px;
+    /* total bar height = art/metadata row + controls row */
+    --mu-playerbar-h: calc(var(--mu-nowplaying-h) + var(--mu-controls-h));
   }
 
-  /* A centered 400px bar plus readable metadata doesn't fit on a phone,
-     so drop the Queue column and let the transport sit on the right */
-  /* Transport sits on the right, followed by the Queue button */
+  /* Two rows on mobile: art + metadata get the full width on top,
+     transport + Queue sit directly underneath */
   #playerbar-row {
-    grid-template-columns: minmax(0, 1fr) auto auto;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-rows: minmax(0, 1fr) var(--mu-controls-h);
+  }
+
+  #playerbar-info {
+    grid-column: 1 / -1;
+    /* fill the row so the border lands on the line between the rows */
+    align-self: stretch;
+    border-bottom: 1px solid var(--cui-border-color);
+  }
+
+  #playerbar-transport {
+    grid-column: 1;
+    min-width: 0;
   }
 
   #playerbar-actions {
+    grid-column: 2;
     padding-right: 4px;
+  }
+
+  /* The 11px link margin sized the old single row; the controls row
+     is shorter, so drop it for the buttons */
+  #playerbar-transport a,
+  #playerbar-actions a {
+    margin-top: 0;
+    margin-bottom: 0;
+  }
+
+  /* With the whole row to itself, the seekbar stretches to fill
+     whatever the buttons don't use */
+  #playerbar-seek {
+    flex: 1 1 auto;
+    min-width: 0;
+    padding: 0 8px;
+  }
+
+  #playerbar-seekbar {
+    width: 100%;
+    min-width: 0;
+    max-width: none;
   }
 
   /* No centering needed on mobile, so the play/pause side only takes
@@ -285,7 +323,7 @@ body {
   }
 
   #main {
-    padding-bottom: calc(var(--mu-bottomnav-h) + var(--mu-nowplaying-h));
+    padding-bottom: calc(var(--mu-bottomnav-h) + var(--mu-playerbar-h));
   }
 
   #playerbar {
@@ -293,7 +331,7 @@ body {
     left: 0;
     bottom: var(--mu-bottomnav-h);
     z-index: 2;
-    height: var(--mu-nowplaying-h);
+    height: var(--mu-playerbar-h);
   }
 }
 
