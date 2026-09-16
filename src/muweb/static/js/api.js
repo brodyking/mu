@@ -47,21 +47,30 @@ const getTrackById = async (id) => {
   return data[0] ?? null;
 };
 
-// Get tracks by ids
-const getTracksById = async (ids) => {
-  try {
-    query = ""
-    for (let i = 0; i < ids.length; i++) {
-      if (i >= 1) { query += "&" }
-      query += `ids=${ids[i]}`
-    }
-    const response = await fetch(`/api/tracks_by_ids?${query}`)
-    const data = await response.json()
-    return data;
-  } catch {
-    alert("Error fetching tracks");
+// Get tracks by ids, in batches to keep URLs short
+const getTracksById = async (ids, batchSize = 500) => {
+  const batches = [];
+  for (let i = 0; i < ids.length; i += batchSize) {
+    batches.push(ids.slice(i, i + batchSize));
   }
-}
+
+  try {
+    const results = await Promise.all(
+      batches.map(async (batch) => {
+        const params = new URLSearchParams();
+        batch.forEach((id) => params.append("ids", id));
+        const response = await fetch(`/api/tracks_by_ids?${params}`);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        return response.json();
+      })
+    );
+    return results.flat();
+  } catch (err) {
+    console.error(err);
+    alert("Error fetching tracks");
+    return [];
+  }
+};
 
 // Get albums
 const getAlbums = async (q) => {
