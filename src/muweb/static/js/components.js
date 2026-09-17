@@ -32,7 +32,7 @@ const PlayerBar = () => {
               </div>
             </div>
           </div>
-          <a class="btn" onclick=""><i class="bi" id="playerbar-favorite"></i></a>
+          <a class="btn" onclick="putFavorite(queueGetCurrent(playerState.queue));hydratePlayerMetadata();"><i class="bi" id="playerbar-favorite"></i></a>
         </div>
       </div>
 
