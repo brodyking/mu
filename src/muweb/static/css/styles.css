@@ -102,6 +102,10 @@ body {
   text-overflow: ellipsis;
 }
 
+#playerbar #playerbar-favorite {
+  font-size: 14px!important;
+}
+
 #playerbar a {
   color: var(--cui-secondary-color);
   text-decoration: none;

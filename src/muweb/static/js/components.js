@@ -18,7 +18,7 @@ const PlayerBar = () => {
           <div class="container text-start align-middle metadata p-0 pt-1 m-0">
             <div class="row">
               <div class="col fw-bold">
-                <a href="/tracks" id="playerbar-title">Title </a>
+                <a href="/tracks" id="playerbar-title">Title </a> 
               </div>
             </div>
             <div class="row">
@@ -32,12 +32,15 @@ const PlayerBar = () => {
               </div>
             </div>
           </div>
+          <a class="btn" onclick=""><i class="bi" id="playerbar-favorite"></i></a>
         </div>
       </div>
 
       <div id="playerbar-transport">
 
         <div class="transport-side transport-left">
+
+
           <div class="d-none" id="playerbar-pause">
             <a class="btn" onclick="playerPause()">
               <i class="bi bi-pause-fill"></i>
@@ -196,9 +199,10 @@ const TracksTable = (onlyFavorites = false, headerText = "tracks") => {
   header.innerHTML = `<span class="fw-bold">${headerText}</span> <span id='tracks-total-count'></span>`;
 
   // Search
-  search.className = "search-form"
+  search.className = "search-form d-flex border-0 border-bottom border-light-gray"
   search.innerHTML = `
-    <input type="text" name="term" autocomplete="off" id="tracks-table-search" class="form-control rounded-0 w-100 border-0 border-bottom border-light-gray shadow-none" placeholder="Search tracks..." onfocus="this.select()"/>
+    <div class="p-2 pe-0"><i class="bi bi-search"></i></div>
+    <input type="text" name="term" autocomplete="off" id="tracks-table-search" class="form-control rounded-0 flex-grow-1 border-0 shadow-none" placeholder="Search tracks..." onfocus="this.select()"/>
   `;
   search.addEventListener('submit', async function(event) {
     // Listens for search submit, fetches tracks and updates rows.
@@ -250,6 +254,8 @@ const TracksTable = (onlyFavorites = false, headerText = "tracks") => {
     if (!row) return;
     playerCreateQueue(tracksView.ids, Number(row.dataset.index));
     playerPlayCurrent();
+    hydratePlayerMetadata();
+    hydrateQueueTableIfActive();
   });
 
   content.appendChild(header);
