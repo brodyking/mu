@@ -148,6 +148,11 @@ def playlists(q: str | None = None):
     return [p.get_dict() for p in api.get_playlists(q).values()]
 
 
+@app.put("/api/tracks/{track_id}/favorite")
+def favorite(track_id: int):
+    return [t.get_dict() for t in api.favorite_tracks(f"id={track_id}").values()]
+
+
 app.mount("/", StaticFiles(directory=WEB_DIR, html=True))
 
 
