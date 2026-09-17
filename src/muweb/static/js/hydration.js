@@ -57,7 +57,7 @@ const hydratePlayerMetadata = async () => {
   hydratePlayerPausedState(paused = false)
 }
 
-const hydrateQueueTableIfActive = async (scrollAreaId, contentAreaId) => {
+const hydrateQueueTableIfActive = async () => {
   if (window.location.pathname == "/queue") {
     await hydrateQueueTable("scrollArea", "contentArea")
   }
