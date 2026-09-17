@@ -7,7 +7,10 @@
 
 // Gets tracks
 const getTracks = async (q, order_by = null) => {
-  if (q == undefined) { q = "" }
+  if (q == undefined) {
+    console.error(`${q} is undefined`)
+    return
+  }
   if (q.length !== 0 && q.indexOf("%3A") == -1 && q.indexOf("%3D") == -1) {
     q = `artist:${q},albumartist:${q},album:${q},title:${q}`
   }
@@ -19,15 +22,18 @@ const getTracks = async (q, order_by = null) => {
     const response = await fetch(url)
     const data = await response.json()
     return data;
-  } catch {
-    alert("Invalid search query")
+  } catch (err) {
+    alert(`Invalid search query (${err})`)
   }
 }
 
 
 // Gets favorited tracks
 const getTracksFavorites = async (q) => {
-  if (q == undefined) { q = "" }
+  if (q == undefined) {
+    console.error(`${q} is undefined`)
+    return
+  }
   if (q.length !== 0 && q.indexOf("%3A") == -1 && q.indexOf("%3D") == -1) {
     q = `artist:${q},albumartist:${q},album:${q},title:${q}`
   }
@@ -35,13 +41,17 @@ const getTracksFavorites = async (q) => {
     const response = await fetch(`/api/tracks?q=${q}&only_favorited=1`)
     const data = await response.json()
     return data;
-  } catch {
-    alert("Invalid search query")
+  } catch (err) {
+    alert(`Invalid search query (${err})`)
   }
 }
 
 // Gets track by id
 const getTrackById = async (id) => {
+  if (id !== id) {
+    console.error(`${id} is not a number.`)
+    return null
+  }
   const response = await fetch(`/api/tracks_by_ids?ids=${id}`);
   const data = await response.json();
   return data[0] ?? null;
@@ -66,19 +76,45 @@ const getTracksById = async (ids, batchSize = 500) => {
     );
     return results.flat();
   } catch (err) {
-    console.error(err);
-    alert("Error fetching tracks");
+    alert(`Error fetching tracks (${err})`)
     return [];
   }
 };
 
-// Get albums
-const getAlbums = async (q) => {
-  if (q == undefined) { q = "" }
-  if (q.length !== 0 && q.indexOf("%3A") == -1 && q.indexOf("%3D") == -1) {
-    q = `albumartist:${q},album:${q}`
+// // Get albums
+// const getAlbums = async (q) => {
+//   if (q == undefined) { q = "" }
+//   if (q.length !== 0 && q.indexOf("%3A") == -1 && q.indexOf("%3D") == -1) {
+//     q = `albumartist:${q},album:${q}`
+//   }
+//   const response = await fetch(`/api/albums?q=${q}`)
+//   const data = await response.json()
+//   return data;
+// }
+
+// Favorite track
+const putFavorite = async (id) => {
+
+  if (id !== id) {
+    console.error(`${id} is not a number.`)
+    return []
   }
-  const response = await fetch(`/api/albums?q=${q}`)
-  const data = await response.json()
-  return data;
+
+  const url = `/api/tracks/${id}/favorite`;
+
+  try {
+    const response = await fetch(url, {
+      method: 'PUT', // Specify the HTTP method
+      headers: {
+        'Content-Type': 'application/json', // Tell the server we are sending JSON
+      },
+      body: []
+    });
+
+    const data = await response.json(); // Parse response payload
+    return data[0] ?? null;
+  } catch (error) {
+    console.error('Error during PUT request:', error);
+  }
+
 }
