@@ -9,8 +9,6 @@ const playerCreateQueue = (ids, pos) => {
 }
 
 const playerSetMetadata = async () => {
-  track = await getTrackById(queueGetCurrent(playerState.queue))
-
   navigator.mediaSession.metadata = new MediaMetadata({
     title: track.title,
     artist: track.artist,
@@ -19,37 +17,8 @@ const playerSetMetadata = async () => {
   });
   navigator.mediaSession.setActionHandler("nexttrack", () => { playerPlayNext() });
   navigator.mediaSession.setActionHandler("previoustrack", () => { playerPlayPrevious() });
-
-  if (track.art_url) {
-    document.getElementById("playerbar-art").src = track.art_url
-    document.getElementById("playerbar-art").classList.remove("opacity-0")
-    document.getElementById("playerbar-art").classList.add("opacity-100")
-  } else {
-    document.getElementById("playerbar-art").classList.remove("opacity-100")
-    document.getElementById("playerbar-art").classList.add("opacity-0")
-  }
-
-  document.getElementById("playerbar-title").innerText = track.title;
-  document.getElementById("playerbar-title").href = `/tracks?q=title%3D"${track.title}"`;
-  document.getElementById("playerbar-artist").innerText = track.artist;
-  document.getElementById("playerbar-artist").href = `/tracks?q=artist%3D"${track.artist}"`;
-  document.getElementById("playerbar-album").innerText = track.album;
-  document.getElementById("playerbar-album").href = `/tracks?q=album%3D"${track.album}"`;
-
-  document.getElementById("playerbar-pause").classList.remove("d-none")
-  document.getElementById("playerbar-resume").classList.add("d-none")
-
 }
 
-const playerControlsSetState = (paused) => {
-  if (paused) {
-    document.getElementById("playerbar-pause").classList.add("d-none")
-    document.getElementById("playerbar-resume").classList.remove("d-none")
-  } else {
-    document.getElementById("playerbar-pause").classList.remove("d-none")
-    document.getElementById("playerbar-resume").classList.add("d-none")
-  }
-}
 
 const playerScrubFromPlayerBar = (e) => {
   const el = e.currentTarget;
@@ -62,12 +31,12 @@ const playerScrubFromPlayerBar = (e) => {
 
 const playerPause = () => {
   audio.pause();
-  playerControlsSetState(paused = true)
+  hydratePlayerPausedState(paused = true)
 }
 
 const playerResume = () => {
   audio.play();
-  playerControlsSetState(paused = false)
+  hydratePlayerPausedState(paused = false)
 }
 
 let playToken = 0;
@@ -93,7 +62,6 @@ const playerPlayCurrent = async () => {
 
   if (myToken !== playToken) return; // a newer play request superseded this one
   playerSetMetadata();
-  hydrateQueueTableIfActive()
 };
 
 const playerPlayNext = async () => {
@@ -111,17 +79,18 @@ const playerPlayPrevious = async () => {
 
 audio.addEventListener("ended", () => {
   playerPlayNext();
-  hydrateQueueTableIfActive()
+  hydratePlayerMetadata();
+  hydrateQueueTableIfActive();
 });
 
 
 audio.addEventListener("play", () => {
-  playerControlsSetState(paused = false)
+  hydratePlayerPausedState(paused = false)
 });
 
 // 3. Add the 'pause' event listener
 audio.addEventListener("pause", () => {
-  playerControlsSetState(paused = true)
+  hydratePlayerPausedState(paused = true)
 });
 
 audio.addEventListener('timeupdate', function() {
@@ -152,5 +121,7 @@ audio.addEventListener('timeupdate', function() {
 
 audio.addEventListener('emptied', () => {
   document.getElementById('playerbar-seekbar').value = 0;
+  hydratePlayerMetadata();
+  hydrateQueueTableIfActive();
 });
 

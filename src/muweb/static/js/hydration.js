@@ -18,6 +18,45 @@ const escapeHtml = (value) =>
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#39;");
 
+const hydratePlayerPausedState = (paused) => {
+  if (paused) {
+    document.getElementById("playerbar-pause").classList.add("d-none")
+    document.getElementById("playerbar-resume").classList.remove("d-none")
+  } else {
+    document.getElementById("playerbar-pause").classList.remove("d-none")
+    document.getElementById("playerbar-resume").classList.add("d-none")
+  }
+}
+
+const hydratePlayerMetadata = async () => {
+  track = await getTrackById(queueGetCurrent(playerState.queue))
+
+  if (track.art_url) {
+    document.getElementById("playerbar-art").src = track.art_url
+    document.getElementById("playerbar-art").classList.remove("opacity-0")
+    document.getElementById("playerbar-art").classList.add("opacity-100")
+  } else {
+    document.getElementById("playerbar-art").classList.remove("opacity-100")
+    document.getElementById("playerbar-art").classList.add("opacity-0")
+  }
+
+  document.getElementById("playerbar-title").innerText = track.title;
+  document.getElementById("playerbar-title").href = `/tracks?q=title%3D"${track.title}"`;
+  document.getElementById("playerbar-artist").innerText = track.artist;
+  document.getElementById("playerbar-artist").href = `/tracks?q=artist%3D"${track.artist}"`;
+  document.getElementById("playerbar-album").innerText = track.album;
+  document.getElementById("playerbar-album").href = `/tracks?q=album%3D"${track.album}"`;
+
+  if (track.favorite) {
+    document.getElementById("playerbar-favorite").classList.remove("bi-heart")
+    document.getElementById("playerbar-favorite").classList.add("bi-heart-fill")
+  } else {
+    document.getElementById("playerbar-favorite").classList.remove("bi-heart-fill")
+    document.getElementById("playerbar-favorite").classList.add("bi-heart")
+  }
+  hydratePlayerPausedState(paused = false)
+}
+
 const hydrateQueueTableIfActive = async (scrollAreaId, contentAreaId) => {
   if (window.location.pathname == "/queue") {
     await hydrateQueueTable("scrollArea", "contentArea")
