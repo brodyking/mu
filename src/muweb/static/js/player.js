@@ -67,20 +67,17 @@ const playerPlayCurrent = async () => {
 const playerPlayNext = async () => {
   playerState.queue = queueNext(playerState.queue)
   playerPlayCurrent(playerState.queue)
-  hydrateQueueTableIfActive()
 
 }
 
 const playerPlayPrevious = async () => {
   playerState.queue = queuePrevious(playerState.queue)
   playerPlayCurrent(playerState.queue)
-  hydrateQueueTableIfActive()
 }
 
 audio.addEventListener("ended", () => {
   playerPlayNext();
   hydratePlayerMetadata();
-  hydrateQueueTableIfActive();
 });
 
 
