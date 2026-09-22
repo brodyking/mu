@@ -254,8 +254,6 @@ const TracksTable = (onlyFavorites = false, headerText = "tracks") => {
     if (!row) return;
     playerCreateQueue(tracksView.ids, Number(row.dataset.index));
     playerPlayCurrent();
-    hydratePlayerMetadata();
-    hydrateQueueTableIfActive();
   });
 
   content.appendChild(header);

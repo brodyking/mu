@@ -8,7 +8,7 @@ const playerCreateQueue = (ids, pos) => {
   playerState.queue = queueCreate(ids, pos)
 }
 
-const playerSetMetadata = async () => {
+const playerSetNavigatorMetadata = async () => {
   navigator.mediaSession.metadata = new MediaMetadata({
     title: track.title,
     artist: track.artist,
@@ -31,12 +31,10 @@ const playerScrubFromPlayerBar = (e) => {
 
 const playerPause = () => {
   audio.pause();
-  hydratePlayerPausedState(paused = true)
 }
 
 const playerResume = () => {
   audio.play();
-  hydratePlayerPausedState(paused = false)
 }
 
 let playToken = 0;
@@ -61,7 +59,7 @@ const playerPlayCurrent = async () => {
   }
 
   if (myToken !== playToken) return; // a newer play request superseded this one
-  playerSetMetadata();
+  playerSetNavigatorMetadata();
 };
 
 const playerPlayNext = async () => {
@@ -116,7 +114,7 @@ audio.addEventListener('timeupdate', function() {
   document.getElementById('playerbar-duration').innerText = `${formatTime(audio.currentTime)} / ${formatTime(audio.duration)}`;
 });
 
-audio.addEventListener('emptied', () => {
+audio.addEventListener('loadstart', () => {
   document.getElementById('playerbar-seekbar').value = 0;
   hydratePlayerMetadata();
   hydrateQueueTableIfActive();
