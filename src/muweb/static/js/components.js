@@ -41,15 +41,22 @@ const PlayerBar = () => {
         <div class="transport-side transport-left">
 
 
-          <div class="d-none" id="playerbar-pause">
-            <a class="btn" onclick="playerPause()">
-              <i class="bi bi-pause-fill"></i>
-            </a>
+          <div class="d-none btn" id="playerbar-loading">
+            <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+            <span class="visually-hidden">Loading...</span>
           </div>
-          <div id="playerbar-resume">
-            <a class="btn" onclick="playerResume()">
-              <i class="bi bi-play-fill"></i>
-            </a>
+          
+          <div id="playerbar-controls">
+            <div class="d-none" id="playerbar-pause">
+              <a class="btn" onclick="playerPause()">
+                <i class="bi bi-pause-fill"></i>
+              </a>
+            </div>
+            <div id="playerbar-resume">
+              <a class="btn" onclick="playerResume()">
+                <i class="bi bi-play-fill"></i>
+              </a>
+            </div>
           </div>
         </div>
         

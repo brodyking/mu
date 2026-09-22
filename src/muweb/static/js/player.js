@@ -45,10 +45,12 @@ const playerPlayCurrent = async () => {
   if (id === null) return;
 
   audio.src = `/api/tracks/${id}/audio`;
-  let main = document.getElementById("main")
-  main.appendChild(Loading("fetching and encoding..."))
   try {
-    await audio.play();
+    document.getElementById("playerbar-loading").classList.remove("d-none")
+    document.getElementById("playerbar-controls").classList.add("d-none")
+    await audio.play()
+    document.getElementById("playerbar-loading").classList.add("d-none");
+    document.getElementById("playerbar-controls").classList.remove("d-none")
   } catch (err) {
     // interrupted by a newer load, ignore
     if (err.name !== "AbortError") {
@@ -56,7 +58,6 @@ const playerPlayCurrent = async () => {
       throw err;
     }
   }
-  main.removeChild(document.getElementById("loading"))
 
   if (myToken !== playToken) return; // a newer play request superseded this one
   playerSetNavigatorMetadata();
