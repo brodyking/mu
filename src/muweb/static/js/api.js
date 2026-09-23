@@ -81,16 +81,22 @@ const getTracksById = async (ids, batchSize = 500) => {
   }
 };
 
-// // Get albums
-// const getAlbums = async (q) => {
-//   if (q == undefined) { q = "" }
-//   if (q.length !== 0 && q.indexOf("%3A") == -1 && q.indexOf("%3D") == -1) {
-//     q = `albumartist:${q},album:${q}`
-//   }
-//   const response = await fetch(`/api/albums?q=${q}`)
-//   const data = await response.json()
-//   return data;
-// }
+const getAlbums = async (q) => {
+  if (q == undefined) {
+    console.error(`${q} is undefined`)
+    return
+  }
+  if (q.length !== 0 && q.indexOf("%3A") == -1 && q.indexOf("%3D") == -1) {
+    q = `album:${q},albumartist:${q}`
+  }
+  try {
+    const response = await fetch(`/api/albums?q=${q}`)
+    const data = await response.json()
+    return data;
+  } catch (err) {
+    alert(`Invalid search query (${err})`)
+  }
+}
 
 // Favorite track
 const putFavorite = async (id) => {

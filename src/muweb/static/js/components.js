@@ -193,6 +193,14 @@ const trackColgroup = `
   </colgroup>
 `;
 
+const albumColgroup = `
+  <colgroup>
+  <col style="width: 200px">    <!-- album -->
+  <col style="width: 100px">    <!-- artist -->
+  <col style="width: 60px">   <!-- tracks -->
+</colgroup>
+`
+
 const TracksTable = (onlyFavorites = false, headerText = "tracks") => {
 
   const content = document.createElement("div"); // Parent element for search and table
@@ -322,9 +330,47 @@ const QueueTable = () => {
   return content;
 };
 
-const AlbumsTable = async () => {
-  const content = document.createElement("div");
-  content.className = "text-center d-flex flex-column justify-content-center align-items-center h-100";
-  content.innerHTML = "<p class='mt-3 fs-4'>coming soon</p>";
+const AlbumsTable = () => {
+
+  const content = document.createElement("div"); // Parent element for search and table
+  content.className = "albums-page";
+  const header = document.createElement("div"); // Header
+  header.classList = "border-bottom pb-1 pt-1 d-flex justify-content-between ps-2 pe-2"
+  const table = document.createElement("div"); // Table
+
+  // Header
+  header.innerHTML = `<span class="fw-bold">albums</span> <span id='albums-total-count'></span>`;
+
+  // Table
+  table.className = "albums-table-wrapper clusterize";
+  table.innerHTML = `
+  <table class="table data-table mb-0">
+    ${albumColgroup}
+    <thead>
+      <tr>
+        <th>album</th>
+        <th>artist</th>
+        <th>tracks</th>
+      </tr>
+    </thead>
+  </table>
+  <div id="scrollArea" class="clusterize-scroll">
+    <table class="table data-table" id="albums-table">
+      ${albumColgroup}
+      <tbody id="contentArea">
+      </tbody>
+    </table>
+  </div>
+  `;
+  // table.addEventListener("dblclick", (event) => {
+  //   const row = event.target.closest("tr[data-index]");
+  //   if (!row) return;
+  //   playerCreateQueue(tracksView.ids, Number(row.dataset.index));
+  //   playerPlayCurrent();
+  // });
+  content.appendChild(header);
+  content.appendChild(table);
   return content;
-};;
+};
+
+

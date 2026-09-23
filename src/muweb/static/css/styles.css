@@ -345,7 +345,7 @@ body {
 
 /* Tracks page: search box on top, list fills what's left */
 
-.tracks-page, .queue-page {
+.tracks-page, .queue-page, .albums-page {
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -357,7 +357,7 @@ body {
   z-index: 2;
 }
 
-.tracks-table-wrapper {
+.tracks-table-wrapper, .albums-table-wrapper {
   display: flex;
   flex-direction: column;
   flex: 1 1 auto;
@@ -365,7 +365,8 @@ body {
 }
 
 /* Header table stays put; only the list below it scrolls */
-.tracks-table-wrapper > .table {
+.tracks-table-wrapper > .table,
+.albums-table-wrapper > .table{
   flex: 0 0 auto;
 }
 
@@ -386,6 +387,20 @@ body {
   padding-right: 5px;
 }
 
+#albums-table td {
+  padding: 0px;
+  vertical-align: middle;
+  height: 50px!important;
+}
+
+#albums-table td img, #albums-table td .img-placeholder {
+  max-height: 50px;
+  max-width: 50px;
+  width: 50px;
+  height: 50px;
+  display: inline-block;
+}
+
 .data-table {
   table-layout: fixed;
   -webkit-user-select: none;
@@ -398,7 +413,8 @@ body {
   background-color: var(--cui-secondary-bg)!important;
 }
 
-.tracks-table-wrapper thead th {
+.tracks-table-wrapper thead th,
+.queue-table-wrapper thead th{
   position: sticky;
   top: 0;
   background-color: var(--cui-body-bg, #fff);

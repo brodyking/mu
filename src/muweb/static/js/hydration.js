@@ -10,6 +10,11 @@ const tracksView = {
   clusterize: null,
 };
 
+const albumsView = {
+  albums: [],
+  clusterize: null,
+};
+
 const escapeHtml = (value) =>
   String(value ?? "")
     .replaceAll("&", "&amp;")
@@ -169,5 +174,48 @@ const hydrateTracksTable = async (term, only_favorites = false) => {
     search.value = term;
   }
   const total = document.getElementById("tracks-total-count")
+  total.innerText = `${rows.length.toLocaleString('en-US')} results`;
+};
+
+const hydrateAlbumsTable = async (term) => {
+  const cell = (value) => {
+    const safe = escapeHtml(value);
+    return `<td title="${safe}">${safe}</td>`;
+  };
+
+  const generateRows = (data) =>
+    data.map((album) => `
+      <tr data-index="${album}">
+        <td>${album.tracks[0].albumart ? `<img src="/api/tracks/${album.tracks[0].id}/art" loading="lazy">` : ``} <span class='ms-1'>${album.title}</span></td>
+        ${cell(album.albumartist)}
+        ${cell(album.tracks.length)}
+      </tr > `);
+
+  if (term === null) {
+    term = "";
+  }
+
+  const albums = await getAlbums(encodeURIComponent(term));
+
+  const rows = albums ?? [];
+
+  albumsView.albums = rows;
+
+  if (albumsView.clusterize) {
+    albumsView.clusterize.destroy(false);
+    albumsView.clusterize = null;
+  }
+
+  albumsView.clusterize = new Clusterize({
+    rows: generateRows(rows),
+    scrollId: "scrollArea",
+    contentId: "contentArea",
+  });
+
+  const search = document.getElementById("albums-table-search");
+  if (search) {
+    search.value = term;
+  }
+  const total = document.getElementById("albums-total-count")
   total.innerText = `${rows.length.toLocaleString('en-US')} results`;
 };

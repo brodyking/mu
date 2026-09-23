@@ -84,7 +84,9 @@ const route = async (pathname, search) => {
       document.getElementById("navbar-albums").classList.add("active")
       changeWindowTitle("albums")
       main.replaceChildren(Loading("fetching albums..."))
-      main.replaceChildren(await AlbumsTable())
+      main.appendChild(AlbumsTable())
+      await hydrateAlbumsTable(params.get("q"))
+      main.removeChild(document.getElementById("loading"))
       break;
     // ===== Error 404 =====
     default:
