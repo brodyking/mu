@@ -6,7 +6,7 @@
 */
 
 :root {
-  --mu-rail-w: 62px;
+  --mu-rail-w: 200px;
   --mu-nowplaying-h: 63px;
   --mu-art-w: 54px;
   --mu-info-w: 260px;
@@ -204,6 +204,9 @@ body {
     height: var(--mu-nowplaying-h);
     padding-left: var(--mu-rail-w);
   }
+  .sidebar {
+    max-width: 200px;
+  }
 }
 
 /* Mobile: sidebar becomes a bottom tab bar, player bar sits above it */
@@ -232,7 +235,7 @@ body {
     border-right: 0 !important;
   }
 
-  #playerbar-info {
+  #playerbar-info, #playerbar-transport, #playerbar-actions {
     grid-column: 1 / -1;
     /* fill the row so the border lands on the line between the rows */
     align-self: stretch;
@@ -293,6 +296,7 @@ body {
     margin-inline-start: 0 !important;
     margin-left: 0 !important;
     padding-bottom: env(safe-area-inset-bottom, 0px);
+    --cui-sidebar-width: var(--mu-rail-w);
     z-index: 2;
   }
 

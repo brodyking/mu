@@ -9,7 +9,7 @@
 const PlayerBar = () => {
   const bar = document.createElement("div");
   bar.id = "playerbar-row";
-  bar.classList = `w-100 bg-body border`;
+  bar.classList = `w-100 bg-body border-top`;
   bar.innerHTML = `
 
       <div id="playerbar-info">
@@ -89,7 +89,7 @@ const PlayerBar = () => {
 const Navbar = () => {
   const element = document.createElement("div");
   element.innerHTML = `
-    <div class="sidebar sidebar-narrow-unfoldable border-end">
+    <div class="sidebar sidebar-fixed border-end">
       <div class="sidebar-header">
         <div class="sidebar-brand">
           <a class="nav-item fs-2 text-secondary text-decoration-none" href="/">µ</a>
