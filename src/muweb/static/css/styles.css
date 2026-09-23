@@ -356,6 +356,11 @@ body {
   min-height: 0;
 }
 
+.albums-page table {
+  max-width: 1400px;
+  margin: auto;
+}
+
 .search-form {
   flex: 0 0 auto;
   z-index: 2;
@@ -391,17 +396,52 @@ body {
   padding-right: 5px;
 }
 
+#albums-table tr {
+  border-color: var(--cui-body-bg);
+  max-height: 200px;
+  height: 200px;
+  margin-bottom: 50px;
+}
+
+#albums-table a {
+  font-size: 14px;
+}
+
+#albums-table tr:hover td {
+  background-color: var(--cui-body-bg)!important;
+  cursor: default;
+}
+
 #albums-table td {
-  padding: 0px;
   vertical-align: middle;
   height: 50px!important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 0px;
+}
+
+#albums-table td .d-flex {
+  border: 2px solid var(--cui-body-bg);
+  padding: 8px;
+}
+
+#albums-table td:hover .d-flex {
+  border: 2px solid var(--cui-secondary-bg);
+}
+
+#albums-table td a {
+  color: var(--cui-body-color)!important;
+  text-decoration: none;
+}
+
+#albums-table td a:hover {
+  text-decoration: underline;
+  cursor: pointer;
 }
 
 #albums-table td img, #albums-table td .img-placeholder {
-  max-height: 50px;
-  max-width: 50px;
-  width: 50px;
-  height: 50px;
+  width: 100%;
   display: inline-block;
 }
 

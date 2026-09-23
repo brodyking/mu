@@ -195,9 +195,11 @@ const trackColgroup = `
 
 const albumColgroup = `
   <colgroup>
-  <col style="width: 200px">    <!-- album -->
-  <col style="width: 100px">    <!-- artist -->
-  <col style="width: 60px">   <!-- tracks -->
+  <col style="width: 100px">    <!-- album -->
+  <col style="width: 100px">    <!-- album -->
+  <col style="width: 100px">    <!-- album -->
+  <col style="width: 100px">    <!-- album -->
+  <col style="width: 100px">    <!-- album -->
 </colgroup>
 `
 
@@ -344,16 +346,6 @@ const AlbumsTable = () => {
   // Table
   table.className = "albums-table-wrapper clusterize";
   table.innerHTML = `
-  <table class="table data-table mb-0">
-    ${albumColgroup}
-    <thead>
-      <tr>
-        <th>album</th>
-        <th>artist</th>
-        <th>tracks</th>
-      </tr>
-    </thead>
-  </table>
   <div id="scrollArea" class="clusterize-scroll">
     <table class="table data-table" id="albums-table">
       ${albumColgroup}

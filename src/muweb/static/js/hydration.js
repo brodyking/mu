@@ -183,13 +183,23 @@ const hydrateAlbumsTable = async (term) => {
     return `<td title="${safe}">${safe}</td>`;
   };
 
-  const generateRows = (data) =>
-    data.map((album) => `
-      <tr data-index="${album}">
-        <td>${album.tracks[0].albumart ? `<img src="/api/tracks/${album.tracks[0].id}/art" loading="lazy">` : ``} <span class='ms-1'>${album.title}</span></td>
-        ${cell(album.albumartist)}
-        ${cell(album.tracks.length)}
-      </tr > `);
+  const generateRows = (data) => {
+    const rowsOut = [];
+    for (let i = 0; i < data.length; i += 5) {
+      const cells = data
+        .slice(i, i + 5)
+        .map((album) => `<td>
+            <div class="d-flex flex-column">
+              <a href="/tracks?q=album%3D${album.title}"><img src="/api/tracks/${album.tracks[0].id}/art" loading="lazy"></a>
+              <strong><a href="/tracks?q=album%3D${album.title}">${album.title}</a></strong>
+              <a href="/tracks?q=albumartist%3D${album.albumartist}">${album.albumartist}</a>
+            </div>
+        </td>`)
+        .join("");
+      rowsOut.push(`<tr>${cells}</tr>`);
+    }
+    return rowsOut;
+  };
 
   if (term === null) {
     term = "";
