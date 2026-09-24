@@ -5,6 +5,27 @@
  |_|
 */
 
+/*
+  Contents
+    1. Tokens
+    2. Dark theme
+    3. Base
+    4. App layout
+    5. Navigation
+    6. Player bar
+    7. List pages (tracks, favorites, queue, albums)
+    8. Data tables
+    9. Albums grid
+
+  Breakpoint: mobile is max-width 991.98px, desktop is min-width 992px.
+  (hydration.js uses the same mobile query for the albums grid.)
+*/
+
+
+/* ==========================================================================
+   1. Tokens
+   ========================================================================== */
+
 :root {
   --mu-rail-w: 200px;
   --mu-nowplaying-h: 63px;
@@ -13,203 +34,6 @@
   --mu-seek-w: 400px;
   --mu-transport-w: 96px;
 }
-
-/* Base layout */
-
-html,
-body {
-  height: 100%;
-  font: 16px 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  font-weight: normal;
-  font-size: 16px;
-  line-height: 1.231;
-}
-
-body {
-  overflow: hidden;
-  overscroll-behavior: none;
-}
-
-.btn, .nav-link {
-  border-radius: 0 !important;
-}
-
-#main {
-  height: 100vh;
-  height: 100dvh;
-  overflow: hidden;
-}
-
-#main > * {
-  height: 100%;
-}
-
-/* Player bar */
-
-#playerbar-row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-  align-items: center;
-  height: 100%;
-}
-
-#playerbar-art {
-  background-color: var(--cui-secondary-bg);
-  width: var(--mu-art-w);
-  height: var(--mu-art-w);
-  object-fit: cover;
-  flex: 0 0 auto;
-  border: none;
-  margin: 3px;
-}
-
-#playerbar-info {
-  width: var(--mu-info-w);
-  max-width: 100%;
-  min-width: 0;
-  justify-self: start;
-  overflow: hidden;
-}
-
-#playerbar-info > .d-flex {
-  min-width: 0;
-}
-
-#playerbar-actions {
-  justify-self: end;
-  min-width: 0;
-  padding-right: 8px;
-}
-
-#playerbar .metadata {
-  margin-top: 3px;
-  min-width: 0;
-  overflow: hidden;
-}
-
-#playerbar .metadata .row {
-  margin: 0;
-}
-
-/* Truncate long titles/artists instead of wrapping or overflowing */
-#playerbar .metadata .col {
-  margin: 0px;
-  padding: 0px;
-  font-size: 13px;
-  min-width: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-#playerbar #playerbar-favorite {
-  font-size: 14px!important;
-}
-
-#playerbar a {
-  color: var(--cui-secondary-color);
-  text-decoration: none;
-  margin: 11px 0px 11px 0px;
-}
-
-#playerbar a:hover, #playerbar .skipbtns a:hover {
-  text-decoration: underline;
-  cursor: pointer;
-}
-
-#playerbar-transport {
-  display: flex;
-  align-items: center;
-}
-
-/* Fixed-width sides keep the seekbar centered regardless of button count */
-#playerbar-transport .transport-side {
-  display: flex;
-  align-items: center;
-  width: var(--mu-transport-w);
-  flex: 0 0 var(--mu-transport-w);
-}
-
-#playerbar-transport .transport-left {
-  justify-content: flex-end;
-}
-
-#playerbar-transport .transport-right {
-  justify-content: flex-start;
-}
-
-#playerbar-duration {
-  font-size: 14px;
-  margin-left: 10px;
-}
-
-#playerbar-seek {
-  display: flex;
-  align-items: center;
-  flex: 0 0 auto;
-}
-
-#playerbar-seekbar {
-  /* Reset original styles */
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  appearance: none;
-  border: none;
-  border-radius: 10px;
-  height: 7px;
-
-  display: block;
-  width: var(--mu-seek-w);
-  min-width: var(--mu-seek-w);
-  max-width: var(--mu-seek-w);
-  flex: none;
-  background-color: var(--cui-secondary-bg);
-  cursor: pointer;
-}
-
-/* 1. Track Background (Chrome, Safari, Edge, Opera) */
-#playerbar-seekbar::-webkit-progress-bar {
-  border-radius: 10px;
-  background-color: var(--cui-secondary-bg);
-}
-
-/* 2. Progress Value Color (Chrome, Safari, Edge, Opera) */
-#playerbar-seekbar::-webkit-progress-value {
-  border-radius: 10px;
-  background-color: var(--cui-body-color); /* Modern Blue */
-  transition: width none; /* Smooth transition if value changes */
-}
-/* Filled/value portion (Firefox) */
-#playerbar-seekbar::-moz-progress-bar {
-  border-radius: 10px;
-  background-color: var(--cui-body-color);
-  transition: none;
-}
-
-
-
-/* Desktop: left rail + player bar pinned to the bottom */
-
-@media (min-width: 992px) {
-  #main {
-    padding-left: var(--mu-rail-w);
-    padding-bottom: var(--mu-nowplaying-h);
-  }
-
-  #playerbar {
-    position: fixed;
-    left: 0;
-    bottom: 0;
-    z-index: 2;
-    height: var(--mu-nowplaying-h);
-    padding-left: var(--mu-rail-w);
-  }
-  .sidebar {
-    max-width: 200px;
-  }
-}
-
-/* Mobile: sidebar becomes a bottom tab bar, player bar sits above it */
 
 @media (max-width: 991.98px) {
   :root {
@@ -223,68 +47,146 @@ body {
     /* total bar height = art/metadata row + controls row */
     --mu-playerbar-h: calc(var(--mu-nowplaying-h) + var(--mu-controls-h));
   }
+}
 
-  /* Two rows on mobile: art + metadata get the full width on top,
-     transport + Queue sit directly underneath */
-  #playerbar-row {
-    grid-template-columns: minmax(0, 1fr) auto;
-    grid-template-rows: minmax(0, 1fr) var(--mu-controls-h);
-    /* the bar is edge-to-edge on phones, so side borders just add clutter;
-       !important is needed to beat CoreUI's .border utility */
-    border-left: 0 !important;
-    border-right: 0 !important;
+
+/* ==========================================================================
+   2. Dark theme (CoreUI variable overrides)
+   ========================================================================== */
+
+[data-coreui-theme="dark"] {
+  /* Base */
+  --cui-body-bg: #1c1c1c;
+  --cui-body-bg-rgb: 28, 28, 28;
+  --cui-body-color: #c7c7c7;
+  --cui-border-color: #3a3a3a;
+  --cui-border-color-translucent: #585858;
+
+  /* Surfaces */
+  --cui-secondary-bg: #262626;
+  --cui-tertiary-bg: #303030;
+  --cui-card-bg: #262626;
+  --cui-card-cap-bg: #303030;
+  --cui-emphasis-color: #eeeeee;
+
+  /* Brand / semantic colors, pulled from the syntax groups */
+  --cui-primary: #5f87af;        /* Type (blue) */
+  --cui-primary-rgb: 95, 135, 175;
+
+  --cui-secondary: #767676;      /* Comment (gray) */
+  --cui-secondary-rgb: 118, 118, 118;
+
+  --cui-success: #87af87;        /* String (green) */
+  --cui-success-rgb: 135, 175, 135;
+
+  --cui-info: #5f8787;           /* Special (cyan) */
+  --cui-info-rgb: 95, 135, 135;
+
+  --cui-warning: #d7af87;        /* Constant/Question (tan) */
+  --cui-warning-rgb: 215, 175, 135;
+
+  --cui-danger: #af5f5f;         /* Error (red) */
+  --cui-danger-rgb: 175, 95, 95;
+
+  --cui-light: #9e9e9e;
+  --cui-light-rgb: 158, 158, 158;
+
+  --cui-dark: #1c1c1c;
+  --cui-dark-rgb: 28, 28, 28;
+
+  /* Links */
+  --cui-link-color: #87afaf;
+  --cui-link-hover-color: #a9c9c9;
+
+  /* Selection / highlight states */
+  --cui-highlight-bg: #374a44;        /* Search */
+  --cui-component-active-bg: #1a3456; /* Visual selection */
+  --cui-component-active-color: #eeeeee;
+
+  /* Sidebar / header (CoreUI admin components) */
+  --cui-sidebar-bg: #1c1c1c;
+  --cui-sidebar-nav-link-color: #c7c7c7;
+  --cui-sidebar-nav-link-hover-color: #eeeeee;
+  --cui-header-bg: #262626;
+  --cui-header-color: #c7c7c7;
+  --cui-header-border-color: #3a3a3a;
+
+  /* Table striping / hover */
+  --cui-table-striped-bg: #262626;
+  --cui-table-hover-bg: #303030;
+
+  /* Dropdown / popover (Pmenu-derived) */
+  --cui-dropdown-bg: #3a3a3a;
+  --cui-dropdown-link-hover-bg: #585858;
+  --cui-popover-bg: #3a3a3a;
+  --cui-popover-border-color: #767676;
+}
+
+
+/* ==========================================================================
+   3. Base
+   ========================================================================== */
+
+html,
+body {
+  height: 100%;
+  font: normal 16px/1.231 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+body {
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+.btn,
+.nav-link {
+  border-radius: 0 !important;
+}
+
+
+/* ==========================================================================
+   4. App layout
+   ========================================================================== */
+
+#main {
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+#main > * {
+  height: 100%;
+}
+
+/* Desktop: leave room for the left rail and the player bar */
+@media (min-width: 992px) {
+  #main {
+    padding-left: var(--mu-rail-w);
+    padding-bottom: var(--mu-nowplaying-h);
   }
+}
 
-  #playerbar-info, #playerbar-transport, #playerbar-actions {
-    grid-column: 1 / -1;
-    /* fill the row so the border lands on the line between the rows */
-    align-self: stretch;
-    border-bottom: 1px solid var(--cui-border-color);
+/* Mobile: leave room for the bottom tab bar and the player bar above it */
+@media (max-width: 991.98px) {
+  #main {
+    padding-bottom: calc(var(--mu-bottomnav-h) + var(--mu-playerbar-h));
   }
+}
 
-  #playerbar-transport {
-    grid-column: 1;
-    min-width: 0;
+
+/* ==========================================================================
+   5. Navigation
+   ========================================================================== */
+
+/* Desktop: fixed left rail */
+@media (min-width: 992px) {
+  .sidebar {
+    max-width: 200px;
   }
+}
 
-  #playerbar-actions {
-    grid-column: 2;
-    padding-right: 4px;
-  }
-
-  /* The 11px link margin sized the old single row; the controls row
-     is shorter, so drop it for the buttons */
-  #playerbar-transport a,
-  #playerbar-actions a {
-    margin-top: 0;
-    margin-bottom: 0;
-  }
-
-  /* With the whole row to itself, the seekbar stretches to fill
-     whatever the buttons don't use */
-  #playerbar-seek {
-    flex: 1 1 auto;
-    min-width: 0;
-    padding: 0 8px;
-  }
-
-  #playerbar-seekbar {
-    width: 100%;
-    min-width: 0;
-    max-width: none;
-  }
-
-  /* No centering needed on mobile, so the play/pause side only takes
-     the width of its single button; this makes room for Queue */
-  #playerbar-transport .transport-left {
-    width: auto;
-    flex: 0 0 auto;
-  }
-
-  #playerbar-duration {
-    display: none;
-  }
-
+/* Mobile: the sidebar becomes a bottom tab bar of icons */
+@media (max-width: 991.98px) {
   #nav .sidebar {
     position: fixed !important;
     top: auto !important;
@@ -333,11 +235,179 @@ body {
   #nav .nav-link-text {
     display: none;
   }
+}
 
-  #main {
-    padding-bottom: calc(var(--mu-bottomnav-h) + var(--mu-playerbar-h));
+
+/* ==========================================================================
+   6. Player bar
+   ========================================================================== */
+
+/* --- Grid: info | transport | actions --- */
+
+#playerbar-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  height: 100%;
+}
+
+#playerbar a {
+  color: var(--cui-secondary-color);
+  text-decoration: none;
+  margin: 11px 0;
+}
+
+#playerbar a:hover {
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* --- Now-playing info (art, metadata, favorite) --- */
+
+#playerbar-info {
+  width: var(--mu-info-w);
+  max-width: 100%;
+  min-width: 0;
+  justify-self: start;
+  overflow: hidden;
+}
+
+#playerbar-info > .d-flex {
+  min-width: 0;
+}
+
+#playerbar-art {
+  background-color: var(--cui-secondary-bg);
+  width: var(--mu-art-w);
+  height: var(--mu-art-w);
+  object-fit: cover;
+  flex: 0 0 auto;
+  border: none;
+  margin: 3px;
+}
+
+#playerbar .metadata {
+  margin-top: 3px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+#playerbar .metadata .row {
+  margin: 0;
+}
+
+/* Truncate long titles/artists instead of wrapping or overflowing */
+#playerbar .metadata .col {
+  margin: 0;
+  padding: 0;
+  font-size: 13px;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#playerbar #playerbar-favorite {
+  font-size: 14px !important;
+}
+
+/* --- Transport (play/pause, seek, skip) --- */
+
+#playerbar-transport {
+  display: flex;
+  align-items: center;
+}
+
+/* Fixed-width sides keep the seekbar centered regardless of button count */
+#playerbar-transport .transport-side {
+  display: flex;
+  align-items: center;
+  width: var(--mu-transport-w);
+  flex: 0 0 var(--mu-transport-w);
+}
+
+#playerbar-transport .transport-left {
+  justify-content: flex-end;
+}
+
+#playerbar-transport .transport-right {
+  justify-content: flex-start;
+}
+
+#playerbar-seek {
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+}
+
+#playerbar-duration {
+  font-size: 14px;
+  margin-left: 10px;
+}
+
+/* --- Seekbar (<progress>) --- */
+
+#playerbar-seekbar {
+  /* Reset native styles */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  border: none;
+  border-radius: 10px;
+  height: 7px;
+
+  display: block;
+  width: var(--mu-seek-w);
+  min-width: var(--mu-seek-w);
+  max-width: var(--mu-seek-w);
+  flex: none;
+  background-color: var(--cui-secondary-bg);
+  cursor: pointer;
+}
+
+/* Track (Chrome, Safari, Edge, Opera) */
+#playerbar-seekbar::-webkit-progress-bar {
+  border-radius: 10px;
+  background-color: var(--cui-secondary-bg);
+}
+
+/* Filled portion (Chrome, Safari, Edge, Opera) */
+#playerbar-seekbar::-webkit-progress-value {
+  border-radius: 10px;
+  background-color: var(--cui-body-color);
+}
+
+/* Filled portion (Firefox) */
+#playerbar-seekbar::-moz-progress-bar {
+  border-radius: 10px;
+  background-color: var(--cui-body-color);
+  transition: none;
+}
+
+/* --- Actions (queue) --- */
+
+#playerbar-actions {
+  justify-self: end;
+  min-width: 0;
+  padding-right: 8px;
+}
+
+/* --- Desktop: pinned to the bottom, right of the rail --- */
+
+@media (min-width: 992px) {
+  #playerbar {
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    z-index: 2;
+    height: var(--mu-nowplaying-h);
+    padding-left: var(--mu-rail-w);
   }
+}
 
+/* --- Mobile: two rows (info on top, controls below), above the tab bar --- */
+
+@media (max-width: 991.98px) {
   #playerbar {
     position: fixed;
     left: 0;
@@ -345,20 +415,81 @@ body {
     z-index: 2;
     height: var(--mu-playerbar-h);
   }
+
+  #playerbar-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-rows: minmax(0, 1fr) var(--mu-controls-h);
+    /* the bar is edge-to-edge on phones, so side borders just add clutter;
+       !important is needed to beat CoreUI's .border utility */
+    border-left: 0 !important;
+    border-right: 0 !important;
+  }
+
+  #playerbar-info,
+  #playerbar-transport,
+  #playerbar-actions {
+    grid-column: 1 / -1;
+    /* fill the row so the border lands on the line between the rows */
+    align-self: stretch;
+    border-bottom: 1px solid var(--cui-border-color);
+  }
+
+  #playerbar-transport {
+    grid-column: 1;
+    min-width: 0;
+  }
+
+  #playerbar-actions {
+    grid-column: 2;
+    padding-right: 4px;
+  }
+
+  /* The 11px link margin sized the old single row; the controls row
+     is shorter, so drop it for the buttons */
+  #playerbar-transport a,
+  #playerbar-actions a {
+    margin-top: 0;
+    margin-bottom: 0;
+  }
+
+  /* With the whole row to itself, the seekbar stretches to fill
+     whatever the buttons don't use */
+  #playerbar-seek {
+    flex: 1 1 auto;
+    min-width: 0;
+    padding: 0 8px;
+  }
+
+  #playerbar-seekbar {
+    width: 100%;
+    min-width: 0;
+    max-width: none;
+  }
+
+  /* No centering needed on mobile, so the play/pause side only takes
+     the width of its single button; this makes room for Queue */
+  #playerbar-transport .transport-left {
+    width: auto;
+    flex: 0 0 auto;
+  }
+
+  #playerbar-duration {
+    display: none;
+  }
 }
 
-/* Tracks page: search box on top, list fills what's left */
 
-.tracks-page, .queue-page, .albums-page {
+/* ==========================================================================
+   7. List pages: header + search on top, scrolling list fills the rest
+   ========================================================================== */
+
+.tracks-page,
+.queue-page,
+.albums-page {
   display: flex;
   flex-direction: column;
   height: 100%;
   min-height: 0;
-}
-
-.albums-page table {
-  max-width: 1400px;
-  margin: auto;
 }
 
 .search-form {
@@ -366,7 +497,8 @@ body {
   z-index: 2;
 }
 
-.tracks-table-wrapper, .albums-table-wrapper {
+.tracks-table-wrapper,
+.albums-table-wrapper {
   display: flex;
   flex-direction: column;
   flex: 1 1 auto;
@@ -375,7 +507,7 @@ body {
 
 /* Header table stays put; only the list below it scrolls */
 .tracks-table-wrapper > .table,
-.albums-table-wrapper > .table{
+.albums-table-wrapper > .table {
   flex: 0 0 auto;
 }
 
@@ -389,60 +521,16 @@ body {
   -webkit-overflow-scrolling: touch;
 }
 
+
+/* ==========================================================================
+   8. Data tables (tracks, favorites, queue)
+   ========================================================================== */
+
 .table td {
   max-width: 150px;
   text-wrap: nowrap;
   overflow: hidden;
   padding-right: 5px;
-}
-
-#albums-table tr {
-  border-color: var(--cui-body-bg);
-  max-height: 200px;
-  height: 200px;
-  margin-bottom: 50px;
-}
-
-#albums-table a {
-  font-size: 14px;
-}
-
-#albums-table tr:hover td {
-  background-color: var(--cui-body-bg)!important;
-  cursor: default;
-}
-
-#albums-table td {
-  vertical-align: middle;
-  height: 50px!important;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  margin: 0px;
-}
-
-#albums-table td .d-flex {
-  border: 2px solid var(--cui-body-bg);
-  padding: 8px;
-}
-
-#albums-table td:hover .d-flex {
-  border: 2px solid var(--cui-secondary-bg);
-}
-
-#albums-table td a {
-  color: var(--cui-body-color)!important;
-  text-decoration: none;
-}
-
-#albums-table td a:hover {
-  text-decoration: underline;
-  cursor: pointer;
-}
-
-#albums-table td img, #albums-table td .img-placeholder {
-  width: 100%;
-  display: inline-block;
 }
 
 .data-table {
@@ -454,11 +542,10 @@ body {
 
 .data-table tr:hover td {
   cursor: pointer;
-  background-color: var(--cui-secondary-bg)!important;
+  background-color: var(--cui-secondary-bg) !important;
 }
 
-.tracks-table-wrapper thead th,
-.queue-table-wrapper thead th{
+.tracks-table-wrapper thead th {
   position: sticky;
   top: 0;
   background-color: var(--cui-body-bg, #fff);
@@ -466,72 +553,66 @@ body {
 }
 
 
+/* ==========================================================================
+   9. Albums grid (5 per row on desktop, 2 on mobile; set in hydration.js)
+   ========================================================================== */
 
+.albums-page table {
+  max-width: 1400px;
+  margin: auto;
+}
 
-[data-coreui-theme="dark"] {
-  /* Base */
-  --cui-body-bg: #1c1c1c;
-  --cui-body-bg-rgb: #1c1c1c;
-  --cui-body-color: #c7c7c7;
-  --cui-border-color: #3a3a3a;
-  --cui-border-color-translucent: #585858;
+#albums-table tr {
+  border-color: var(--cui-body-bg);
+  max-height: 200px;
+  height: 200px;
+  margin-bottom: 50px;
+}
 
-  /* Surfaces */
-  --cui-secondary-bg: #262626;
-  --cui-tertiary-bg: #303030;
-  --cui-card-bg: #262626;
-  --cui-card-cap-bg: #303030;
-  --cui-emphasis-color: #eeeeee;
+/* Albums are cards, not clickable rows, so cancel the data-table hover */
+#albums-table tr:hover td {
+  background-color: var(--cui-body-bg) !important;
+  cursor: default;
+}
 
-  /* Brand / semantic colors, pulled from the syntax groups */
-  --cui-primary: #5f87af;        /* Type (blue) */
-  --cui-primary-rgb: 95, 135, 175;
+#albums-table td {
+  vertical-align: middle;
+  height: 50px !important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 0;
+}
 
-  --cui-secondary: #767676;      /* Comment (gray) */
-  --cui-secondary-rgb: 118, 118, 118;
+#albums-table td .d-flex {
+  border: 2px solid var(--cui-body-bg);
+  padding: 8px;
+}
 
-  --cui-success: #87af87;        /* String (green) */
-  --cui-success-rgb: 135, 175, 135;
+#albums-table td:hover .d-flex {
+  border: 2px solid var(--cui-secondary-bg);
+}
 
-  --cui-info: #5f8787;           /* Special (cyan) */
-  --cui-info-rgb: 95, 135, 135;
+#albums-table a {
+  font-size: 14px;
+}
 
-  --cui-warning: #d7af87;        /* Constant/Question (tan) */
-  --cui-warning-rgb: 215, 175, 135;
+#albums-table td a {
+  color: var(--cui-body-color) !important;
+  text-decoration: none;
+}
 
-  --cui-danger: #af5f5f;         /* Error (red) */
-  --cui-danger-rgb: 175, 95, 95;
+#albums-table td a:hover {
+  text-decoration: underline;
+  cursor: pointer;
+}
 
-  --cui-light: #9e9e9e;
-  --cui-light-rgb: 158, 158, 158;
-
-  --cui-dark: #1c1c1c;
-  --cui-dark-rgb: 28, 28, 28;
-
-  /* Links */
-  --cui-link-color: #87afaf;
-  --cui-link-hover-color: #a9c9c9;
-
-  /* Selection / highlight states */
-  --cui-highlight-bg: #374a44;       /* Search */
-  --cui-component-active-bg: #1a3456; /* Visual selection */
-  --cui-component-active-color: #eeeeee;
-
-  /* Sidebar / header (CoreUI admin components) */
-  --cui-sidebar-bg: #1c1c1c;
-  --cui-sidebar-nav-link-color: #c7c7c7;
-  --cui-sidebar-nav-link-hover-color: #eeeeee;
-  --cui-header-bg: #262626;
-  --cui-header-color: #c7c7c7;
-  --cui-header-border-color: #3a3a3a;
-
-  /* Table striping / hover */
-  --cui-table-striped-bg: #262626;
-  --cui-table-hover-bg: #303030;
-
-  /* Dropdown / popover (Pmenu-derived) */
-  --cui-dropdown-bg: #3a3a3a;
-  --cui-dropdown-link-hover-bg: #585858;
-  --cui-popover-bg: #3a3a3a;
-  --cui-popover-border-color: #767676;
+/* Square covers keep every row the same height, even before lazy-loaded
+   images arrive, which Clusterize needs to scroll smoothly */
+#albums-table td img,
+#albums-table td .img-placeholder {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  display: inline-block;
 }

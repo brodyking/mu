@@ -177,39 +177,37 @@ const hydrateTracksTable = async (term, only_favorites = false) => {
   total.innerText = `${rows.length.toLocaleString('en-US')} results`;
 };
 
-const hydrateAlbumsTable = async (term) => {
-  const cell = (value) => {
-    const safe = escapeHtml(value);
-    return `<td title="${safe}">${safe}</td>`;
-  };
+// Albums grid: 5 covers per row on desktop, 2 on mobile.
+// Keep this query in sync with the mobile breakpoint in styles.css.
+const albumsMobileQuery = window.matchMedia("(max-width: 991.98px)");
+const albumsPerRow = () => (albumsMobileQuery.matches ? 2 : 5);
 
-  const generateRows = (data) => {
-    const rowsOut = [];
-    for (let i = 0; i < data.length; i += 5) {
-      const cells = data
-        .slice(i, i + 5)
-        .map((album) => `<td>
-            <div class="d-flex flex-column">
-              <a href="/tracks?q=album%3D${album.title}"><img src="/api/tracks/${album.tracks[0].id}/art" loading="lazy"></a>
-              <strong><a href="/tracks?q=album%3D${album.title}">${album.title}</a></strong>
-              <a href="/tracks?q=albumartist%3D${album.albumartist}">${album.albumartist}</a>
-            </div>
-        </td>`)
-        .join("");
-      rowsOut.push(`<tr>${cells}</tr>`);
-    }
-    return rowsOut;
-  };
-
-  if (term === null) {
-    term = "";
+const generateAlbumRows = (albums, perRow) => {
+  const rowsOut = [];
+  for (let i = 0; i < albums.length; i += perRow) {
+    const cells = albums
+      .slice(i, i + perRow)
+      .map((album) => `<td>
+          <div class="d-flex flex-column">
+            <a href="/tracks?q=album%3D${album.title}"><img src="/api/tracks/${album.tracks[0].id}/art" loading="lazy" class="border"></a>
+            <strong class="mt-1"><a href="/tracks?q=album%3D${album.title}">${album.title}</a></strong>
+            <a href="/tracks?q=albumartist%3D${album.albumartist}">${album.albumartist}</a>
+          </div>
+      </td>`)
+      .join("");
+    rowsOut.push(`<tr>${cells}</tr>`);
   }
+  return rowsOut;
+};
 
-  const albums = await getAlbums(encodeURIComponent(term));
+// (Re)builds the grid from albumsView.albums at the current column count.
+const renderAlbumsGrid = () => {
+  const table = document.getElementById("albums-table");
+  if (!table) return; // not on the albums page
 
-  const rows = albums ?? [];
-
-  albumsView.albums = rows;
+  const perRow = albumsPerRow();
+  // One <col> per column; table-layout: fixed splits the width evenly
+  table.querySelector("colgroup").innerHTML = "<col>".repeat(perRow);
 
   if (albumsView.clusterize) {
     albumsView.clusterize.destroy(false);
@@ -217,15 +215,29 @@ const hydrateAlbumsTable = async (term) => {
   }
 
   albumsView.clusterize = new Clusterize({
-    rows: generateRows(rows),
+    rows: generateAlbumRows(albumsView.albums, perRow),
     scrollId: "scrollArea",
     contentId: "contentArea",
   });
+};
+
+// Re-flow the grid when the window crosses the mobile breakpoint
+albumsMobileQuery.addEventListener("change", renderAlbumsGrid);
+
+const hydrateAlbumsTable = async (term) => {
+  if (term === null) {
+    term = "";
+  }
+
+  const albums = await getAlbums(encodeURIComponent(term));
+  albumsView.albums = albums ?? [];
+
+  renderAlbumsGrid();
 
   const search = document.getElementById("albums-table-search");
   if (search) {
     search.value = term;
   }
   const total = document.getElementById("albums-total-count")
-  total.innerText = `${rows.length.toLocaleString('en-US')} results`;
+  total.innerText = `${albumsView.albums.length.toLocaleString('en-US')} results`;
 };

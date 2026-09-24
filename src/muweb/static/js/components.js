@@ -14,7 +14,7 @@ const PlayerBar = () => {
 
       <div id="playerbar-info">
         <div class="d-flex gap-0">
-          <img id="playerbar-art" class="ms-1 me-2 border-1 opacity-0">
+          <img id="playerbar-art" class="ms-1 me-2 border opacity-0">
           <div class="container text-start align-middle metadata p-0 pt-1 m-0">
             <div class="row">
               <div class="col fw-bold">
@@ -193,15 +193,8 @@ const trackColgroup = `
   </colgroup>
 `;
 
-const albumColgroup = `
-  <colgroup>
-  <col style="width: 100px">    <!-- album -->
-  <col style="width: 100px">    <!-- album -->
-  <col style="width: 100px">    <!-- album -->
-  <col style="width: 100px">    <!-- album -->
-  <col style="width: 100px">    <!-- album -->
-</colgroup>
-`
+// Columns are filled in by renderAlbumsGrid() (5 on desktop, 2 on mobile)
+const albumColgroup = `<colgroup></colgroup>`
 
 const TracksTable = (onlyFavorites = false, headerText = "tracks") => {
 
