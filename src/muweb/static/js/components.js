@@ -331,6 +331,7 @@ const AlbumsTable = () => {
   content.className = "albums-page";
   const header = document.createElement("div"); // Header
   header.classList = "border-bottom pb-1 pt-1 d-flex justify-content-between ps-2 pe-2"
+  const search = document.createElement("form"); // Search Box
   const table = document.createElement("div"); // Table
 
   // Header
@@ -347,13 +348,25 @@ const AlbumsTable = () => {
     </table>
   </div>
   `;
-  // table.addEventListener("dblclick", (event) => {
-  //   const row = event.target.closest("tr[data-index]");
-  //   if (!row) return;
-  //   playerCreateQueue(tracksView.ids, Number(row.dataset.index));
-  //   playerPlayCurrent();
-  // });
+
+  // Search
+  search.className = "search-form d-flex border-0 border-bottom border-light-gray"
+  search.innerHTML = `
+    <div class="p-2 pe-0"><i class="bi bi-search"></i></div>
+    <input type="text" name="term" autocomplete="off" id="albums-table-search" class="form-control rounded-0 flex-grow-1 border-0 shadow-none" placeholder="Search albums..." onfocus="this.select()"/>
+  `;
+  search.addEventListener('submit', async function(event) {
+    // Listens for search submit, fetches tracks and updates rows.
+    event.preventDefault();
+    const formData = new FormData(search);
+    const formDataEntries = Object.fromEntries(formData.entries());
+    const term = encodeURIComponent(formDataEntries.term)
+    route("/albums", `?q=${term}`)
+    window.scrollTo(0, 0)
+  });
+
   content.appendChild(header);
+  content.appendChild(search);
   content.appendChild(table);
   return content;
 };
