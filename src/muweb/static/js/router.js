@@ -102,9 +102,9 @@ document.addEventListener('click', function(event) {
   const link = event.target.closest('a');
 
   if (link && event.target.dataset.external !== undefined && link.hasAttribute('href')) {
-    if (confirm(`This is an external link. Are you sure you want to visit?`)) {
-      window.open(link.href, '_blank');
-    }
+    // if (confirm(`This is an external link. Are you sure you want to visit?`)) {
+    window.open(link.href, '_blank');
+    // }
   } else if (link && link.hasAttribute('href')) {
     route(link.pathname, link.search)
   }
