@@ -7,13 +7,16 @@
 
 """
 
+import os
+import secrets
 import subprocess
 from pathlib import Path
 from typing import Literal
 
 from fastapi import FastAPI, HTTPException, Query, Request
-from fastapi.responses import FileResponse, Response
+from fastapi.responses import FileResponse, JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel
 
 from mu.api import Api as MuApi
 from mu.models import Track
@@ -153,7 +156,81 @@ def favorite(track_id: int):
     return [t.get_dict() for t in api.favorite_tracks(f"id={track_id}").values()]
 
 
+class LoginBody(BaseModel):
+    password: str
+
+
+COOKIE_NAME = "muwebauth"
+GATE_PAGE = WEB_DIR / "login.html"
+PUBLIC_PATHS = {
+    "/login.html",
+    "/js/theme.js",
+    "/css/styles.css",
+    "/api/auth/login",
+}
+
+# Auth state lives on the app so the CLI can set it before uvicorn starts.
+app.state.password = None
+app.state.session_token = None
+
+
+def configure_auth(password: str | None) -> None:
+    """Enable auth with the given password, or disable it with None/empty."""
+    if password:
+        app.state.password = password
+        # Random per-run token stored in the cookie instead of the password itself.
+        app.state.session_token = secrets.token_urlsafe(32)
+    else:
+        app.state.password = None
+        app.state.session_token = None
+
+
+def auth_enabled() -> bool:
+    return app.state.password is not None
+
+
+@app.post("/api/auth/login")
+def auth_login(body: LoginBody, response: Response) -> bool:
+    if not auth_enabled():
+        return True
+
+    if not secrets.compare_digest(
+        body.password.encode(), app.state.password.encode()
+    ):
+        response.status_code = 401
+        return False
+
+    response.set_cookie(
+        COOKIE_NAME,
+        app.state.session_token,
+        httponly=True,
+        samesite="lax",
+        max_age=60 * 60 * 24 * 30,  # 30 days
+    )
+    return True
+
+
+@app.post("/api/auth/logout")
+def auth_logout(response: Response) -> bool:
+    response.delete_cookie(COOKIE_NAME, httponly=True, samesite="lax")
+    return True
+
+
 app.mount("/", StaticFiles(directory=WEB_DIR, html=True))
+
+
+@app.middleware("http")
+async def require_cookie(request: Request, call_next):
+    if not auth_enabled() or request.url.path in PUBLIC_PATHS:
+        return await call_next(request)
+
+    value = request.cookies.get(COOKIE_NAME, "")
+    if not secrets.compare_digest(value.encode(), app.state.session_token.encode()):
+        if request.url.path.startswith("/api/"):
+            return JSONResponse({"detail": "unauthorized"}, status_code=401)
+        return FileResponse(GATE_PAGE, status_code=401)
+
+    return await call_next(request)
 
 
 @app.exception_handler(404)

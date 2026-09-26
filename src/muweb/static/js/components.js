@@ -117,16 +117,11 @@ const Navbar = () => {
           </a>
         </li>
 
+
         <li class="nav-item mt-auto">
-          <a class="nav-link" href="https://github.com/brodyking/mu" data-external>
-            <i class="nav-icon bi bi-github"></i>
-            <span class="nav-link-text">github <i class="bi bi-box-arrow-up-right"></i></span>
-          </a>
-        </li>
-        <li class="nav-item ">
-          <a class="nav-link" href="/api/" data-external>
-            <i class="nav-icon bi bi-book"></i>
-            <span class="nav-link-text">api <i class="bi bi-box-arrow-up-right"></i></span>
+          <a class="nav-link" href="#" onclick="postLogout()">
+            <i class="nav-icon bi bi-door-open"></i>
+            <span class="nav-link-text">logout</span>
           </a>
         </li>
       </ul>
@@ -159,6 +154,15 @@ const Homepage = () => {
   content.innerHTML = `
     <h1 class='mt-5 align-self-center fs-1'>µ</h1>
     <p class='mt-3 fs-4'>your personal music library</p>
+    <div class="d-flex">
+      <a href="https://github.com/brodyking/mu" class="btn text-primary align-middle" data-external>
+        <i class="bi bi-github"></i> github
+      </a>
+      <div class="border-end"></div>
+      <a href="/api/" class="btn text-primary align-middle" data-external>
+        <i class="bi bi-book-fill"></i> api 
+      </a>
+    </div>
   `;
   return content;
 };
