@@ -194,13 +194,14 @@ const albumsPerRow = () => (albumsMobileQuery.matches ? 2 : 5);
 const generateAlbumRows = (albums, perRow) => {
   const rowsOut = [];
   for (let i = 0; i < albums.length; i += perRow) {
+    // TODO: escape chars like &
     const cells = albums
       .slice(i, i + perRow)
       .map((album) => `<td>
           <div class="d-flex flex-column">
-            <a href="/tracks?q=album%3D${album.title}"><img src="/api/tracks/${album.tracks[0].id}/art" loading="lazy" class="border"></a>
-            <strong class="mt-1"><a href="/tracks?q=album%3D${album.title}">${album.title}</a></strong>
-            <a href="/tracks?q=albumartist%3D${album.albumartist}">${album.albumartist}</a>
+            <a href='/tracks?q=album%3D"${album.title}"'><img src="/api/tracks/${album.tracks[0].id}/art" loading="lazy" class="border"></a>
+            <strong class="mt-1"><a href='/tracks?q=album%3D"${album.title}"'>${album.title}</a></strong>
+            <a href='/tracks?q=albumartist%3D"${album.albumartist}"'>${album.albumartist}</a>
           </div>
       </td>`)
       .join("");
