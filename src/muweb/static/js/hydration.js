@@ -23,6 +23,15 @@ const escapeHtml = (value) =>
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#39;");
 
+const hydrateHomepage = async () => {
+  stats = await getStats();
+  document.getElementById("homepage-playlists").innerText = stats["playlists"].toLocaleString('en-US')
+  document.getElementById("homepage-artists").innerText = stats["artists"].toLocaleString('en-US')
+  document.getElementById("homepage-albums").innerText = stats["albums"].toLocaleString('en-US')
+  document.getElementById("homepage-tracks").innerText = stats["tracks"].toLocaleString('en-US')
+}
+
+
 const hydratePlayerPausedState = (paused) => {
   if (paused) {
     document.getElementById("playerbar-pause").classList.add("d-none")

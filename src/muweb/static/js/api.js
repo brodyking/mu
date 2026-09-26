@@ -5,6 +5,17 @@
  |_|
 */
 
+// Get overall status
+const getStats = async () => {
+  try {
+    const response = await fetch("/api/stats");
+    const data = await response.json()
+    return data;
+  } catch (err) {
+    alert(`Couldn't fetch stats ${err}`);
+  }
+}
+
 // Gets tracks
 const getTracks = async (q, order_by = null) => {
   if (q == undefined) {

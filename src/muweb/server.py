@@ -49,6 +49,16 @@ def track_or_404(track_id: int) -> Track:
     return track
 
 
+@app.get("/api/stats")
+def stats():
+    return {
+        "tracks": len(api.get_tracks()),
+        "albums": len(api.get_albums()),
+        "artists": len(api.get_artists()),
+        "playlists": len(api.get_playlists()),
+    }
+
+
 @app.get("/api/tracks")
 def tracks(
     q: str | None = None,
@@ -194,9 +204,7 @@ def auth_login(body: LoginBody, response: Response) -> bool:
     if not auth_enabled():
         return True
 
-    if not secrets.compare_digest(
-        body.password.encode(), app.state.password.encode()
-    ):
+    if not secrets.compare_digest(body.password.encode(), app.state.password.encode()):
         response.status_code = 401
         return False
 

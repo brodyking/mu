@@ -154,15 +154,48 @@ const Homepage = () => {
   content.innerHTML = `
     <h1 class='mt-5 align-self-center fs-1'>µ</h1>
     <p class='mt-3 fs-4'>your personal music library</p>
-    <div class="d-flex">
-      <a href="https://github.com/brodyking/mu" class="btn text-primary align-middle" data-external>
-        <i class="bi bi-github"></i> github
+
+    <div class="d-flex text-center mt-3 ">
+
+      <a class="btn disabled text-body border-0" href="/tracks">
+        <span>tracks:</span>
+        <span id="homepage-tracks" class="text-primary">0</span>
       </a>
+
       <div class="border-end"></div>
-      <a href="/api/" class="btn text-primary align-middle" data-external>
-        <i class="bi bi-book-fill"></i> api 
+
+      <a class="btn disabled text-body border-0" href="/albums">
+        <span>albums:</span>
+        <span id="homepage-albums" class="text-primary">0</span>
       </a>
+
+      <div class="border-end"></div>
+
+      <a class="btn disabled text-body border-0" href="/artists">
+        <span>artists:</span>
+        <span id="homepage-artists" class="text-primary">0</span>
+      </a>
+
+      <div class="border-end"></div>
+
+      <a class="btn disabled text-body border-0" href="/playlists">
+        <span>playlists:</span>
+        <span id="homepage-playlists" class="text-primary">0</span>
+      </a>
+
     </div>
+
+    <!---->
+    <!-- <div class="d-flex mt-4 text-center"> -->
+    <!--   <a href="https://github.com/brodyking/mu" class="btn text-primary align-middle" data-external> -->
+    <!--     <i class="bi bi-github"></i> github -->
+    <!--   </a> -->
+    <!--   <div class="border-end"></div> -->
+    <!--   <a href="/api/" class="btn text-primary align-middle" data-external> -->
+    <!--     <i class="bi bi-book-fill"></i> api  -->
+    <!--   </a> -->
+    <!-- </div> -->
+
   `;
   return content;
 };

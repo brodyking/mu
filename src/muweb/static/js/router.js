@@ -51,7 +51,10 @@ const route = async (pathname, search) => {
     // ===== Homepage =====
     case "/":
       changeWindowTitle()
-      main.replaceChildren(Homepage())
+      main.replaceChildren(Loading("fetching stats..."))
+      main.appendChild(Homepage())
+      await hydrateHomepage()
+      main.removeChild(document.getElementById("loading"))
       break;
     // ===== Queuetab =====
     case "/queue":
