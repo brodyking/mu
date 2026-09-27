@@ -55,11 +55,11 @@ const hydratePlayerMetadata = async () => {
   }
 
   document.getElementById("playerbar-title").innerText = track.title;
-  document.getElementById("playerbar-title").href = `/tracks?q=title%3D"${track.title}"`;
+  document.getElementById("playerbar-title").href = `/tracks?q=title%3D"${encodeURIComponent(track.title)}"`;
   document.getElementById("playerbar-artist").innerText = track.artist;
-  document.getElementById("playerbar-artist").href = `/tracks?q=artist%3D"${track.artist}"`;
+  document.getElementById("playerbar-artist").href = `/albums?q=artist%3D"${encodeURIComponent(track.artist)}"`;
   document.getElementById("playerbar-album").innerText = track.album;
-  document.getElementById("playerbar-album").href = `/tracks?q=album%3D"${track.album}"`;
+  document.getElementById("playerbar-album").href = `/tracks?q=album%3D"${encodeURIComponent(track.album)}"`;
 
   if (track.favorite) {
     document.getElementById("playerbar-favorite").classList.remove("bi-heart")
@@ -194,14 +194,13 @@ const albumsPerRow = () => (albumsMobileQuery.matches ? 2 : 5);
 const generateAlbumRows = (albums, perRow) => {
   const rowsOut = [];
   for (let i = 0; i < albums.length; i += perRow) {
-    // TODO: escape chars like &
     const cells = albums
       .slice(i, i + perRow)
       .map((album) => `<td>
           <div class="d-flex flex-column">
-            <a href='/tracks?q=album%3D"${album.title}"'><img src="/api/tracks/${album.tracks[0].id}/art" loading="lazy" class="border"></a>
-            <strong class="mt-1"><a href='/tracks?q=album%3D"${album.title}"'>${album.title}</a></strong>
-            <a href='/tracks?q=albumartist%3D"${album.albumartist}"'>${album.albumartist}</a>
+            <a href='/tracks?q=album%3D"${encodeURIComponent(album.title)}"'><img src="/api/tracks/${album.tracks[0].id}/art" loading="lazy" class="border"></a>
+            <strong class="mt-1"><a href='/tracks?q=album%3D"${encodeURIComponent(album.title)}"'>${album.title}</a></strong>
+            <a href='/albums?q=albumartist%3D"${encodeURIComponent(album.albumartist)}"'>${album.albumartist}</a>
           </div>
       </td>`)
       .join("");

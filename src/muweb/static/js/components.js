@@ -185,17 +185,6 @@ const Homepage = () => {
 
     </div>
 
-    <!---->
-    <!-- <div class="d-flex mt-4 text-center"> -->
-    <!--   <a href="https://github.com/brodyking/mu" class="btn text-primary align-middle" data-external> -->
-    <!--     <i class="bi bi-github"></i> github -->
-    <!--   </a> -->
-    <!--   <div class="border-end"></div> -->
-    <!--   <a href="/api/" class="btn text-primary align-middle" data-external> -->
-    <!--     <i class="bi bi-book-fill"></i> api  -->
-    <!--   </a> -->
-    <!-- </div> -->
-
   `;
   return content;
 };
