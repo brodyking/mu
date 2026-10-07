@@ -22,6 +22,7 @@ const getTracks = async (q, order_by = null) => {
     console.error(`${q} is undefined`)
     return
   }
+  q = encodeURIComponent(q)
   if (q.length !== 0 && q.indexOf("%3A") == -1 && q.indexOf("%3D") == -1) {
     q = `artist:${q},albumartist:${q},album:${q},title:${q}`
   }
@@ -45,6 +46,7 @@ const getTracksFavorites = async (q) => {
     console.error(`${q} is undefined`)
     return
   }
+  q = encodeURIComponent(q)
   if (q.length !== 0 && q.indexOf("%3A") == -1 && q.indexOf("%3D") == -1) {
     q = `artist:${q},albumartist:${q},album:${q},title:${q}`
   }
@@ -97,6 +99,7 @@ const getAlbums = async (q) => {
     console.error(`${q} is undefined`)
     return
   }
+  q = encodeURIComponent(q);
   if (q.length !== 0 && q.indexOf("%3A") == -1 && q.indexOf("%3D") == -1) {
     q = `album:${q},albumartist:${q}`
   }
@@ -142,3 +145,20 @@ const postLogout = async () => {
   window.location.href = "/login.html";
 }
 
+const getArtists = async (q) => {
+  if (q == undefined) {
+    console.error(`${q} is undefined`)
+    return
+  }
+  q = encodeURIComponent(q);
+  if (q.length !== 0 && q.indexOf("%3A") == -1 && q.indexOf("%3D") == -1) {
+    q = `albumartist:"${q}",artist:"${q}"`
+  }
+  try {
+    const response = await fetch(`/api/artists?q=${q}`)
+    const data = await response.json()
+    return data;
+  } catch (err) {
+    alert(`Invalid search query (${err})`)
+  }
+}

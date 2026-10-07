@@ -41,7 +41,7 @@ const route = async (pathname, search) => {
 
   let main = document.getElementById("main")
 
-  const links = [document.getElementById("navbar-tracks"), document.getElementById("navbar-favorites"), document.getElementById("navbar-albums")]
+  const links = [document.getElementById("navbar-tracks"), document.getElementById("navbar-favorites"), document.getElementById("navbar-albums"), document.getElementById("navbar-artists")]
   links.forEach((link) => {
     if (link) link.classList.remove("active")
   })
@@ -89,6 +89,15 @@ const route = async (pathname, search) => {
       main.replaceChildren(Loading("fetching albums..."))
       main.appendChild(AlbumsTable())
       await hydrateAlbumsTable(params.get("q"))
+      main.removeChild(document.getElementById("loading"))
+      break;
+    // ===== Artists tab ======
+    case "/artists":
+      document.getElementById("navbar-artists").classList.add("active")
+      changeWindowTitle("artists")
+      main.replaceChildren(Loading("fetching artists..."))
+      main.appendChild(ArtistsTable())
+      await hydrateArtistsTable(params.get("q"))
       main.removeChild(document.getElementById("loading"))
       break;
     // ===== Error 404 =====

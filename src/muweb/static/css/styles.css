@@ -485,7 +485,8 @@ body {
 
 .tracks-page,
 .queue-page,
-.albums-page {
+.albums-page,
+.artists-page {
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -498,7 +499,8 @@ body {
 }
 
 .tracks-table-wrapper,
-.albums-table-wrapper {
+.albums-table-wrapper,
+.artists-table-wrapper {
   display: flex;
   flex-direction: column;
   flex: 1 1 auto;
@@ -507,6 +509,7 @@ body {
 
 /* Header table stays put; only the list below it scrolls */
 .tracks-table-wrapper > .table,
+.artists-table-wraper > .table,
 .albums-table-wrapper > .table {
   flex: 0 0 auto;
 }

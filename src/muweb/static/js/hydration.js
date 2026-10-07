@@ -15,6 +15,11 @@ const albumsView = {
   clusterize: null,
 };
 
+const artistsView = {
+  artists: [],
+  clusterize: null,
+}
+
 const escapeHtml = (value) =>
   String(value ?? "")
     .replaceAll("&", "&amp;")
@@ -85,7 +90,7 @@ const hydrateQueueTable = async () => {
 
   const generateRows = (data) =>
     data.map((track, index) => `
-      <tr data-index="${index}" data-id="${escapeHtml(track.id)}">
+      <tr data-name="${escapeHtml(track.id)}">
         ${cell(track.id)}
         <td title="${track.favorite ? "Favorite" : "Not Favorited"}"><i class="text-primary bi bi-heart${track.favorite ? "-fill" : ""}"></i></td>
         ${cell(track.title)}
@@ -102,7 +107,6 @@ const hydrateQueueTable = async () => {
       </tr>`);
 
   const tids = queueGetUpcoming(playerState.queue) ?? []
-  if (tids.length == 0) { return }
 
   const tracks = tids ? await getTracksById(tids) : []
 
@@ -160,8 +164,8 @@ const hydrateTracksTable = async (term, only_favorites = false) => {
   }
 
   const tracks = only_favorites
-    ? await getTracksFavorites(encodeURIComponent(term))
-    : await getTracks(encodeURIComponent(term));
+    ? await getTracksFavorites(term)
+    : await getTracks(term);
 
   const rows = tracks ?? [];
 
@@ -238,7 +242,7 @@ const hydrateAlbumsTable = async (term) => {
     term = "";
   }
 
-  const albums = await getAlbums(encodeURIComponent(term));
+  const albums = await getAlbums(term);
   albumsView.albums = albums ?? [];
 
   renderAlbumsGrid();
@@ -250,3 +254,44 @@ const hydrateAlbumsTable = async (term) => {
   const total = document.getElementById("albums-total-count")
   total.innerText = `${albumsView.albums.length.toLocaleString('en-US')} results`;
 };
+
+const hydrateArtistsTable = async (term) => {
+  if (term === null) {
+    term = "";
+  }
+
+  const cell = (value) => {
+    const safe = escapeHtml(value);
+    return `<td title="${safe}">${safe}</td>`;
+  };
+
+  const artists = await getArtists(term);
+
+  const generateRows = (data) =>
+    data.map((artist, index) => `
+      <tr data-index="${index}" data-artist="${escapeHtml(artist.name)}">
+        ${cell(artist.name)}
+        ${cell(artist.tracks.length)}
+      </tr>
+      `);
+
+  const rows = artists ?? [];
+
+  artistsView.artists = rows.map((artist) => artist.name);
+
+  if (artistsView.clusterize) {
+    artistsView.clusterize.destroy(false);
+    artistsView.clusterize = null;
+  }
+
+  artistsView.clusterize = new Clusterize({
+    rows: generateRows(rows),
+    scrollId: "scrollArea",
+    contentId: "contentArea",
+  });
+
+  const total = document.getElementById("artists-total-count")
+  total.innerText = `${rows.length.toLocaleString('en-US')} results`;
+
+
+}

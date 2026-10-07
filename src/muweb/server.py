@@ -152,7 +152,7 @@ def albums(q: str | None = None):
 @app.get("/api/artists")
 def artists(q: str | None = None):
     """Returns artists from a mu search query"""
-    return [a.get_dict() for a in api.get_artists(q).values()]
+    return [a.get_dict() for a in api.get_artists(q, only_albumartists=True).values()]
 
 
 @app.get("/api/playlists")

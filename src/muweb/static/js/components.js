@@ -117,6 +117,14 @@ const Navbar = () => {
           </a>
         </li>
 
+        <li class="nav-item">
+          <a class="nav-link" href="/artists" id="navbar-artists">
+            <i class="nav-icon bi bi-person-workspace"></i>
+            <span class="nav-link-text">artists</span>
+          </a>
+        </li>
+
+
 
         <li class="nav-item mt-auto">
           <a class="nav-link" href="#" onclick="postLogout()">
@@ -200,6 +208,13 @@ const Error404 = () => {
   `;
   return content;
 };
+
+const artistColgroup = `
+  <colgroup>
+    <col style="width: 100px;">
+    <col style="width: 60px;">
+  </colgroup>
+`
 
 const trackColgroup = `
   <colgroup>
@@ -389,6 +404,67 @@ const AlbumsTable = () => {
     const term = encodeURIComponent(formDataEntries.term)
     route("/albums", `?q=${term}`)
     window.scrollTo(0, 0)
+  });
+
+  content.appendChild(header);
+  content.appendChild(search);
+  content.appendChild(table);
+  return content;
+};
+
+const ArtistsTable = () => {
+
+  const content = document.createElement("div"); // Parent element for search and table
+  content.className = "artists-page";
+  const header = document.createElement("div"); // Header
+  header.classList = "border-bottom pb-1 pt-1 d-flex justify-content-between ps-2 pe-2"
+  const search = document.createElement("form"); // Search Box
+  const table = document.createElement("div"); // Table
+
+  // Header
+  header.innerHTML = `<span class="fw-bold">artists</span> <span id='artists-total-count'></span>`;
+
+  // Search
+  search.className = "search-form d-flex border-0 border-bottom border-light-gray"
+  search.innerHTML = `
+    <div class="p-2 pe-0"><i class="bi bi-search"></i></div>
+    <input type="text" name="term" autocomplete="off" id="artists-table-search" class="form-control rounded-0 flex-grow-1 border-0 shadow-none" placeholder="Search artists..." onfocus="this.select()"/>
+  `;
+  search.addEventListener('submit', async function(event) {
+    // Listens for search submit, fetches tracks and updates rows.
+    event.preventDefault();
+    const formData = new FormData(search);
+    const formDataEntries = Object.fromEntries(formData.entries());
+    const term = encodeURIComponent(formDataEntries.term)
+    route("/artists", `?q=${term}`)
+    window.scrollTo(0, 0)
+  });
+
+  // Table
+  table.className = "artists-table-wrapper clusterize";
+  table.innerHTML = `
+  <table class="table data-table mb-0">
+    ${artistColgroup}
+    <thead>
+      <tr>
+        <th>artist</th>
+        <th>tracks</th>
+      </tr>
+    </thead>
+  </table>
+  <div id="scrollArea" class="clusterize-scroll">
+    <table class="table data-table" id="tracks-table">
+      ${artistColgroup}
+      <tbody id="contentArea">
+      </tbody>
+    </table>
+  </div>
+  `;
+
+  table.addEventListener("click", (event) => {
+    const row = event.target.closest("tr[data-index]");
+    if (!row) return;
+    route("/albums", `?q=albumartist%3D"${encodeURIComponent(row.dataset.artist)}"`)
   });
 
   content.appendChild(header);
