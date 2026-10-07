@@ -142,7 +142,7 @@ const putFavorite = async (id) => {
 // logout
 const postLogout = async () => {
   await fetch("/api/auth/logout", { method: "POST" });
-  window.location.href = "/login.html";
+  window.location.href = window.location.pathname + '?t=' + Date.now() + window.location.hash;
 }
 
 const getArtists = async (q) => {
