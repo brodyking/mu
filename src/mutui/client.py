@@ -85,7 +85,7 @@ class Client(App):
 
         self.register_theme(
             theme=Theme(
-                name="tokyonight-moon (default)",
+                name="tokyonight-moon",
                 primary="#82AAFFFF",  # blue
                 secondary="#394B70FF",  # blue7
                 accent="#C099FFFF",  # magenta
@@ -101,7 +101,24 @@ class Client(App):
             )
         )
 
-        self.theme = "tokyonight-moon (default)"
+        self.register_theme(
+            theme=Theme(
+                name="hubbamax (default)",
+                primary="#87AFAFFF",  # cyan_light (selection-background)
+                secondary="#5F87AFFF",  # blue
+                accent="#AF87AFFF",  # purple
+                background="#1C1C1CFF",  # bg
+                foreground="#BCBCBCFF",  # fg
+                surface="#262626FF",  # gray1
+                panel="#303030FF",  # gray2
+                success="#5FAF5FFF",  # green
+                warning="#D7AF87FF",  # yellow_bright
+                error="#AF5F5FFF",  # red
+                dark=True,
+                variables={},
+            )
+        )
+        self.theme = "hubbamax (default)"
         self.animation_level = "none"
 
         self.nowplaying = NowPlaying(self.player)
