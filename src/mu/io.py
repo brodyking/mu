@@ -209,7 +209,9 @@ def mu_print_version(client_version: str, database_schema: int) -> None:
 
     link_text = Color.blue("https://github.com/brodyking/mu")
 
-    client_version_text = Color.yellow("mu + muc: ") + Color.green(f"v{client_version}")
+    client_version_text = Color.yellow("mu + mutui: ") + Color.green(
+        f"v{client_version}"
+    )
     database_schema_text = Color.yellow("db schema: ") + Color.green(
         f"v{database_schema}"
     )

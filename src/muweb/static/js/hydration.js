@@ -1,0 +1,297 @@
+/*    _
+ | | | | mu
+ | |_| | (c) 2026 all rights reserved
+ | ._,_| https://github.com/brodyking/mu
+ |_|
+*/
+
+const tracksView = {
+  ids: [],
+  clusterize: null,
+};
+
+const albumsView = {
+  albums: [],
+  clusterize: null,
+};
+
+const artistsView = {
+  artists: [],
+  clusterize: null,
+}
+
+const escapeHtml = (value) =>
+  String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+
+const hydrateHomepage = async () => {
+  stats = await getStats();
+  document.getElementById("homepage-playlists").innerText = stats["playlists"].toLocaleString('en-US')
+  document.getElementById("homepage-artists").innerText = stats["artists"].toLocaleString('en-US')
+  document.getElementById("homepage-albums").innerText = stats["albums"].toLocaleString('en-US')
+  document.getElementById("homepage-tracks").innerText = stats["tracks"].toLocaleString('en-US')
+}
+
+
+const hydratePlayerPausedState = (paused) => {
+  if (paused) {
+    document.getElementById("playerbar-pause").classList.add("d-none")
+    document.getElementById("playerbar-resume").classList.remove("d-none")
+  } else {
+    document.getElementById("playerbar-pause").classList.remove("d-none")
+    document.getElementById("playerbar-resume").classList.add("d-none")
+  }
+}
+
+const hydratePlayerMetadata = async () => {
+  track = await getTrackById(queueGetCurrent(playerState.queue))
+
+  if (track.art_url) {
+    document.getElementById("playerbar-art").src = track.art_url
+    document.getElementById("playerbar-art").classList.remove("opacity-0")
+    document.getElementById("playerbar-art").classList.add("opacity-100")
+  } else {
+    document.getElementById("playerbar-art").classList.remove("opacity-100")
+    document.getElementById("playerbar-art").classList.add("opacity-0")
+  }
+
+  document.getElementById("playerbar-title").innerText = track.title;
+  document.getElementById("playerbar-title").href = `/tracks?q=title%3D"${encodeURIComponent(track.title)}"`;
+  document.getElementById("playerbar-artist").innerText = track.artist;
+  document.getElementById("playerbar-artist").href = `/albums?q=artist%3D"${encodeURIComponent(track.artist)}"`;
+  document.getElementById("playerbar-album").innerText = track.album;
+  document.getElementById("playerbar-album").href = `/tracks?q=album%3D"${encodeURIComponent(track.album)}"`;
+
+  if (track.favorite) {
+    document.getElementById("playerbar-favorite").classList.remove("bi-heart")
+    document.getElementById("playerbar-favorite").classList.add("bi-heart-fill")
+  } else {
+    document.getElementById("playerbar-favorite").classList.remove("bi-heart-fill")
+    document.getElementById("playerbar-favorite").classList.add("bi-heart")
+  }
+  hydratePlayerPausedState(paused = false)
+}
+
+const hydrateQueueTableIfActive = async () => {
+  if (window.location.pathname == "/queue") {
+    await hydrateQueueTable("scrollArea", "contentArea")
+  }
+}
+
+const hydrateQueueTable = async () => {
+  const cell = (value) => {
+    const safe = escapeHtml(value);
+    return `<td title="${safe}">${safe}</td>`;
+  };
+
+  const generateRows = (data) =>
+    data.map((track, index) => `
+      <tr data-name="${escapeHtml(track.id)}">
+        ${cell(track.id)}
+        <td title="${track.favorite ? "Favorite" : "Not Favorited"}"><i class="text-primary bi bi-heart${track.favorite ? "-fill" : ""}"></i></td>
+        ${cell(track.title)}
+        ${cell(track.artist)}
+        ${cell(track.album)}
+        ${cell(track.plays)}
+        ${cell(track.time)}
+        ${cell(track.dateadded)}
+        ${cell(track.tracknumber)}
+        ${cell(track.albumartist)}
+        ${cell(track.discnumber)}
+        ${cell(track.genre)}
+        ${cell(track.date)}
+      </tr>`);
+
+  const tids = queueGetUpcoming(playerState.queue) ?? []
+
+  const tracks = tids ? await getTracksById(tids) : []
+
+  const trackById = new Map(tracks.map(track => [track.id, track]))
+  const ordered_tracks = tids
+    .map(tid => trackById.get(tid))
+    .filter(Boolean) // drop any ids that didn't resolve to a track
+  const rows = ordered_tracks ?? [];
+
+  tracksView.ids = rows.map((track) => track.id);
+
+  if (tracksView.clusterize) {
+    tracksView.clusterize.destroy(false);
+    tracksView.clusterize = null;
+  }
+
+  tracksView.clusterize = new Clusterize({
+    rows: generateRows(rows),
+    scrollId: "scrollArea",
+    contentId: "contentArea",
+  });
+
+  const total = document.getElementById("tracks-total-count")
+  total.innerText = `${rows.length.toLocaleString('en-US')} results`;
+
+}
+
+
+const hydrateTracksTable = async (term, only_favorites = false) => {
+  const cell = (value) => {
+    const safe = escapeHtml(value);
+    return `<td title="${safe}">${safe}</td>`;
+  };
+
+  const generateRows = (data) =>
+    data.map((track, index) => `
+      <tr data-index="${index}" data-id="${escapeHtml(track.id)}">
+        ${cell(track.id)}
+        <td title="${track.favorite ? "Favorite" : "Not Favorited"}"><i class="text-primary bi bi-heart${track.favorite ? "-fill" : ""}"></i></td>
+        ${cell(track.title)}
+        ${cell(track.artist)}
+        ${cell(track.album)}
+        ${cell(track.plays)}
+        ${cell(track.time)}
+        ${cell(track.dateadded)}
+        ${cell(track.tracknumber)}
+        ${cell(track.albumartist)}
+        ${cell(track.discnumber)}
+        ${cell(track.genre)}
+        ${cell(track.date)}
+      </tr>`);
+
+  if (term === null) {
+    term = "";
+  }
+
+  const tracks = only_favorites
+    ? await getTracksFavorites(term)
+    : await getTracks(term);
+
+  const rows = tracks ?? [];
+
+  tracksView.ids = rows.map((track) => track.id);
+
+  if (tracksView.clusterize) {
+    tracksView.clusterize.destroy(false);
+    tracksView.clusterize = null;
+  }
+
+  tracksView.clusterize = new Clusterize({
+    rows: generateRows(rows),
+    scrollId: "scrollArea",
+    contentId: "contentArea",
+  });
+
+  const search = document.getElementById("tracks-table-search");
+  if (search) {
+    search.value = term;
+  }
+  const total = document.getElementById("tracks-total-count")
+  total.innerText = `${rows.length.toLocaleString('en-US')} results`;
+};
+
+// Albums grid: 5 covers per row on desktop, 2 on mobile.
+// Keep this query in sync with the mobile breakpoint in styles.css.
+const albumsMobileQuery = window.matchMedia("(max-width: 991.98px)");
+const albumsPerRow = () => (albumsMobileQuery.matches ? 2 : 5);
+
+const generateAlbumRows = (albums, perRow) => {
+  const rowsOut = [];
+  for (let i = 0; i < albums.length; i += perRow) {
+    const cells = albums
+      .slice(i, i + perRow)
+      .map((album) => `<td>
+          <div class="d-flex flex-column">
+            <a href='/tracks?q=album%3D"${encodeURIComponent(album.title)}"'><img src="/api/tracks/${album.tracks[0].id}/art" loading="lazy" class="border"></a>
+            <strong class="mt-1"><a href='/tracks?q=album%3D"${encodeURIComponent(album.title)}"'>${album.title}</a></strong>
+            <a href='/albums?q=albumartist%3D"${encodeURIComponent(album.albumartist)}"'>${album.albumartist}</a>
+          </div>
+      </td>`)
+      .join("");
+    rowsOut.push(`<tr>${cells}</tr>`);
+  }
+  return rowsOut;
+};
+
+// (Re)builds the grid from albumsView.albums at the current column count.
+const renderAlbumsGrid = () => {
+  const table = document.getElementById("albums-table");
+  if (!table) return; // not on the albums page
+
+  const perRow = albumsPerRow();
+  // One <col> per column; table-layout: fixed splits the width evenly
+  table.querySelector("colgroup").innerHTML = "<col>".repeat(perRow);
+
+  if (albumsView.clusterize) {
+    albumsView.clusterize.destroy(false);
+    albumsView.clusterize = null;
+  }
+
+  albumsView.clusterize = new Clusterize({
+    rows: generateAlbumRows(albumsView.albums, perRow),
+    scrollId: "scrollArea",
+    contentId: "contentArea",
+  });
+};
+
+// Re-flow the grid when the window crosses the mobile breakpoint
+albumsMobileQuery.addEventListener("change", renderAlbumsGrid);
+
+const hydrateAlbumsTable = async (term) => {
+  if (term === null) {
+    term = "";
+  }
+
+  const albums = await getAlbums(term);
+  albumsView.albums = albums ?? [];
+
+  renderAlbumsGrid();
+
+  const search = document.getElementById("albums-table-search");
+  if (search) {
+    search.value = term;
+  }
+  const total = document.getElementById("albums-total-count")
+  total.innerText = `${albumsView.albums.length.toLocaleString('en-US')} results`;
+};
+
+const hydrateArtistsTable = async (term) => {
+  if (term === null) {
+    term = "";
+  }
+
+  const cell = (value) => {
+    const safe = escapeHtml(value);
+    return `<td title="${safe}">${safe}</td>`;
+  };
+
+  const artists = await getArtists(term);
+
+  const generateRows = (data) =>
+    data.map((artist, index) => `
+      <tr data-index="${index}" data-artist="${escapeHtml(artist.name)}">
+        ${cell(artist.name)}
+        ${cell(artist.tracks.length)}
+      </tr>
+      `);
+
+  const rows = artists ?? [];
+
+  artistsView.artists = rows.map((artist) => artist.name);
+
+  if (artistsView.clusterize) {
+    artistsView.clusterize.destroy(false);
+    artistsView.clusterize = null;
+  }
+
+  artistsView.clusterize = new Clusterize({
+    rows: generateRows(rows),
+    scrollId: "scrollArea",
+    contentId: "contentArea",
+  });
+
+  const total = document.getElementById("artists-total-count")
+  total.innerText = `${rows.length.toLocaleString('en-US')} results`;
+
+
+}

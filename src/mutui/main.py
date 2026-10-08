@@ -1,13 +1,13 @@
 """
  _   _
-| | | | muc client
+| | | | mutui
 | |_| | (c) 2026 all rights reserved
 | ._,_| https://github.com/brodyking/mu
 |_|
 
 """
 
-from muc.client import Client
+from mutui.client import Client
 
 
 def main():

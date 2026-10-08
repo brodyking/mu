@@ -6,7 +6,7 @@ from textual.message import Message
 from textual.screen import ModalScreen
 from textual.widgets import Label
 
-from muc.widgets.vimdatatable import VimDataTable
+from mutui.widgets.vimdatatable import VimDataTable
 
 
 class Popup(ModalScreen[str]):

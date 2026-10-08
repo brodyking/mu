@@ -68,6 +68,7 @@ class Album:
         return {
             "title": self.title,
             "albumartist": self.albumartist,
+            "tracks": [t.get_dict() for t in self.tracks],
         }
 
 
@@ -89,7 +90,7 @@ class Playlist:
             "id": self.id,
             "title": self.title,
             "description": self.description,
-            "tracks": self.tracks,
+            "tracks": [t.get_dict() for t in self.tracks],
         }
 
 
@@ -99,4 +100,4 @@ class Artist:
         self.tracks = tracks
 
     def get_dict(self) -> dict:
-        return {"name": self.name, "tracks": self.tracks}
+        return {"name": self.name, "tracks": [t.get_dict() for t in self.tracks]}

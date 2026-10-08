@@ -1,0 +1,476 @@
+/*    _
+ | | | | mu
+ | |_| | (c) 2026 all rights reserved
+ | ._,_| https://github.com/brodyking/mu
+ |_|
+*/
+
+
+const PlayerBar = () => {
+  const bar = document.createElement("div");
+  bar.id = "playerbar-row";
+  bar.classList = `w-100 bg-body border-top`;
+  bar.innerHTML = `
+
+      <div id="playerbar-info">
+        <div class="d-flex gap-0">
+          <img id="playerbar-art" class="ms-1 me-2 border opacity-0">
+          <div class="container text-start align-middle metadata p-0 pt-1 m-0">
+            <div class="row">
+              <div class="col fw-bold">
+                <a href="/tracks" id="playerbar-title">Title </a> 
+              </div>
+            </div>
+            <div class="row">
+              <div class="col">
+                by <a href="/tracks" id="playerbar-artist">Artist</a>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col">
+                from <a href="/tracks" id="playerbar-album">Album</a>
+              </div>
+            </div>
+          </div>
+          <a class="btn" onclick="putFavorite(queueGetCurrent(playerState.queue));hydratePlayerMetadata();"><i class="bi" id="playerbar-favorite"></i></a>
+        </div>
+      </div>
+
+      <div id="playerbar-transport">
+
+        <div class="transport-side transport-left">
+
+
+          <div class="d-none btn" id="playerbar-loading">
+            <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+            <span class="visually-hidden">Loading...</span>
+          </div>
+          
+          <div id="playerbar-controls">
+            <div class="d-none" id="playerbar-pause">
+              <a class="btn" onclick="playerPause()">
+                <i class="bi bi-pause-fill"></i>
+              </a>
+            </div>
+            <div id="playerbar-resume">
+              <a class="btn" onclick="playerResume()">
+                <i class="bi bi-play-fill"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+        
+          <div id="playerbar-seek" >
+            <progress id="playerbar-seekbar" value="0" max="1"></progress>
+            <a id="playerbar-duration" class="btn disabled border-0">00:00 / 00:00</a>
+          </div>
+
+        <div class="transport-side transport-right">
+          <a class="btn" onclick="playerPlayPrevious()">
+            <i class="bi bi-skip-backward-fill"></i>
+          </a>
+          <a class="btn" onclick="playerPlayNext()">
+            <i class="bi bi-skip-forward-fill"></i>
+          </a>
+        </div>
+
+      </div>
+
+      <div id="playerbar-actions">
+        <a href="/queue" class="btn">
+          <i class="bi bi-music-note-list"></i>
+        </a>
+      </div>
+
+  `
+  return bar
+}
+
+const Navbar = () => {
+  const element = document.createElement("div");
+  element.innerHTML = `
+    <div class="sidebar sidebar-fixed border-end">
+      <div class="sidebar-header">
+        <div class="sidebar-brand">
+          <a class="nav-item fs-2 text-secondary text-decoration-none" href="/">µ</a>
+        </div>
+      </div>
+      <ul class="sidebar-nav">
+        <li class="nav-item">
+          <a class="nav-link" href="/tracks" id="navbar-tracks">
+            <i class="nav-icon bi bi-music-note"></i>
+            <span class="nav-link-text">tracks</span>
+          </a>
+        </li>
+
+        <li class="nav-item">
+          <a class="nav-link" href="/favorites" id="navbar-favorites">
+            <i class="nav-icon bi bi-heart-fill"></i>
+            <span class="nav-link-text">favorites</span>
+          </a>
+        </li>
+
+        <li class="nav-item">
+          <a class="nav-link" href="/albums" id="navbar-albums">
+            <i class="nav-icon bi bi-vinyl-fill"></i>
+            <span class="nav-link-text">albums</span>
+          </a>
+        </li>
+
+        <li class="nav-item">
+          <a class="nav-link" href="/artists" id="navbar-artists">
+            <i class="nav-icon bi bi-person-workspace"></i>
+            <span class="nav-link-text">artists</span>
+          </a>
+        </li>
+
+
+
+        <li class="nav-item mt-auto">
+          <a class="nav-link" href="#" onclick="postLogout()">
+            <i class="nav-icon bi bi-door-open"></i>
+            <span class="nav-link-text">logout</span>
+          </a>
+        </li>
+      </ul>
+    </div>`
+  return element;
+}
+
+const Loading = (info = "loading...") => {
+  const content = document.createElement("div");
+  content.id = "loading"
+  content.innerHTML = `
+    <!-- Full-Screen Loading Overlay -->
+    <div id="loading-overlay" class="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center" style="z-index: 9999; background-color: color-mix(in srgb, var(--cui-body-bg) 50%, transparent);">
+      <div class="text-center">
+        <!-- CoreUI / Bootstrap Spinner -->
+        <div class="spinner-border text-body" role="status" style="width: 3rem; height: 3rem;">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+        <!-- Optional Loading Text -->
+        <div class="text-body mt-2">${info}</div>
+      </div>
+    </div>
+  `;
+  return content
+}
+
+const Homepage = () => {
+  const content = document.createElement("div");
+  content.className = "text-center d-flex flex-column justify-content-center align-items-center h-100";
+  content.innerHTML = `
+    <h1 class='mt-5 align-self-center fs-1'>µ</h1>
+    <p class='mt-3 fs-4'>your personal music library</p>
+
+    <div class="d-flex text-center mt-3 ">
+
+      <a class="btn disabled text-body border-0" href="/tracks">
+        <span>tracks:</span>
+        <span id="homepage-tracks" class="text-primary">0</span>
+      </a>
+
+      <div class="border-end"></div>
+
+      <a class="btn disabled text-body border-0" href="/albums">
+        <span>albums:</span>
+        <span id="homepage-albums" class="text-primary">0</span>
+      </a>
+
+      <div class="border-end"></div>
+
+      <a class="btn disabled text-body border-0" href="/artists">
+        <span>artists:</span>
+        <span id="homepage-artists" class="text-primary">0</span>
+      </a>
+
+      <div class="border-end"></div>
+
+      <a class="btn disabled text-body border-0" href="/playlists">
+        <span>playlists:</span>
+        <span id="homepage-playlists" class="text-primary">0</span>
+      </a>
+
+    </div>
+
+  `;
+  return content;
+};
+
+const Error404 = () => {
+  const content = document.createElement("div");
+  content.className = "text-center d-flex flex-column justify-content-center align-items-center h-100";
+  content.innerHTML = `
+    <div class="text-center d-flex flex-column justify-content-center align-items-center h-100">
+      <h1 class='mt-5 align-self-center fs-1'>Error 404</h1>
+      <p class='mt-3 fs-5'>Page not found.</p>
+    </div>
+  `;
+  return content;
+};
+
+const artistColgroup = `
+  <colgroup>
+    <col style="width: 100px;">
+    <col style="width: 60px;">
+  </colgroup>
+`
+
+const trackColgroup = `
+  <colgroup>
+    <col style="width: 60px">   <!-- id -->
+    <col style="width: 36px">   <!-- favorite icon -->
+    <col style="width: 200px">    <!-- title -->
+    <col style="width: 100px">    <!-- artist -->
+    <col style="width: 100px">    <!-- album -->
+    <col style="width: 60px">   <!-- plays -->
+    <col style="width: 60px">   <!-- time -->
+    <col style="width: 100px">  <!-- dateadded -->
+    <col style="width: 90px">   <!-- tracknumber -->
+    <col style="width: 15%">    <!-- albumartist -->
+    <col style="width: 80px">   <!-- discnumber -->
+    <col style="width: 100px">  <!-- genre -->
+    <col style="width: 90px">   <!-- date -->
+  </colgroup>
+`;
+
+// Columns are filled in by renderAlbumsGrid() (5 on desktop, 2 on mobile)
+const albumColgroup = `<colgroup></colgroup>`
+
+const TracksTable = (onlyFavorites = false, headerText = "tracks") => {
+
+  const content = document.createElement("div"); // Parent element for search and table
+  content.className = "tracks-page";
+  const header = document.createElement("div"); // Header
+  header.classList = "border-bottom pb-1 pt-1 d-flex justify-content-between ps-2 pe-2"
+  const search = document.createElement("form"); // Search Box
+  const table = document.createElement("div"); // Table
+
+  // Header
+  header.innerHTML = `<span class="fw-bold">${headerText}</span> <span id='tracks-total-count'></span>`;
+
+  // Search
+  search.className = "search-form d-flex border-0 border-bottom border-light-gray"
+  search.innerHTML = `
+    <div class="p-2 pe-0"><i class="bi bi-search"></i></div>
+    <input type="text" name="term" autocomplete="off" id="tracks-table-search" class="form-control rounded-0 flex-grow-1 border-0 shadow-none" placeholder="Search tracks..." onfocus="this.select()"/>
+  `;
+  search.addEventListener('submit', async function(event) {
+    // Listens for search submit, fetches tracks and updates rows.
+    event.preventDefault();
+    const formData = new FormData(search);
+    const formDataEntries = Object.fromEntries(formData.entries());
+    const term = encodeURIComponent(formDataEntries.term)
+    if (onlyFavorites) {
+      route("/favorites", `?q=${term}`)
+    } else {
+      route("/tracks", `?q=${term}`)
+    }
+    window.scrollTo(0, 0)
+  });
+
+  // Table
+  table.className = "tracks-table-wrapper clusterize";
+  table.innerHTML = `
+  <table class="table data-table mb-0">
+    ${trackColgroup}
+    <thead>
+      <tr>
+        <th>id</th>
+        <th></th>
+        <th>title</th>
+        <th>artist</th>
+        <th>album</th>
+        <th>plays</th>
+        <th>time</th>
+        <th>dateadded</th>
+        <th>tracknumber</th>
+        <th>albumartist</th>
+        <th>discnumber</th>
+        <th>genre</th>
+        <th>date</th>
+      </tr>
+    </thead>
+  </table>
+  <div id="scrollArea" class="clusterize-scroll">
+    <table class="table data-table" id="tracks-table">
+      ${trackColgroup}
+      <tbody id="contentArea">
+      </tbody>
+    </table>
+  </div>
+  `;
+  table.addEventListener("dblclick", (event) => {
+    const row = event.target.closest("tr[data-index]");
+    if (!row) return;
+    playerCreateQueue(tracksView.ids, Number(row.dataset.index));
+    playerPlayCurrent();
+  });
+
+  content.appendChild(header);
+  content.appendChild(search);
+  content.appendChild(table);
+  return content;
+};
+
+const QueueTable = () => {
+
+  const content = document.createElement("div"); // Parent element for search and table
+  content.className = "queue-page";
+  const header = document.createElement("div"); // Header
+  header.classList = "border-bottom pb-1 pt-1 d-flex justify-content-between ps-2 pe-2"
+  const table = document.createElement("div"); // Table
+
+  // Header
+  header.innerHTML = `<span class="fw-bold">queue</span> <span id='tracks-total-count'></span>`;
+
+  // Table
+  table.className = "tracks-table-wrapper clusterize";
+  table.innerHTML = `
+  <table class="table data-table mb-0">
+    ${trackColgroup}
+    <thead>
+      <tr>
+        <th>id</th>
+        <th></th>
+        <th>title</th>
+        <th>artist</th>
+        <th>album</th>
+        <th>plays</th>
+        <th>time</th>
+        <th>dateadded</th>
+        <th>tracknumber</th>
+        <th>albumartist</th>
+        <th>discnumber</th>
+        <th>genre</th>
+        <th>date</th>
+      </tr>
+    </thead>
+  </table>
+  <div id="scrollArea" class="clusterize-scroll">
+    <table class="table data-table" id="tracks-table">
+      ${trackColgroup}
+      <tbody id="contentArea">
+      </tbody>
+    </table>
+  </div>
+  `;
+  table.addEventListener("dblclick", (event) => {
+    const row = event.target.closest("tr[data-index]");
+    if (!row) return;
+    playerCreateQueue(tracksView.ids, Number(row.dataset.index));
+    playerPlayCurrent();
+  });
+  content.appendChild(header);
+  content.appendChild(table);
+  return content;
+};
+
+const AlbumsTable = () => {
+
+  const content = document.createElement("div"); // Parent element for search and table
+  content.className = "albums-page";
+  const header = document.createElement("div"); // Header
+  header.classList = "border-bottom pb-1 pt-1 d-flex justify-content-between ps-2 pe-2"
+  const search = document.createElement("form"); // Search Box
+  const table = document.createElement("div"); // Table
+
+  // Header
+  header.innerHTML = `<span class="fw-bold">albums</span> <span id='albums-total-count'></span>`;
+
+  // Table
+  table.className = "albums-table-wrapper clusterize";
+  table.innerHTML = `
+  <div id="scrollArea" class="clusterize-scroll">
+    <table class="table data-table" id="albums-table">
+      ${albumColgroup}
+      <tbody id="contentArea">
+      </tbody>
+    </table>
+  </div>
+  `;
+
+  // Search
+  search.className = "search-form d-flex border-0 border-bottom border-light-gray"
+  search.innerHTML = `
+    <div class="p-2 pe-0"><i class="bi bi-search"></i></div>
+    <input type="text" name="term" autocomplete="off" id="albums-table-search" class="form-control rounded-0 flex-grow-1 border-0 shadow-none" placeholder="Search albums..." onfocus="this.select()"/>
+  `;
+  search.addEventListener('submit', async function(event) {
+    // Listens for search submit, fetches tracks and updates rows.
+    event.preventDefault();
+    const formData = new FormData(search);
+    const formDataEntries = Object.fromEntries(formData.entries());
+    const term = encodeURIComponent(formDataEntries.term)
+    route("/albums", `?q=${term}`)
+    window.scrollTo(0, 0)
+  });
+
+  content.appendChild(header);
+  content.appendChild(search);
+  content.appendChild(table);
+  return content;
+};
+
+const ArtistsTable = () => {
+
+  const content = document.createElement("div"); // Parent element for search and table
+  content.className = "artists-page";
+  const header = document.createElement("div"); // Header
+  header.classList = "border-bottom pb-1 pt-1 d-flex justify-content-between ps-2 pe-2"
+  const search = document.createElement("form"); // Search Box
+  const table = document.createElement("div"); // Table
+
+  // Header
+  header.innerHTML = `<span class="fw-bold">artists</span> <span id='artists-total-count'></span>`;
+
+  // Search
+  search.className = "search-form d-flex border-0 border-bottom border-light-gray"
+  search.innerHTML = `
+    <div class="p-2 pe-0"><i class="bi bi-search"></i></div>
+    <input type="text" name="term" autocomplete="off" id="artists-table-search" class="form-control rounded-0 flex-grow-1 border-0 shadow-none" placeholder="Search artists..." onfocus="this.select()"/>
+  `;
+  search.addEventListener('submit', async function(event) {
+    // Listens for search submit, fetches tracks and updates rows.
+    event.preventDefault();
+    const formData = new FormData(search);
+    const formDataEntries = Object.fromEntries(formData.entries());
+    const term = encodeURIComponent(formDataEntries.term)
+    route("/artists", `?q=${term}`)
+    window.scrollTo(0, 0)
+  });
+
+  // Table
+  table.className = "artists-table-wrapper clusterize";
+  table.innerHTML = `
+  <table class="table data-table mb-0">
+    ${artistColgroup}
+    <thead>
+      <tr>
+        <th>artist</th>
+        <th>tracks</th>
+      </tr>
+    </thead>
+  </table>
+  <div id="scrollArea" class="clusterize-scroll">
+    <table class="table data-table" id="tracks-table">
+      ${artistColgroup}
+      <tbody id="contentArea">
+      </tbody>
+    </table>
+  </div>
+  `;
+
+  table.addEventListener("click", (event) => {
+    const row = event.target.closest("tr[data-index]");
+    if (!row) return;
+    route("/albums", `?q=albumartist%3D"${encodeURIComponent(row.dataset.artist)}"`)
+  });
+
+  content.appendChild(header);
+  content.appendChild(search);
+  content.appendChild(table);
+  return content;
+};
+
+

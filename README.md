@@ -1,14 +1,29 @@
 <h1 align="center">µ - your personal music library</h1>
 <div align="center">
-<img src="./.github/banner.png" height="220px"><br><br>
-<p>
-  μ (<code>mu</code>) is an opinionated, cross platform, mp3 only, music library management tool designed to be <b>backup friendly</b> and <b>programmable</b>. All music is stored in a hierarchical format, and the internal database is a simple SQLite file.</p>
-
-<img src="./.github/screenshot.png" alt="Screenshot of muc" width="100%">
-
-<p>
-  µ comes with mµc (<code>muc</code>), a tui music player built for µ that focuses on speed and simplicity.
-</p>
+  <img src="./.github/banner.png" height="220px"><br><br>
+  <p>
+    μ (<code>mu</code>) is an opinionated, cross platform, mp3 only, music library management tool designed to be <b>backup friendly</b> and <b>programmable</b>. All music is stored in a hierarchical format, and the internal database is a simple SQLite file.</p>
+  <hr>
+  <table>
+    <tr>
+      <td>
+        <a href="./.github/mutui.png">
+          <img src="./.github/mutui.png" alt="Screenshot of mutui" width="100%">
+        </a>
+        <p>
+          µ comes with mµtui (<code>mutui</code>), a tui music player built for µ that focuses on speed and simplicity.
+        </p>
+      </td>
+      <td>
+        <a href="./.github/muweb.png">
+          <img src="./.github/muweb.png" alt="Screenshot of mutui" width="100%">
+        </a>
+        <p>
+          µ also comes with muweb (<code>muweb</code>), a PWA web player designed to be cross platform and self hosted.
+        </p>
+      </td>
+    </tr>
+  </table>
 </div>
 
 ## Table of Contents
@@ -17,7 +32,8 @@
 
 - [Table of Contents](#table-of-contents)
 - [What is µ?](#what-is-%C2%B5)
-- [What is mµc?](#what-is-m%C2%B5c)
+- [What is mµtui?](#what-is-m%C2%B5tui)
+- [What is mµweb?](#what-is-m%C2%B5web)
 - [Installation](#installation)
   - [File Structure](#file-structure)
 - [What's included](#whats-included)
@@ -29,13 +45,15 @@
   - [Removing and favoriting tracks](#removing-and-favoriting-tracks)
   - [Listing and searching](#listing-and-searching)
   - [Playlists](#playlists)
-- [mµc Basic Usage](#m%C2%B5c-basic-usage)
+- [mµtui Basic Usage](#m%C2%B5tui-basic-usage)
   - [Tab Navigation](#tab-navigation)
   - [Pane Navigation](#pane-navigation)
   - [Table Navigation](#table-navigation)
   - [Tracks Table Navigation](#tracks-table-navigation)
   - [Playback/Media Keys](#playbackmedia-keys)
   - [Playlist/Queue Table Navigation](#playlistqueue-table-navigation)
+- [mµweb Basic Usage](#m%C2%B5web-basic-usage)
+  - [Authentication](#authentication)
 - [Using the µ Python API](#using-the-%C2%B5-python-api)
   - [Reading your library](#reading-your-library)
   - [Creating and managing playlists](#creating-and-managing-playlists)
@@ -43,7 +61,7 @@
   - [Searching](#searching)
   - [Importing and Scanning](#importing-and-scanning)
   - [Favorites and play counts](#favorites-and-play-counts)
-  - [There's more!](#theres-more)
+  - [There's more](#theres-more)
 
 <!-- /TOC -->
 
@@ -53,17 +71,21 @@
 
  **µ is not a player.** The only functionality µ takes responsibility over is the management of your library and how you interface with it. This standardization will hopefully allow for other players to be created and given support. You can use µ entirely from the CLI by using the `mu` command. This includes functionality such as searching, importing, favoriting, and playlists.
 
-## What is mµc?
+## What is mµtui?
 
-mµc is a terminal music player. It will probably be where you spend most of your time using µ, and is currently the only supported client for µ. It is included by default when installing µ, and can be started with the `muc` command.
+mµtui is a terminal music player. It will probably be where you spend most of your time using µ. It is included by default when installing µ, and can be started with the `mutui` command.
+
+## What is mµweb?
+
+mµweb is a self hosted music player that runs in the browser. It is cross platform and works on mobile. If you aren't familar with the terminal or want to use µ on other devices, this is the client for you.
 
 ## Installation
 
 µ is supported on MacOS, Linux, and Windows.
 
-mµc is only supported on Macos and Linux. While mµc might work on windows, bugs are expected.
+mutui is only supported on Macos and Linux. While mutui might work on windows, bugs are expected.
 
-It is highly advised to use a terminal such as [kitty](https://github.com/kovidgoyal/kitty), [ghostty](https://github.com/ghostty-org/ghostty), [weztern](https://github.com/wezterm/wezterm), or [konsole](https://github.com/kde/konsole) if you plan on using mµc. These terminals work better with the [Textual](https://github.com/textualize/textual) framework mµc is based upon.
+It is highly advised to use a terminal such as [kitty](https://github.com/kovidgoyal/kitty), [ghostty](https://github.com/ghostty-org/ghostty), [weztern](https://github.com/wezterm/wezterm), or [konsole](https://github.com/kde/konsole) if you plan on using mutui. These terminals work better with the [Textual](https://github.com/textualize/textual) framework mutui is based upon.
 
 Before proceeding, ensure you have Python >=v3.12.13.
 
@@ -98,10 +120,11 @@ The `~/Music/mu/` folder can be backed up and then restored to preserve your mus
 
 ## What's included
 
-The two basic CLI commands that µ come with are `mu` and `muc` .
+The two basic CLI commands that µ come with are `mu` and `mutui` .
 
 - `mu` allows you to interact with µ through the CLI. Almost all operations that are supported by the api are supported through the CLI.
-- `muc` starts the tui client for µ. It is currently the only way to interact with µ. Support for mobile/web is planned.
+- `mutui` starts the tui client for µ. 
+- `muweb` starts the web client for µ. 
 
 ## µ Basic Commands
 
@@ -300,9 +323,9 @@ Commands:
   remove  remove track(s) from playlist(s) (alias: rm)
 ```
 
-## mµc Basic Usage
+## mµtui Basic Usage
 
-To get started using mµc, simply run `muc` in the terminal of your choosing.
+To get started using mutui, simply run `mutui` in the terminal of your choosing.
 
 For a list of available keybinds, press `?`. (Note: This does not work inside of popups)
 
@@ -375,6 +398,12 @@ Playback keys are accessible almost everywhere inside of µ, barring input field
 ### Playlist/Queue Table Navigation
 
 In both the `Playlist` and `Queue` , you can remove tracks with the `d` key.
+
+## mµweb Basic Usage
+mµweb is the easiest way to listen to a µ library on any device with a web browser. To start mµweb, type `muweb` into your terminal shell. It will start on `localhost:8000`. It will use the default µ library in `~/Music/mu/`.
+
+### Authentication
+If you require authentication for your library, typing `--pasword [password]` or `--ask-password`. Note: you can only have a single password active, so be careful who you give it too.
 
 ## Using the µ Python API
 

@@ -1,6 +1,6 @@
 """
  _   _
-| | | | muc client
+| | | | mutui
 | |_| | (c) 2026 all rights reserved
 | ._,_| https://github.com/brodyking/mu
 |_|
@@ -14,25 +14,25 @@ from textual.theme import Theme
 from textual.widgets import TabbedContent, TabPane
 
 from mu.api import Api
-from muc.player import Player
-from muc.widgets.albumsdatatable import AlbumsDataTable
-from muc.widgets.artistsdatatable import ArtistsDataTable
-from muc.widgets.cmdline import CmdLine
-from muc.widgets.footer import Footer
-from muc.widgets.nowplaying import (
+from mutui.player import Player
+from mutui.widgets.albumsdatatable import AlbumsDataTable
+from mutui.widgets.artistsdatatable import ArtistsDataTable
+from mutui.widgets.cmdline import CmdLine
+from mutui.widgets.footer import Footer
+from mutui.widgets.nowplaying import (
     NowPlaying,
     NowPlayingProgressBar,
     NowPlayingVolumeBar,
 )
-from muc.widgets.optionssplit import OptionsSplit
-from muc.widgets.playlistsdatatable import CreatePlaylistPopup, DeletePlaylistPopup
-from muc.widgets.playlistssplit import (
+from mutui.widgets.optionssplit import OptionsSplit
+from mutui.widgets.playlistsdatatable import CreatePlaylistPopup, DeletePlaylistPopup
+from mutui.widgets.playlistssplit import (
     PlaylistsSplit,
     RemoveTrackFromPlaylistPopup,
 )
-from muc.widgets.popups import CurrentlyAvailableBindsPopup, QuitPopup
-from muc.widgets.queuedatatable import QueueDataTable
-from muc.widgets.tracksdatatable import (
+from mutui.widgets.popups import CurrentlyAvailableBindsPopup, QuitPopup
+from mutui.widgets.queuedatatable import QueueDataTable
+from mutui.widgets.tracksdatatable import (
     AddToPlaylistPopup,
     TrackOptionsPopup,
     TracksDataTable,
@@ -85,7 +85,7 @@ class Client(App):
 
         self.register_theme(
             theme=Theme(
-                name="tokyonight-moon (default)",
+                name="tokyonight-moon",
                 primary="#82AAFFFF",  # blue
                 secondary="#394B70FF",  # blue7
                 accent="#C099FFFF",  # magenta
@@ -101,7 +101,24 @@ class Client(App):
             )
         )
 
-        self.theme = "tokyonight-moon (default)"
+        self.register_theme(
+            theme=Theme(
+                name="hubbamax (default)",
+                primary="#87AFAFFF",  # cyan_light (selection-background)
+                secondary="#5F87AFFF",  # blue
+                accent="#AF87AFFF",  # purple
+                background="#1C1C1CFF",  # bg
+                foreground="#BCBCBCFF",  # fg
+                surface="#262626FF",  # gray1
+                panel="#303030FF",  # gray2
+                success="#5FAF5FFF",  # green
+                warning="#D7AF87FF",  # yellow_bright
+                error="#AF5F5FFF",  # red
+                dark=True,
+                variables={},
+            )
+        )
+        self.theme = "hubbamax (default)"
         self.animation_level = "none"
 
         self.nowplaying = NowPlaying(self.player)
