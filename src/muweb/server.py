@@ -161,6 +161,11 @@ def playlists(q: str | None = None):
     return [p.get_dict() for p in api.get_playlists(q).values()]
 
 
+@app.put("/api/tracks/{track_id}/increment_play")
+def increment_play(track_id: int):
+    return api.increment_playcount_tracks(f"id={track_id}", 1)
+
+
 @app.put("/api/tracks/{track_id}/favorite")
 def favorite(track_id: int):
     return [t.get_dict() for t in api.favorite_tracks(f"id={track_id}").values()]

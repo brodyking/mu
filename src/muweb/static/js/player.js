@@ -75,6 +75,7 @@ const playerPlayPrevious = async () => {
 }
 
 audio.addEventListener("ended", () => {
+  putIncrementPlaycount(queueGetCurrent(playerState.queue))
   playerPlayNext();
   hydratePlayerMetadata();
 });
