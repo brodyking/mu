@@ -136,9 +136,31 @@ const putFavorite = async (id) => {
   } catch (error) {
     console.error('Error during PUT request:', error);
   }
-
 }
 
+// Increment track plays
+const putIncrementPlaycount = async (id) => {
+  if (id !== id) {
+    console.log(`{$id} is not a number.`)
+    return []
+  }
+
+  const url = `/api/tracks/${id}/increment_play`
+
+  try {
+    const response = await fetch(url, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: []
+    });
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error during PUT request:", error)
+  }
+}
 // logout
 const postLogout = async () => {
   await fetch("/api/auth/logout", { method: "POST" });
