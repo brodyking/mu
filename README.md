@@ -52,6 +52,7 @@
   - [Tracks Table Navigation](#tracks-table-navigation)
   - [Playback/Media Keys](#playbackmedia-keys)
   - [Playlist/Queue Table Navigation](#playlistqueue-table-navigation)
+  - [Configuration files with mµtui](#configuration-files-with-m%C2%B5tui)
 - [mµweb Basic Usage](#m%C2%B5web-basic-usage)
   - [Authentication](#authentication)
 - [Using the µ Python API](#using-the-%C2%B5-python-api)
@@ -398,6 +399,16 @@ Playback keys are accessible almost everywhere inside of µ, barring input field
 ### Playlist/Queue Table Navigation
 
 In both the `Playlist` and `Queue` , you can remove tracks with the `d` key.
+
+### Configuration files with mµtui
+
+You can change the default theme by adding it to the config file located at `~/.config/mutui/config.toml`
+
+```toml
+theme = "tokyonight-moon"
+```
+
+There are currently no other configuration options.
 
 ## mµweb Basic Usage
 mµweb is the easiest way to listen to a µ library on any device with a web browser. To start mµweb, type `muweb` into your terminal shell. It will start on `localhost:8000`. It will use the default µ library in `~/Music/mu/`.
