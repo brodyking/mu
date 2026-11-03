@@ -7,11 +7,14 @@
 
 """
 
+from pathlib import Path
+import tomllib
+
 from textual import on
 from textual.app import App, ComposeResult
 from textual.containers import Horizontal, Vertical
 from textual.theme import Theme
-from textual.widgets import TabbedContent, TabPane
+from textual.widgets import TabPane, TabbedContent
 
 from mu.api import Api
 from mutui.player import Player
@@ -26,10 +29,7 @@ from mutui.widgets.nowplaying import (
 )
 from mutui.widgets.optionssplit import OptionsSplit
 from mutui.widgets.playlistsdatatable import CreatePlaylistPopup, DeletePlaylistPopup
-from mutui.widgets.playlistssplit import (
-    PlaylistsSplit,
-    RemoveTrackFromPlaylistPopup,
-)
+from mutui.widgets.playlistssplit import PlaylistsSplit, RemoveTrackFromPlaylistPopup
 from mutui.widgets.popups import CurrentlyAvailableBindsPopup, QuitPopup
 from mutui.widgets.queuedatatable import QueueDataTable
 from mutui.widgets.tracksdatatable import (
@@ -78,10 +78,19 @@ class Client(App):
         "options-tab",
     ]
 
+    def _cread_and_load_config(self) -> dict:
+        config_path = Path(Path.home() / ".config" / "mutui")
+        config_path.mkdir(parents=True, exist_ok=True)
+        file_path = config_path / "config.toml"
+        file_path.touch()
+        with file_path.open("r", encoding="utf-8") as f:
+            return tomllib.loads(f.read())
+
     def __init__(self) -> None:
         super().__init__()
         self.api = Api()
         self.player = Player(self.api)
+        self.config = self._cread_and_load_config()
 
         self.register_theme(
             theme=Theme(
@@ -118,7 +127,12 @@ class Client(App):
                 variables={},
             )
         )
-        self.theme = "hubbamax (default)"
+
+        if self.config["theme"] in self.available_themes:
+            self.theme = self.config["theme"]
+        else:
+            self.theme = "hubbamax (default)"
+
         self.animation_level = "none"
 
         self.nowplaying = NowPlaying(self.player)
