@@ -128,7 +128,7 @@ class Client(App):
             )
         )
 
-        if self.config["theme"] in self.available_themes:
+        if self.config.get("theme") in self.available_themes:
             self.theme = self.config["theme"]
         else:
             self.theme = "hubbamax (default)"
