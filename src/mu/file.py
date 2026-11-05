@@ -136,13 +136,19 @@ def _sanitize_tag(name: str | None, fallback: str) -> str:
     return name or fallback
 
 
-def copy_file_to_source(src: Path, source_path: Path, albumart_path: Path) -> dict:
+def copy_file_to_source(
+    src: Path, source_path: Path, albumart_path: Path, meta: dict | None = None
+) -> dict:
     """
-    Reads metadata once, copies the file into source_path organised as
-    artist/album/, and returns that metadata with filepath/filename
-    pointing at the copy.
+    Copies the file into source_path organised as artist/album/, and returns
+    its metadata with filepath/filename pointing at the copy.
+    Pass `meta` if you've already called read_metadata on src, so the file
+    isn't read twice; otherwise it is read here.
     """
-    meta = read_metadata(src, albumart_path)  # the ONE read
+    if meta is None:
+        meta = read_metadata(src, albumart_path)  # the ONE read
+    else:
+        meta = dict(meta)  # don't modify the caller's dict
 
     dest_dir = (
         source_path
@@ -153,6 +159,12 @@ def copy_file_to_source(src: Path, source_path: Path, albumart_path: Path) -> di
     dest = dest_dir / src.name  # the FILE, not the dir
 
     if src.resolve() != dest.resolve():
+        # Never overwrite a file already in the library: "song.mp3" becomes
+        # "song (1).mp3", "song (2).mp3", ... so each copy gets its own track.
+        n = 1
+        while dest.exists():
+            dest = dest_dir / f"{src.stem} ({n}){src.suffix}"
+            n += 1
         shutil.copy2(src, dest)
 
     meta["filepath"] = str(dest)

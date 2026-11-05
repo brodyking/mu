@@ -28,8 +28,9 @@ class Api:
 
     def scan_source_folder(self, batch_size: int = 100) -> Iterator[dict]:
         """
-        Rescans source_path and upserts every MP3 found.
-        Yields one progress dict per file, after that file has been committed.
+        Rescans source_path and upserts every MP3 found. Files already in the
+        library are updated; new files that duplicate an existing track are
+        skipped. Yields one progress dict per file, after it has been committed.
         """
         files = sorted(
             p
@@ -40,8 +41,9 @@ class Api:
 
     def import_media(self, path, batch_size: int = 10) -> Iterator[dict]:
         """
-        Copies media from the path into the source folder,
-        then upserts to the database. Yields one progress dict per file
+        Copies media from the path into the source folder, then upserts to
+        the database. Tracks already in the library are skipped and never
+        copied. Yields one progress dict per file.
         """
         path = Path(path).resolve()
 
@@ -612,12 +614,42 @@ class Api:
         ).fetchone()
         return Track(row)
 
+    def _dup_key(self, track) -> tuple[str, str, str]:
+        """
+        The (title, artist, album) key two tracks must share to count as
+        duplicates. Ignores case and surrounding spaces, and treats a missing
+        tag the same as an empty one. Untitled tracks use their filename in
+        place of the title.
+        `track` can be a metadata dict or a database row.
+        """
+
+        def clean(value) -> str:
+            return str(value or "").strip().casefold()
+
+        title = clean(track["title"]) or clean(track["filename"])
+        return (title, clean(track["artist"]), clean(track["album"]))
+
     def _ingest(
-        self, files: list[Path], batch_size: int, copy_to_source: bool = False
+        self,
+        files: list[Path],
+        batch_size: int,
+        copy_to_source: bool = False,
     ) -> Iterator[dict]:
-        """Shared by scan_source_folder and import_media."""
+        """
+        Shared by scan_source_folder and import_media.
+        Duplicates (same title/artist/album, see _dup_key) are always skipped.
+        A file that is already in the library is an update, not a duplicate.
+        """
         total = len(files)
         batch: list[tuple[dict, dict | None]] = []
+
+        # What's already in the library. `seen` also collects every file this
+        # run accepts, so two copies in the same import are caught too.
+        rows = self.db.query(
+            "SELECT filepath, filename, title, artist, album FROM tracks"
+        )
+        known_paths: set[str] = {row["filepath"] for row in rows}
+        seen: set[tuple[str, str, str]] = {self._dup_key(row) for row in rows}
 
         # Upserts metadata dict's from batch
         def flush() -> list[dict]:
@@ -634,6 +666,8 @@ class Api:
                         if meta is not None:
                             record["ok"] = False
                             record["error"] = f"write failed: {exc}"
+                            # Nothing was saved, so later copies may still import
+                            seen.discard(self._dup_key(meta))
             records: list[dict] = [record for record, _ in batch]
             batch.clear()
             return records
@@ -645,18 +679,28 @@ class Api:
                 "total": total,
                 "filename": path.name,
                 "error": None,
+                "skipped": False,
             }
             meta = None
             try:
-                if copy_to_source:
-                    meta = copy_file_to_source(
-                        path, self.db.source_path, self.db.albumart_path
-                    )
+                meta = read_metadata(path, self.db.albumart_path)
+                key = self._dup_key(meta)
+                already_in_library = meta["filepath"] in known_paths
+                # Check BEFORE copying so skipped files never land in source_path
+                if key in seen and not already_in_library:
+                    record["skipped"] = True
+                    meta = None
                 else:
-                    meta = read_metadata(path, self.db.albumart_path)
+                    if copy_to_source:
+                        meta = copy_file_to_source(
+                            path, self.db.source_path, self.db.albumart_path, meta=meta
+                        )
+                    # Only claim the key once the file has been read and copied
+                    seen.add(key)
             except Exception as exc:
                 record["ok"] = False
                 record["error"] = f"read failed: {exc}"
+                meta = None
             batch.append((record, meta))
             if len(batch) >= batch_size:
                 yield from flush()
