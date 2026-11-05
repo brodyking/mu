@@ -56,7 +56,7 @@ def scan() -> None:
     """Scans the source folder"""
     for response in api.scan_source_folder():
         mu_print(
-            "",
+            "skipped duplicate: " if response.get("skipped") else "",
             url=response["filename"],
             count=(response["count"] + 1, response["total"]),
             ok=response["ok"],
@@ -112,14 +112,17 @@ def track_remove(
 @track_parser.command("import", help="import media (alias: i)")
 def import_tracks(
     path: Annotated[str, typer.Argument(help="directory/location of track(s)")],
+    ignore_duplicates: Annotated[
+        bool, typer.Option("--ignore-duplicates", "-i", help="ignore duplicates")
+    ] = False,
 ) -> None:
     """Imports all files from the specified directory"""
     for response in api.import_media(path):
         mu_print(
-            "",
+            "skipped duplicate: " if response.get("skipped") else "",
             url=response["filename"],
             count=(response["count"] + 1, response["total"]),
-            ok=response["ok"],
+            ok=False if response.get("skipped") else response["ok"],
         )
 
 

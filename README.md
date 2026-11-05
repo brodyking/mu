@@ -183,6 +183,8 @@ To import new mp3 files to your library, use the `track` subparser (aliased
 
  This command can be used to import folders of music, or just individual mp3 files. All tracks imported are copied into the `~/Music/mu/source/` folder.
 
+**Note: Duplicate tracks (ones sharing the same title, artist, and album) are always skipped when importing.**
+
 ### µ query syntax
 
 The same `track` subparser mentioned above has other commands. Those being `remove` (alias `rm` ) and `favorite` (alias `f` ). But to use these commands, you must understand µ query syntax.
