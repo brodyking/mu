@@ -80,9 +80,10 @@ class QueueList:
         """
         Removes the track at specified pos, returns the track removed.
         """
-        if pos > len(self.queue):
+        if pos >= len(self.queue):
             return None
         tid = self.queue.pop(pos)
+        self.pos -= 1
         response = self.api.get_tracks(f"id={tid}")
         if tid in response:
             return response[tid]
