@@ -416,7 +416,7 @@ There are currently no other configuration options.
 mµweb is the easiest way to listen to a µ library on any device with a web browser. To start mµweb, type `muweb` into your terminal shell. It will start on `localhost:8000`. It will use the default µ library in `~/Music/mu/`.
 
 ### Authentication
-If you require authentication for your library, typing `--pasword [password]` or `--ask-password`. Note: you can only have a single password active, so be careful who you give it too.
+If you require authentication for your library, typing `--password [password]` or `--ask-password`. Note: you can only have a single password active, so be careful who you give it too.
 
 ## Using the µ Python API
 
